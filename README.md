@@ -19,7 +19,11 @@ Another feature allows users at the same event to log in and create a visual til
 
 ## Wireframes
 
-Wireframes here
+![screenshot](https://github.com/VisualTiles/VisualTilesTogether/blob/master/art/wf_01.jpg)
+
+![screenshot](https://github.com/VisualTiles/VisualTilesTogether/blob/master/art/wf_02.jpg)
+
+![screenshot](https://github.com/VisualTiles/VisualTilesTogether/blob/master/art/wf_03.jpg)
 
 ## License
 
