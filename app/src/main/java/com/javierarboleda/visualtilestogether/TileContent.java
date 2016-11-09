@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class TileContent {
     private String shapeUrl;
+    private String shapeFbStorage;
     private int posVotes;
     private int negVotes;
     private Date submitTime;
@@ -14,10 +15,11 @@ public class TileContent {
 
     }
 
-    public TileContent(boolean approved, int negVotes, int posVotes, String shapeUrl, Date submitTime) {
+    public TileContent(boolean approved, int negVotes, int posVotes, String shapeFbStorage, String shapeUrl, Date submitTime) {
         this.approved = approved;
         this.negVotes = negVotes;
         this.posVotes = posVotes;
+        this.shapeFbStorage = shapeFbStorage;
         this.shapeUrl = shapeUrl;
         this.submitTime = submitTime;
     }
@@ -52,6 +54,14 @@ public class TileContent {
 
     public void setShapeUrl(String shapeUrl) {
         this.shapeUrl = shapeUrl;
+    }
+
+    public String getShapeFbStorage() {
+        return shapeFbStorage;
+    }
+
+    public void setShapeFbStorage(String shapeFbStorage) {
+        this.shapeFbStorage = shapeFbStorage;
     }
 
     public Date getSubmitTime() {

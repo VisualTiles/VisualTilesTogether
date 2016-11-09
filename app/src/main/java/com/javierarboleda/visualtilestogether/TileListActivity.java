@@ -1,7 +1,9 @@
 package com.javierarboleda.visualtilestogether;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,11 +11,16 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class TileListActivity extends AppCompatActivity {
 
@@ -22,8 +29,10 @@ public class TileListActivity extends AppCompatActivity {
     private RecyclerView mRvTileList;
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseRecyclerAdapter<TileContent, TileViewholder> mFirebaseAdapter;
+    private FirebaseStorage mFirebaseStorage;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
+    private StorageReference mShapesRef;
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
         public ImageView ivShape;
@@ -46,6 +55,12 @@ public class TileListActivity extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) findViewById(R.id.rvTileList);
 
+        // get the shapes folder of Firebase Storage for this app
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mShapesRef = mFirebaseStorage
+                .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
+                .child("shapes");
+
         // this should grab https://visual-tiles-together.firebaseio.com/
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
@@ -57,12 +72,33 @@ public class TileListActivity extends AppCompatActivity {
                         mFirebaseDatabaseReference.child(TILES_TABLE)) {
 
             @Override
-            protected void populateViewHolder(TileViewholder viewHolder, TileContent tile, int position) {
+            protected void populateViewHolder(final TileViewholder viewHolder, final TileContent tile, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null) {
                     Glide.with(mContext)
                             .load(tile.getShapeUrl())
                             .into(viewHolder.ivShape);
+                }
+                if (tile.getShapeFbStorage() != null) {
+                    mShapesRef
+                            .child(tile.getShapeFbStorage())
+                            .getDownloadUrl()
+                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Glide.with(mContext)
+                                    .load(uri)
+                                    .into(viewHolder.ivShape);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(mContext, "shapeFpStorage \"" + tile.getShapeFbStorage() + "\" no workee", Toast.LENGTH_SHORT)
+                                    .show();
+                        }
+                    });
+
                 }
                 viewHolder.tvYes.setText(String.valueOf(tile.getPosVotes()));
                 viewHolder.tvNo.setText(String.valueOf(tile.getNegVotes()));
