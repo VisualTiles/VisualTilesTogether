@@ -9,6 +9,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -17,6 +20,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,7 +34,8 @@ import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.models.TileContent;
 
-public class TileListActivity extends AppCompatActivity {
+public class TileListActivity extends AppCompatActivity
+        implements GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TILES_TABLE = "tiles";
     private static final String ANONYMOUS = "anonymous";
@@ -47,6 +54,7 @@ public class TileListActivity extends AppCompatActivity {
     private String mUsername;
     private String mPhotoUrl;
     private String mUid;
+    private GoogleApiClient mGoogleApiClient;
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
         public ImageView ivShape;
@@ -87,6 +95,11 @@ public class TileListActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "Uid " + mUid);
             }
         }
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .build();
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) findViewById(R.id.rvTileList);
@@ -162,5 +175,35 @@ public class TileListActivity extends AppCompatActivity {
         mLinearLayoutManager.setStackFromEnd(true);
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.sign_out_menu:
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                mUsername = ANONYMOUS;
+                startActivity(new Intent(this, SignInActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
+        // be available.
+        Log.d(LOG_TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 }

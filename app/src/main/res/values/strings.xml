@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Visual Tiles Together</string>
     <string name="sign_in">Sign In</string>
+    <string name="sign_out">Sign Out</string>
 </resources>
