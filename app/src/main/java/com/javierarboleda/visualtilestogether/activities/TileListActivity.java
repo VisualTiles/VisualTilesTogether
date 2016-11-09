@@ -1,12 +1,14 @@
-package com.javierarboleda.visualtilestogether;
+package com.javierarboleda.visualtilestogether.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -17,14 +19,21 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.models.TileContent;
 
 public class TileListActivity extends AppCompatActivity {
 
     private static final String TILES_TABLE = "tiles";
+    private static final String ANONYMOUS = "anonymous";
+    private static final String LOG_TAG = TileListActivity.class.getSimpleName();
+
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
     private DatabaseReference mFirebaseDatabaseReference;
@@ -33,6 +42,11 @@ public class TileListActivity extends AppCompatActivity {
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
     private StorageReference mShapesRef;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseUser mFirebaseUser;
+    private String mUsername;
+    private String mPhotoUrl;
+    private String mUid;
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
         public ImageView ivShape;
@@ -51,6 +65,28 @@ public class TileListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mContext = this;
         setContentView(R.layout.activity_tile_list);
+
+        // Initialize Firebase Auth
+        // Default username is anonymous.
+        mUsername = ANONYMOUS;
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser == null) {
+            // Not signed in, launch the Sign In activity
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+            return;
+        } else {
+            mUsername = mFirebaseUser.getDisplayName();
+            if (mFirebaseUser.getPhotoUrl() != null) {
+                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                mUsername = mFirebaseUser.getDisplayName();
+                mUid = mFirebaseUser.getUid();
+                Log.d(LOG_TAG, "PhotoUrl " + mPhotoUrl);
+                Log.d(LOG_TAG, "Username " + mUsername);
+                Log.d(LOG_TAG, "Uid " + mUid);
+            }
+        }
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) findViewById(R.id.rvTileList);

@@ -1,4 +1,4 @@
-package com.javierarboleda.visualtilestogether;
+package com.javierarboleda.visualtilestogether.models;
 
 import java.util.Date;
 
