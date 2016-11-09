@@ -33,6 +33,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.models.TileContent;
+import com.javierarboleda.visualtilestogether.models.User;
 
 public class TileListActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener {
@@ -40,6 +41,7 @@ public class TileListActivity extends AppCompatActivity
     private static final String TILES_TABLE = "tiles";
     private static final String ANONYMOUS = "anonymous";
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
+    private static final String USERS_TABLE = "users";
 
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
@@ -52,9 +54,10 @@ public class TileListActivity extends AppCompatActivity
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
     private String mUsername;
-    private String mPhotoUrl;
     private String mUid;
     private GoogleApiClient mGoogleApiClient;
+    private DatabaseReference mDbUsers;
+    private User mUser;
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
         public ImageView ivShape;
@@ -85,15 +88,9 @@ public class TileListActivity extends AppCompatActivity
             finish();
             return;
         } else {
+            mUid = mFirebaseUser.getUid();
             mUsername = mFirebaseUser.getDisplayName();
-            if (mFirebaseUser.getPhotoUrl() != null) {
-                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-                mUsername = mFirebaseUser.getDisplayName();
-                mUid = mFirebaseUser.getUid();
-                Log.d(LOG_TAG, "PhotoUrl " + mPhotoUrl);
-                Log.d(LOG_TAG, "Username " + mUsername);
-                Log.d(LOG_TAG, "Uid " + mUid);
-            }
+            mUser = User.fromFirebaseUser(mFirebaseUser);
         }
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -112,6 +109,8 @@ public class TileListActivity extends AppCompatActivity
 
         // this should grab https://visual-tiles-together.firebaseio.com/
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        mDbUsers = mFirebaseDatabaseReference.child(USERS_TABLE);
+        mDbUsers.child(mUid).setValue(mUser);
 
         // bind the tiles table to the RecyclerView
         mFirebaseAdapter = new FirebaseRecyclerAdapter<TileContent, TileViewholder>
