@@ -75,6 +75,7 @@ public class TileListActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        final Context appContext = getApplicationContext();
         setContentView(R.layout.activity_tile_list);
 
         // Initialize Firebase Auth
@@ -123,7 +124,7 @@ public class TileListActivity extends AppCompatActivity
             protected void populateViewHolder(final TileViewholder viewHolder, final TileContent tile, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null) {
-                    Glide.with(mContext)
+                    Glide.with(appContext)
                             .load(tile.getShapeUrl())
                             .into(viewHolder.ivShape);
                 }
