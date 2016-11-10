@@ -4,10 +4,10 @@ package com.javierarboleda.visualtilestogether.models;
 import com.google.firebase.auth.FirebaseUser;
 
 public class User {
-    String name;
-    String email;
-    String photoUrl;
-    boolean isAnonymous;
+    private String name;
+    private String email;
+    private String photoUrl;
+    private boolean isAnonymous;
 
     public User() {
     }
