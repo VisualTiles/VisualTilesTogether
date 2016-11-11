@@ -3,7 +3,7 @@ package com.javierarboleda.visualtilestogether.models;
 import java.util.Date;
 
 
-public class TileContent {
+public class Tile {
     private String shapeUrl;
     private String shapeFbStorage;
     private int posVotes;
@@ -11,11 +11,11 @@ public class TileContent {
     private Date submitTime;
     private boolean approved;
 
-    public TileContent() {
+    public Tile() {
 
     }
 
-    public TileContent(boolean approved, int negVotes, int posVotes, String shapeFbStorage, String shapeUrl, Date submitTime) {
+    public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage, String shapeUrl, Date submitTime) {
         this.approved = approved;
         this.negVotes = negVotes;
         this.posVotes = posVotes;

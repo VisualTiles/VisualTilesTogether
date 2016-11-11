@@ -30,7 +30,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.models.TileContent;
+import com.javierarboleda.visualtilestogether.models.Tile;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getFirebaseAuth;
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUid;
@@ -45,7 +45,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
 
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
-    private FirebaseRecyclerAdapter<TileContent, TileViewholder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<Tile, TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
     private StorageReference mShapesRef;
@@ -90,14 +90,14 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         dbUsers.child(getUid()).setValue(getUser());
 
         // bind the tiles table to the RecyclerView
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<TileContent, TileViewholder>
-                (TileContent.class,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Tile, TileViewholder>
+                (Tile.class,
                         R.layout.tile_list_item,
                         TileViewholder.class,
                         dbRef.child(TILES_TABLE)) {
 
             @Override
-            protected void populateViewHolder(final TileViewholder viewHolder, final TileContent tile, int position) {
+            protected void populateViewHolder(final TileViewholder viewHolder, final Tile tile, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null) {
                     Glide.with(appContext)
