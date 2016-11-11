@@ -38,7 +38,6 @@ import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getU
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.resetUserame;
 
 public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
-
     private static final String TILES_TABLE = "tiles";
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
     private static final String USERS_TABLE = "users";

@@ -72,7 +72,7 @@ public class SignInActivity extends AppCompatActivity implements
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-// Initialize FirebaseAuth
+        // Initialize FirebaseAuth
         mFirebaseAuth = FirebaseAuth.getInstance();
     }
 

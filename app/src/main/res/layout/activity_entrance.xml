@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/activity_entrance"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:context="com.javierarboleda.visualtilestogether.activities.EntranceActivity">
+<LinearLayout
+            android:id="@+id/view_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="Sign in to begin Visual Tiles"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"/>
+        <com.google.android.gms.common.SignInButton
+                android:id="@+id/sign_in_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                />
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+            android:id="@+id/tutorial_view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/colorPrimaryDark"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_above="@id/view_footer"
+            />
+
+    <android.support.design.widget.TabLayout
+            android:id="@+id/tutorial_tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_margin="8dp"
+            app:tabBackground="@drawable/intro_tab_selector"
+            android:layout_alignLeft="@id/tutorial_view_pager"
+            android:layout_alignRight="@id/tutorial_view_pager"
+            android:layout_alignBottom="@id/tutorial_view_pager"
+            app:tabGravity="center"
+            app:tabIndicatorHeight="0dp"
+            />
+
+</RelativeLayout>
