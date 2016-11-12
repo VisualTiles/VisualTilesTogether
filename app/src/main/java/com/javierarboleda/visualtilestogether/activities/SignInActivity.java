@@ -37,9 +37,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 
 public class SignInActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener,
+        VisualTilesTogetherApp.VisualTilesListenerInterface {
 
     private static final String LOG_TAG = SignInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
@@ -74,6 +76,8 @@ public class SignInActivity extends AppCompatActivity implements
 
         // Initialize FirebaseAuth
         mFirebaseAuth = FirebaseAuth.getInstance();
+
+        VisualTilesTogetherApp.addListener(this);
     }
 
     @Override
@@ -133,11 +137,26 @@ public class SignInActivity extends AppCompatActivity implements
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            startActivity(new Intent(SignInActivity.this, MainActivity.class));
-                            finish();
+                            VisualTilesTogetherApp.initUser(task.getResult().getUser());
                         }
                     }
                 });
     }
 
+    @Override
+    public void onChannelReady() {
+        Toast.makeText(this, "Channel is ready too =)", Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public void onError() {
+        Toast.makeText(this, "Oh no! User db failed!", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onUserReady() {
+        startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        finish();
+    }
 }

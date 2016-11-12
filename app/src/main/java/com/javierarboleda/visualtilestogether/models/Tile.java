@@ -4,6 +4,7 @@ import java.util.Date;
 
 
 public class Tile {
+    public static final String TABLE_NAME = "tiles";
     private String shapeUrl;
     private String shapeFbStorage;
     private String creatorId;
@@ -14,10 +15,10 @@ public class Tile {
     private boolean approved;
 
     public Tile() {
-
     }
 
-    public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage, String shapeUrl, Date submitTime) {
+    public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage,
+                String shapeUrl, Date submitTime) {
         this.approved = approved;
         this.negVotes = negVotes;
         this.posVotes = posVotes;
@@ -26,7 +27,8 @@ public class Tile {
         this.submitTime = submitTime;
     }
 
-    public Tile(boolean approved, String channelId, String creatorId, int negVotes, int posVotes, String shapeFbStorage, String shapeUrl, Date submitTime) {
+    public Tile(boolean approved, String channelId, String creatorId, int negVotes, int posVotes,
+                String shapeFbStorage, String shapeUrl, Date submitTime) {
         this.approved = approved;
         this.channelId = channelId;
         this.creatorId = creatorId;

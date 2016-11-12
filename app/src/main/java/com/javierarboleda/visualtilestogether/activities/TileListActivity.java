@@ -31,6 +31,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.models.User;
+import com.javierarboleda.visualtilestogether.util.FirebaseUtil;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getFirebaseAuth;
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUid;
@@ -38,9 +40,7 @@ import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getU
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.resetUserame;
 
 public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
-    private static final String TILES_TABLE = "tiles";
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
-    private static final String USERS_TABLE = "users";
 
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
@@ -85,7 +85,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
 
         // this should grab https://visual-tiles-together.firebaseio.com/
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference dbUsers = dbRef.child(USERS_TABLE);
+        DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
         dbUsers.child(getUid()).setValue(getUser());
 
         // bind the tiles table to the RecyclerView
@@ -93,10 +93,11 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 (Tile.class,
                         R.layout.tile_list_item,
                         TileViewholder.class,
-                        dbRef.child(TILES_TABLE)) {
+                        dbRef.child(Tile.TABLE_NAME)) {
 
             @Override
-            protected void populateViewHolder(final TileViewholder viewHolder, final Tile tile, int position) {
+            protected void populateViewHolder(
+                    final TileViewholder viewHolder, final Tile tile, int position) {
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null) {
                     Glide.with(appContext)
