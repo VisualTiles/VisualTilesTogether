@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_add_tile_to_upcoming"
+        android:icon="@drawable/ic_add_tile_to_upcoming_24dp"
+        android:title="Add Tile"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo_black_24dp"
+        android:title="Undo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo_black_24dp"
+        android:title="Redo"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_clear"
+        android:icon="@drawable/ic_clear_black_24dp"
+        android:title="Clear"
+        app:showAsAction="always" />
+
+</menu>
