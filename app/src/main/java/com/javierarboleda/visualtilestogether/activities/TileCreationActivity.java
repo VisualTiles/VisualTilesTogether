@@ -5,6 +5,8 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.databinding.ActivityTileCreationBinding;
@@ -28,10 +30,81 @@ public class TileCreationActivity extends AppCompatActivity {
         d.getSize(canvasDimen);
         mCanvas.getLayoutParams().height = canvasDimen.x;
 
-        binding.cvVisualTile.setMode(CanvasView.Mode.DRAW);
-        binding.cvVisualTile.setDrawer(CanvasView.Drawer.LINE);
+        mCanvas.setMode(CanvasView.Mode.DRAW);
+        mCanvas.setDrawer(CanvasView.Drawer.PEN);
 
         mCanvas.setPaintStrokeWidth(10F);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        Menu topMenu = binding.amvTop.getMenu();
+        getMenuInflater().inflate(R.menu.action_menu_title_editor_top, topMenu);
+
+        for (int i = 0; i < topMenu.size(); i++) {
+            topMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    return onOptionsItemSelected(item);
+                }
+            });
+        }
+
+        Menu bottomMenu = binding.amvBottom.getMenu();
+        getMenuInflater().inflate(R.menu.action_menu_tile_editor_bottom, bottomMenu);
+
+        for (int i = 0; i < bottomMenu.size(); i++) {
+            bottomMenu.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    return onOptionsItemSelected(item);
+                }
+            });
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_add_tile_to_upcoming:
+                return true;
+            case R.id.action_undo:
+                mCanvas.undo();
+                return true;
+            case R.id.action_redo:
+                mCanvas.redo();
+                return true;
+            case R.id.action_clear:
+                mCanvas.clear();
+                return true;
+            case R.id.action_draw_mode:
+                mCanvas.setMode(CanvasView.Mode.DRAW);
+                mCanvas.setDrawer(CanvasView.Drawer.PEN);
+                return true;
+            case R.id.action_line_mode:
+                mCanvas.setMode(CanvasView.Mode.DRAW);
+                mCanvas.setDrawer(CanvasView.Drawer.LINE);
+                return true;
+            case R.id.action_box_mode:
+                mCanvas.setMode(CanvasView.Mode.DRAW);
+                mCanvas.setDrawer(CanvasView.Drawer.RECTANGLE);
+                return true;
+            case R.id.action_circle_mode:
+                mCanvas.setMode(CanvasView.Mode.DRAW);
+                mCanvas.setDrawer(CanvasView.Drawer.CIRCLE);
+                return true;
+            case R.id.action_text_mode:
+                mCanvas.setMode(CanvasView.Mode.TEXT);
+                return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 
     // Need to create square view to create artwork

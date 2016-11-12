@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_draw_mode"
+        android:icon="@drawable/ic_pencil_black_24dp"
+        android:title="Draw Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_line_mode"
+        android:icon="@drawable/ic_line_24dp"
+        android:title="Line Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_box_mode"
+        android:icon="@drawable/ic_box_24dp"
+        android:title="Box Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_circle_mode"
+        android:icon="@drawable/ic_circle_24dp"
+        android:title="Circle Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_text_mode"
+        android:icon="@drawable/ic_text_black_24dp"
+        android:title="Text Mode"
+        app:showAsAction="always" />
+
+</menu>
