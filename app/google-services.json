@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "773110916977-mm9hqn584qf8vfrmn9qpsfo8g63g0oon.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.javierarboleda.visualtilestogether",
+            "certificate_hash": "31443BAD9B1EC2C4B2D042FCD3148733621BD817"
+          }
+        },
+        {
           "client_id": "773110916977-k13mspcn80kl8tclcau1m2lkmlu2nk7s.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
