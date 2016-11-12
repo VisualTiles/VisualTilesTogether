@@ -3,6 +3,7 @@ package com.javierarboleda.visualtilestogether.models;
 import java.util.Date;
 
 public class Channel {
+    public static final String TABLE_NAME = "channels";
     private String name;
     private Date startTime;
     private Date endTime;

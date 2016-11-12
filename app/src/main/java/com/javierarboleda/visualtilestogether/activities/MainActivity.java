@@ -34,8 +34,6 @@ public class MainActivity extends AppCompatActivity
         ShapeAddDialog.OnFragmentInteractionListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final String CHANNELS_TABLE = "channels";
-    private static final String TILES_TABLE = "tiles";
     private UploadTask uploadTask;
 
     @Override
@@ -73,7 +71,8 @@ public class MainActivity extends AppCompatActivity
         Log.d(LOG_TAG, "new channel (" + channel.getName() + ", "
                 + channel.getStartTime().toString() + ", "
                 + channel.getEndTime().toString() + ")");
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(CHANNELS_TABLE);
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(
+                Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
         Log.d(LOG_TAG, "key is " + key);
@@ -83,7 +82,8 @@ public class MainActivity extends AppCompatActivity
     public void onFragmentInteraction(Bitmap bitmap) {
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
-        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(TILES_TABLE);
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(
+                Tile.TABLE_NAME);
         final String key = dbRef.push().getKey();
 
         StorageReference shapesRef = mFirebaseStorage

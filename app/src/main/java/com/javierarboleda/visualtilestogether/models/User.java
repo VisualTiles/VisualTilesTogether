@@ -1,9 +1,13 @@
 package com.javierarboleda.visualtilestogether.models;
 
 
+import com.android.annotations.Nullable;
 import com.google.firebase.auth.FirebaseUser;
 
 public class User {
+    public static final String TABLE_NAME = "users";
+    @Nullable
+    private String channelId;
     private String name;
     private String email;
     private String photoUrl;
@@ -12,11 +16,20 @@ public class User {
     public User() {
     }
 
-    public User(String email, boolean isAnonymous, String name, String photoUrl) {
+    public User(String channelId, String email, boolean isAnonymous, String name, String photoUrl) {
+        this.channelId = channelId;
         this.email = email;
         this.isAnonymous = isAnonymous;
         this.name = name;
         this.photoUrl = photoUrl;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channel) {
+        this.channelId = channel;
     }
 
     public String getEmail() {
@@ -52,11 +65,11 @@ public class User {
     }
 
     public static User fromFirebaseUser(FirebaseUser fbu) {
-        User user = new User(fbu.getEmail(),
+        User user = new User(null,
+                fbu.getEmail(),
                 fbu.isAnonymous(),
                 fbu.getDisplayName(),
                 fbu.getPhotoUrl().toString());
-
         return user;
     }
 }
