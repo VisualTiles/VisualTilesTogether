@@ -6,6 +6,8 @@ import java.util.Date;
 public class Tile {
     private String shapeUrl;
     private String shapeFbStorage;
+    private String creatorId;
+    private String channelId;
     private int posVotes;
     private int negVotes;
     private Date submitTime;
@@ -22,6 +24,33 @@ public class Tile {
         this.shapeFbStorage = shapeFbStorage;
         this.shapeUrl = shapeUrl;
         this.submitTime = submitTime;
+    }
+
+    public Tile(boolean approved, String channelId, String creatorId, int negVotes, int posVotes, String shapeFbStorage, String shapeUrl, Date submitTime) {
+        this.approved = approved;
+        this.channelId = channelId;
+        this.creatorId = creatorId;
+        this.negVotes = negVotes;
+        this.posVotes = posVotes;
+        this.shapeFbStorage = shapeFbStorage;
+        this.shapeUrl = shapeUrl;
+        this.submitTime = submitTime;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
+    }
+
+    public String getCreatorId() {
+        return creatorId;
+    }
+
+    public void setCreatorId(String creatorId) {
+        this.creatorId = creatorId;
     }
 
     public boolean isApproved() {
