@@ -57,5 +57,4 @@
             app:tabGravity="center"
             app:tabIndicatorHeight="0dp"
             />
-
 </RelativeLayout>

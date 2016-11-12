@@ -28,6 +28,8 @@ public class VisualTilesTogetherApp extends Application {
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         if (firebaseUser == null) {
             // Not signed in, launch the Sign In activity
+            // NOTE(chris): This may cause a runtime exception, because startActivity is happening
+            // outside of an activity context? I'm not sure why this is working.
             startActivity(new Intent(this, SignInActivity.class));
             return;
         } else {

@@ -162,8 +162,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-
-            case R.id.sign_out_menu:
+            case R.id.menu_item_sign_out:
                 getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 resetUserame();
