@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "773110916977",
+    "firebase_url": "https://visual-tiles-together.firebaseio.com",
+    "project_id": "visual-tiles-together",
+    "storage_bucket": "visual-tiles-together.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773110916977:android:8400a72dd465e8dc",
+        "android_client_info": {
+          "package_name": "com.javierarboleda.visualtilestogether"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "773110916977-k13mspcn80kl8tclcau1m2lkmlu2nk7s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.javierarboleda.visualtilestogether",
+            "certificate_hash": "5C449F8D3E60E0C2D4CDE94D35DCDE4936CC2844"
+          }
+        },
+        {
+          "client_id": "773110916977-iebnk2lt4tdh394qgt1m888f392l2b8k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.javierarboleda.visualtilestogether",
+            "certificate_hash": "90A82D248607D76B8211F83212652281FA095A16"
+          }
+        },
+        {
+          "client_id": "773110916977-c7t0jkl101so51ihmstpl3q5iaooqa3c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4kG-tNzhigH1YuLLkXsL0frudkazWwxM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "773110916977-c7t0jkl101so51ihmstpl3q5iaooqa3c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
