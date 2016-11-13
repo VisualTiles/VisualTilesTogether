@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
+        // TODO(jav): Save user when channel is defined; so they don't get stuck in a loop.
         VisualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }

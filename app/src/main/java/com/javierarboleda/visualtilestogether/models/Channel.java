@@ -1,12 +1,15 @@
 package com.javierarboleda.visualtilestogether.models;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class Channel {
     public static final String TABLE_NAME = "channels";
     private String name;
     private Date startTime;
     private Date endTime;
+    private Map<Integer, String> tileIds;
 
     public Channel() {
     }
@@ -15,6 +18,13 @@ public class Channel {
         this.name = name;
         this.startTime = startTime;
         this.endTime = endTime;
+    }
+
+    public Channel(Date endTime, String name, Date startTime, Map<Integer, String> tileIds) {
+        this.endTime = endTime;
+        this.name = name;
+        this.startTime = startTime;
+        this.tileIds = tileIds;
     }
 
     public Date getEndTime() {
@@ -39,5 +49,17 @@ public class Channel {
 
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
+    }
+
+    public Map<Integer, String> getTileIds() {
+        return tileIds;
+    }
+
+    public void setTileIds(Map<Integer, String> tileIds) {
+        this.tileIds = tileIds;
+    }
+
+    public void addTileId(int position, String tileId) {
+        
     }
 }
