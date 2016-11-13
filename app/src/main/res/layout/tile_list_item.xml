@@ -5,51 +5,47 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="4dp" >
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="24dp" >
-    <ImageView
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        app:srcCompat="@mipmap/ic_launcher"
-        android:id="@+id/ivShape"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            app:srcCompat="@mipmap/ic_launcher"
+            android:id="@+id/ivShape"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:text="Yep:"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/ivShape"
-        android:layout_alignStart="@+id/ivShape"
-        android:id="@+id/tvYesLabel" />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_uparrow_normal"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="48dp"
+            android:id="@+id/ibUpVote"
+            style="?android:attr/borderlessButtonStyle" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/tvYesLabel"
-        android:layout_toEndOf="@+id/tvYesLabel"
-        android:id="@+id/tvYes"
-        tools:text="12"
-        android:paddingLeft="4dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/ibUpVote"
+            android:layout_alignStart="@+id/ibUpVote"
+            android:paddingStart="4dp"
+            android:id="@+id/tvVotesTotal"
+            tools:text="222"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
-    <TextView
-        android:text="Nope:"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/tvYes"
-        android:layout_toEndOf="@+id/tvYes"
-        android:id="@+id/tvNoLabel"
-        android:paddingLeft="16dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/tvNoLabel"
-        android:layout_toEndOf="@+id/tvNoLabel"
-        android:id="@+id/tvNo"
-        tools:text="8"
-        android:paddingLeft="4dp" />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_downarrow_normal"
+            android:id="@+id/ibDownVote"
+            android:layout_below="@+id/tvVotesTotal"
+            android:layout_alignStart="@+id/tvVotesTotal"
+            style="?android:attr/borderlessButtonStyle" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>
