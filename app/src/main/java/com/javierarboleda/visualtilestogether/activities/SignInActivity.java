@@ -206,8 +206,12 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void showPostSignInButtons() {
-        preSignInButtons.setVisibility(View.GONE);
-        postSignInButtons.setVisibility(View.VISIBLE);
+
+        Intent intent = new Intent(this, CreateJoinActivity.class);
+        startActivity(intent);
+
+//        preSignInButtons.setVisibility(View.GONE);
+//        postSignInButtons.setVisibility(View.VISIBLE);
     }
 
     @Override

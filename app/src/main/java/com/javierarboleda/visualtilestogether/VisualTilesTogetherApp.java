@@ -98,7 +98,8 @@ public class VisualTilesTogetherApp extends Application {
                             if (listener.get() != null)
                                 listener.get().onUserReady();
                         }
-                        initChannel(user.getChannelId());
+                        // TODO(team): Add this back in when user can leave a channel
+                        // initChannel(user.getChannelId());
                     }
 
                     @Override
@@ -109,6 +110,10 @@ public class VisualTilesTogetherApp extends Application {
                         }
                     }
                 });
+    }
+
+    public static void initChannel() {
+        initChannel(user.getChannelId());
     }
 
     public static void initChannel(String channelId) {
