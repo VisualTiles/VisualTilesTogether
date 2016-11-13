@@ -65,6 +65,7 @@ public class User {
     }
 
     public static User fromFirebaseUser(FirebaseUser fbu) {
+        // ChannelId is null when this function is called (only for new users, hopefully).
         User user = new User(null,
                 fbu.getEmail(),
                 fbu.isAnonymous(),

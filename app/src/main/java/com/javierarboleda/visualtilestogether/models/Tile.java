@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class Tile {
     public static final String TABLE_NAME = "tiles";
+    public static final String CHANNEL_ID = "channelId";
     private String shapeUrl;
     private String shapeFbStorage;
     private String creatorId;

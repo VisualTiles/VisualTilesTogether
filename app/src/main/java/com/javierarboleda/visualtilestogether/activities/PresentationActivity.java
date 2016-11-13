@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.percent.PercentFrameLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -23,13 +24,18 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.BuildConfig;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.PresentLayout;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.models.User;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -64,14 +70,13 @@ public class PresentationActivity extends AppCompatActivity implements
             VisualTilesTogetherApp.getChannel() ==  null) {
             finish();
         }
-
         if (layout == null) {
             layout = PresentLayout.createDemoLayout();
-            if (!channelId.isEmpty()) {
+            /*
+            if (database != null && !channelId.isEmpty()) {
                 database.setValue(layout);
-            }
+            }*/
         }
-
 
         layout.setListener(this);
         viewContainer = (PercentFrameLayout) findViewById(R.id.viewContainer);
@@ -161,7 +166,7 @@ public class PresentationActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         drawLayout();
-        beginFunAnimation();
+        // beginFunAnimation();
     }
 
     public PresentLayout stepLayout(PresentLayout left, PresentLayout right, float stepPercent) {
@@ -212,6 +217,43 @@ public class PresentationActivity extends AppCompatActivity implements
                     }
                 }
         );
+        beginListeningForTiles();
+    }
+    private void beginListeningForTiles() {
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        Query dbTiles = dbRef.child(Tile.TABLE_NAME)
+                .orderByChild(Tile.CHANNEL_ID)
+                .equalTo(VisualTilesTogetherApp.getUser().getChannelId());
+        dbTiles.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long tileCount = dataSnapshot.getChildrenCount();
+                Log.i(TAG, "Tile count: " + tileCount);
+                HashMap<Integer, Tile> loadedTiles = new HashMap<>();
+                int tilePos = 0;
+                for (DataSnapshot record : dataSnapshot.getChildren()) {
+                    loadedTiles.put(tilePos++, record.getValue(Tile.class));
+                }
+                Log.i(TAG, "Tile count: " + tileCount);
+                // No tiles = no update.
+                if (tilePos == 0)
+                    return;
+                for (int i = 0; i < layout.getTileCount(); i++) {
+                    int pos = (int) (i % tileCount);
+                    Log.i(TAG, "Loading tile index " + i + " with tile pos " + pos);
+                    if (loadedTiles.get(pos) != null) {
+                        layout.setTile(i, loadedTiles.get(pos));
+                    } else {
+                        Log.e(TAG, "WTF Tile is null!?: " + pos);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private ImageView buildTileView() {
@@ -283,8 +325,24 @@ public class PresentationActivity extends AppCompatActivity implements
     }
 
     private void loadTile(int position, ImageView view, int durationMs) {
-        if (view == null) return;
-        Glide.with(this).load(layout.getTiles()[position].getShapeUrl())
+        if (view == null) {
+            Log.e(TAG, "Null imageview reference in loadTile for position " + position);
+            return;
+        }
+        if (layout == null) {
+            Log.e(TAG, "Null layout reference in loadTile for position " + position);
+            return;
+        }
+        Tile tile = layout.getTiles()[position];
+        if (tile == null) {
+            Log.e(TAG, "Null tile reference in loadTile for position " + position);
+            return;
+        }
+        if (tile.getShapeUrl() == null) {
+            Log.e(TAG, "Null getShapeUrl reference in loadTile for position " + position);
+            return;
+        }
+        Glide.with(this).load(tile.getShapeUrl())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .crossFade(durationMs)
                 .into(view);
