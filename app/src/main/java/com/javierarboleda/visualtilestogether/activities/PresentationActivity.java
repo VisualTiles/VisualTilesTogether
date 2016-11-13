@@ -166,7 +166,7 @@ public class PresentationActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         drawLayout();
-        beginFunAnimation();
+        // beginFunAnimation();
     }
 
     public PresentLayout stepLayout(PresentLayout left, PresentLayout right, float stepPercent) {
