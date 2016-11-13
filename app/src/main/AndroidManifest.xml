@@ -7,9 +7,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.TileListActivity" />
+        <activity android:name=".activities.TileListActivity"
+                  android:screenOrientation="portrait" />
         <activity android:name=".activities.SignInActivity"
-            android:launchMode="singleTop" android:noHistory="true">
+                  android:screenOrientation="portrait"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+                  android:launchMode="singleTop"
+                  android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -23,13 +27,15 @@
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+                  android:screenOrientation="portrait">
         </activity>
         <activity android:name=".activities.CreateGroupActivity"
                   android:icon="@mipmap/ic_launcher"
                   android:label="@string/app_name"
                   android:allowBackup="true"
-                  android:theme="@style/AppTheme" />
+                  android:theme="@style/AppTheme"
+                  android:screenOrientation="portrait" />
         <activity
             android:name=".activities.TileCreationActivity"
             android:label="@string/app_name"

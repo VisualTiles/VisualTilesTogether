@@ -72,6 +72,7 @@ public class VisualTilesTogetherApp extends Application {
     public static User getUser() {
         return user;
     }
+
     public static Channel getChannel() {
         return channel;
     }

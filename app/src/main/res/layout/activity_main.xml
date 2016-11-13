@@ -25,14 +25,6 @@
             android:id="@+id/btAddShape" />
 
         <Button
-            android:text="Add Channel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/btAddChannel"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />
-
-        <Button
             android:text="Show Gallery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
