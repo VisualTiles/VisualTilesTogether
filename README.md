@@ -57,7 +57,7 @@ _Visual Effects and Timeline_
 
 _Backend, Models, Persistence, Architecture_
 
-* [ ] Research and Design
+* [x] Research and Design
   * [ ] Models
 * [ ] Create Firebase account
 
