@@ -3,4 +3,8 @@
     <string name="sign_in">Sign In</string>
     <string name="sign_out">Sign Out</string>
     <string name="present">Present</string>
+    <string name="enter_event_code">Enter event code</string>
+    <string name="join_event">Join an event</string>
+    <string name="join_button">Join</string>
+    <string name="create_new_event">Create a new event</string>
 </resources>

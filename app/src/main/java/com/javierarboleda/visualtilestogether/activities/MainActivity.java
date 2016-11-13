@@ -50,7 +50,8 @@ public class MainActivity extends AppCompatActivity
         btAddShape.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ShapeAddDialog.newInstance().show(getSupportFragmentManager(), "new shape");
+                Intent intent = new Intent(MainActivity.this, TileCreationActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -59,14 +60,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(MainActivity.this, TileListActivity.class));
-            }
-        });
-
-        Button btAddChannel = (Button) findViewById(R.id.btAddChannel);
-        btAddChannel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ChannelAddDialog.newInstance().show(getSupportFragmentManager(), "new channel");
             }
         });
     }
