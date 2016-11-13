@@ -18,9 +18,12 @@ package com.javierarboleda.visualtilestogether.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -36,17 +39,24 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseError;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
+import com.javierarboleda.visualtilestogether.adapters.TutorialImageAdapter;
+import com.xgc1986.parallaxPagerTransformer.ParallaxPagerTransformer;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, View.OnClickListener,
         VisualTilesTogetherApp.VisualTilesListenerInterface {
-
     private static final String LOG_TAG = SignInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
 
     private SignInButton mSignInButton;
+
+    private View preSignInButtons;
+    private View postSignInButtons;
+    private Button btnCreateChannel;
+    private Button btnJoinChannel;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -60,6 +70,17 @@ public class SignInActivity extends AppCompatActivity implements
 
         // Assign fields
         mSignInButton = (SignInButton) findViewById(R.id.sign_in_button);
+        preSignInButtons = findViewById(R.id.pre_sign_in_buttons);
+        postSignInButtons = findViewById(R.id.post_sign_in_buttons);
+        btnCreateChannel = (Button) findViewById(R.id.btnCreateChannel);
+        btnJoinChannel = (Button) findViewById(R.id.btnJoinChannel);
+        btnJoinChannel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO(jav): FIX ME! This is allowing you in with a null channel!
+                onChannelReady();
+            }
+        });
 
         // Set click listeners
         mSignInButton.setOnClickListener(this);
@@ -74,10 +95,29 @@ public class SignInActivity extends AppCompatActivity implements
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        // Initialize FirebaseAuth
+        // Initialize FirebaseAuth.
         mFirebaseAuth = FirebaseAuth.getInstance();
 
+        // Listen for user and channel callbacks.
         VisualTilesTogetherApp.addListener(this);
+
+        initTutorialView();
+
+        showPreSignInButtons();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        VisualTilesTogetherApp.removeListener(this);
+    }
+
+    private void initTutorialView() {
+        ViewPager pager = (ViewPager) findViewById(R.id.tutorial_view_pager);
+        pager.setAdapter(new TutorialImageAdapter(this));
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tutorial_tab_layout);
+        tabLayout.setupWithViewPager(pager, true);
+        pager.setPageTransformer(false, new ParallaxPagerTransformer(R.id.ivTutorial));
     }
 
     @Override
@@ -145,18 +185,34 @@ public class SignInActivity extends AppCompatActivity implements
 
     @Override
     public void onChannelReady() {
-        Toast.makeText(this, "Channel is ready too =)", Toast.LENGTH_LONG).show();
-
+        if (VisualTilesTogetherApp.getChannel() == null) {
+            Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "Channel is ready too =)", Toast.LENGTH_LONG).show();
+        }
+        startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        finish();
     }
 
     @Override
-    public void onError() {
-        Toast.makeText(this, "Oh no! User db failed!", Toast.LENGTH_LONG).show();
+    public void onError(DatabaseError error) {
+        Toast.makeText(this, "Oh no! User db failed (or cancelled)!", Toast.LENGTH_LONG).show();
+        showPreSignInButtons();
+    }
+
+    private void showPreSignInButtons() {
+        preSignInButtons.setVisibility(View.VISIBLE);
+        postSignInButtons.setVisibility(View.GONE);
+    }
+
+    private void showPostSignInButtons() {
+        preSignInButtons.setVisibility(View.GONE);
+        postSignInButtons.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onUserReady() {
-        startActivity(new Intent(SignInActivity.this, MainActivity.class));
-        finish();
+        // Show channel creation or join buttons.
+        showPostSignInButtons();
     }
 }

@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.javierarboleda.visualtilestogether.BuildConfig;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.PresentLayout;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
@@ -59,10 +60,9 @@ public class PresentationActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_presentation);
 
-        if (getIntent().hasExtra(PARAM_CHANNEL_ID)) {
-            channelId = getIntent().getStringExtra(PARAM_CHANNEL_ID);
-            database = FirebaseDatabase.getInstance().getReference().child("presentations")
-                    .child(channelId);
+        if (VisualTilesTogetherApp.getUser() == null ||
+            VisualTilesTogetherApp.getChannel() ==  null) {
+            finish();
         }
 
         if (layout == null) {

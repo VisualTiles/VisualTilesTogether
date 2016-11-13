@@ -13,10 +13,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.activities.SignInActivity;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.User;
-import com.javierarboleda.visualtilestogether.util.FirebaseUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -26,14 +26,17 @@ public class VisualTilesTogetherApp extends Application {
     private static String username;
     private static FirebaseAuth firebaseAuth;
     private static String uId;
-    private static User user;
-    private static Channel channel;
+    private static User user = null;
+    private static Channel channel = null;
 
     public interface VisualTilesListenerInterface {
-        void onError();
+        void onError(DatabaseError error);
+
         void onUserReady();
+
         void onChannelReady();
     }
+
     private static List<WeakReference<VisualTilesListenerInterface>> listeners = new ArrayList<>();
 
     @Override
@@ -69,6 +72,9 @@ public class VisualTilesTogetherApp extends Application {
     public static User getUser() {
         return user;
     }
+    public static Channel getChannel() {
+        return channel;
+    }
 
     public static void resetUserame() {
         username = ANONYMOUS;
@@ -99,7 +105,7 @@ public class VisualTilesTogetherApp extends Application {
                     public void onCancelled(DatabaseError databaseError) {
                         for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                             if (listener.get() != null)
-                                listener.get().onError();
+                                listener.get().onError(databaseError);
                         }
                     }
                 });
@@ -107,11 +113,13 @@ public class VisualTilesTogetherApp extends Application {
 
     public static void initChannel(String channelId) {
         if (channelId == null) {
-            return;
+            // Fallback channel for when it doesn't exist.
+            // TODO(jav): Remove this once create/join login screen is working.
+            channelId = "-KWFW_yHrzu2JtKMURlq";
         }
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference dbUsers = dbRef.child(Channel.TABLE_NAME);
-        dbUsers.child(channelId).addValueEventListener(
+        DatabaseReference dbChannel = dbRef.child(Channel.TABLE_NAME);
+        dbChannel.child(channelId).addValueEventListener(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -126,7 +134,7 @@ public class VisualTilesTogetherApp extends Application {
                     public void onCancelled(DatabaseError databaseError) {
                         for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                             if (listener.get() != null)
-                                listener.get().onError();
+                                listener.get().onError(databaseError);
                         }
                     }
                 });
@@ -134,5 +142,15 @@ public class VisualTilesTogetherApp extends Application {
 
     public static void addListener(VisualTilesListenerInterface listener) {
         listeners.add(new WeakReference<>(listener));
+    }
+
+    public static void removeListener(VisualTilesListenerInterface listener) {
+        for (Iterator<WeakReference<VisualTilesListenerInterface>> iterator = listeners.iterator();
+             iterator.hasNext(); ) {
+            WeakReference<VisualTilesListenerInterface> weakRef = iterator.next();
+            if (weakRef.get() == listener) {
+                iterator.remove();
+            }
+        }
     }
 }

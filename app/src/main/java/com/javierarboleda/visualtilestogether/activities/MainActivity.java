@@ -20,6 +20,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.fragments.ChannelAddDialog;
 import com.javierarboleda.visualtilestogether.fragments.ShapeAddDialog;
 import com.javierarboleda.visualtilestogether.models.Channel;
@@ -32,7 +33,6 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity
  implements ChannelAddDialog.OnFragmentInteractionListener,
         ShapeAddDialog.OnFragmentInteractionListener {
-
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private UploadTask uploadTask;
 
@@ -40,6 +40,11 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (VisualTilesTogetherApp.getUser() == null ||
+                VisualTilesTogetherApp.getChannel() ==  null) {
+            finish();
+        }
 
         Button btAddShape = (Button) findViewById(R.id.btAddShape);
         btAddShape.setOnClickListener(new View.OnClickListener() {
@@ -75,6 +80,7 @@ public class MainActivity extends AppCompatActivity
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
+        VisualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }
 
