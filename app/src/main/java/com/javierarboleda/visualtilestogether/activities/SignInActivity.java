@@ -186,11 +186,9 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     public void onChannelReady() {
         if (VisualTilesTogetherApp.getChannel() == null) {
-            Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "Channel is ready too =)", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Channel didn't load correctly.", Toast.LENGTH_LONG).show();
         }
-        startActivity(new Intent(SignInActivity.this, MainActivity.class));
+        startActivity(new Intent(this, TileListActivity.class));
         finish();
     }
 
@@ -209,6 +207,7 @@ public class SignInActivity extends AppCompatActivity implements
 
         Intent intent = new Intent(this, CreateJoinActivity.class);
         startActivity(intent);
+        finish();
 
 //        preSignInButtons.setVisibility(View.GONE);
 //        postSignInButtons.setVisibility(View.VISIBLE);

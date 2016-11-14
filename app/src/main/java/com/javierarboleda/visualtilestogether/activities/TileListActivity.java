@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,14 +27,18 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
-import com.javierarboleda.visualtilestogether.util.FirebaseUtil;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getFirebaseAuth;
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUid;
@@ -51,15 +57,17 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private GoogleApiClient mGoogleApiClient;
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
-        public ImageView ivShape;
-        public TextView tvYes;
-        public TextView tvNo;
+        ImageView ivShape;
+        ImageButton ibUpVote;
+        ImageButton ibDownVote;
+        TextView tvVotesTotal;
 
         public TileViewholder(View itemView) {
             super(itemView);
             ivShape = (ImageView) itemView.findViewById(R.id.ivShape);
-            tvYes = (TextView) itemView.findViewById(R.id.tvYes);
-            tvNo = (TextView) itemView.findViewById(R.id.tvNo);
+            ibUpVote = (ImageButton) itemView.findViewById(R.id.ibUpVote);
+            ibDownVote = (ImageButton) itemView.findViewById(R.id.ibDownVote);
+            tvVotesTotal = (TextView) itemView.findViewById(R.id.tvVotesTotal);
         }
     }
 
@@ -73,6 +81,14 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(TileListActivity.this, TileCreationActivity.class));
+            }
+        });
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) findViewById(R.id.rvTileList);
@@ -93,11 +109,15 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 (Tile.class,
                         R.layout.tile_list_item,
                         TileViewholder.class,
-                        dbRef.child(Tile.TABLE_NAME)) {
+                        dbRef.child(Tile.TABLE_NAME)
+                                .orderByChild(Tile.CHANNEL_ID)
+                                .equalTo(VisualTilesTogetherApp.getUser().getChannelId())) {
 
             @Override
             protected void populateViewHolder(
                     final TileViewholder viewHolder, final Tile tile, int position) {
+                final DatabaseReference tileRef = getRef(position);
+
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null) {
                     Glide.with(appContext)
@@ -125,8 +145,19 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                     });
 
                 }
-                viewHolder.tvYes.setText(String.valueOf(tile.getPosVotes()));
-                viewHolder.tvNo.setText(String.valueOf(tile.getNegVotes()));
+                viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onVoteClicked(tileRef, 1);
+                    }
+                });
+                viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onVoteClicked(tileRef, -1);
+                    }
+                });
+                viewHolder.tvVotesTotal.setText(String.valueOf(tile.getPosVotes() - tile.getNegVotes()));
             }
         };
 
@@ -153,6 +184,35 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         mRvTileList.setAdapter(mFirebaseAdapter);
     }
 
+    // run a transaction to uptick positive votes or negative votes
+    // depending on the value of the vote increment
+    private void onVoteClicked(DatabaseReference tileRef, final int voteIncrement) {
+        tileRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Tile tile = mutableData.getValue(Tile.class);
+                if (tile == null) {
+                    return Transaction.success(mutableData);
+                }
+
+                if (voteIncrement > 0) {
+                    tile.setPosVotes(tile.getPosVotes() + voteIncrement);
+                } else if (voteIncrement < 0) {
+                    // actually increments
+                    tile.setNegVotes(tile.getNegVotes() - voteIncrement);
+                }
+
+                mutableData.setValue(tile);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -163,6 +223,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_item_present:
+                startActivity(new Intent(this, PresentationActivity.class));
+                return true;
             case R.id.menu_item_sign_out:
                 getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
