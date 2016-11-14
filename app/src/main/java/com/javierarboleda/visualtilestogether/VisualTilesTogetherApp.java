@@ -2,6 +2,7 @@ package com.javierarboleda.visualtilestogether;
 
 import android.app.Application;
 import android.content.Intent;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -130,6 +131,7 @@ public class VisualTilesTogetherApp extends Application {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         channel = dataSnapshot.getValue(Channel.class);
+
                         for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                             if (listener.get() != null)
                                 listener.get().onChannelReady();
@@ -144,6 +146,14 @@ public class VisualTilesTogetherApp extends Application {
                         }
                     }
                 });
+
+        // Enforce that user and channel are in sync.
+        if (user.getChannelId() != channelId) {
+            Log.i(LOG_TAG, "User channel is not the same channel as intiChannel!");
+            user.setChannelId(channelId);
+            DatabaseReference dbUserRef = dbRef.child(User.TABLE_NAME).child(uId);
+            dbUserRef.setValue(user);
+        }
     }
 
     public static void addListener(VisualTilesListenerInterface listener) {

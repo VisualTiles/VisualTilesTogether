@@ -27,8 +27,8 @@ _Visual Canvas_
 * [ ] Moderator can edit the visual canvas
   * [ ] Add or Swap a visual tile from the "upcomming" queue
 * [ ] Presenting device can connect and clone display to external screens and/or cast using Chromecast
- 
- 
+
+
 _Creting a Visual Tile_
 
 * [ ] User can click on create tile FAB to start Create Visual Tile mode
@@ -50,7 +50,7 @@ _Selecting Visual Tiles_
 _Visual Effects and Timeline_
 
 * [ ] Moderator can pick a visual effect from a list of available effects
-  * [ ] Moderator can set interval of visual effect event to fire 
+  * [ ] Moderator can set interval of visual effect event to fire
 * [ ] Moderator can pick period length (# of beats)
 * [ ] Moderator can assign tempo (beats per minute)
 

@@ -16,7 +16,8 @@
             app:srcCompat="@mipmap/ic_launcher"
             android:id="@+id/ivShape"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:background="@android:color/black" />
 
         <ImageButton
             android:layout_width="wrap_content"
