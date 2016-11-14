@@ -122,7 +122,7 @@ public class VisualTilesTogetherApp extends Application {
         if (channelId == null) {
             // Fallback channel for when it doesn't exist.
             // TODO(jav): Remove this once create/join login screen is working.
-            channelId = "-KWFW_yHrzu2JtKMURlq";
+            channelId = "-KWVuJtz9tfBvdQUn4F_";
         }
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference dbChannel = dbRef.child(Channel.TABLE_NAME);

@@ -33,12 +33,22 @@ public class CreateJoinActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
+        VisualTilesTogetherApp.addListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        VisualTilesTogetherApp.removeListener(this);
+        super.onDestroy();
     }
 
     public void joinEventOnClick(View view) {
-
-        VisualTilesTogetherApp.addListener(this);
-        VisualTilesTogetherApp.initChannel();
+        String channel = binding.etEventCode.getText().toString();
+        if (channel == null || channel.isEmpty()) {
+            VisualTilesTogetherApp.initChannel();
+        } else {
+            VisualTilesTogetherApp.initChannel(channel);
+        }
 
 //        if (VisualTilesTogetherApp.getChannel() == null) {
 //            Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
@@ -85,8 +95,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     public void onChannelReady() {
         if (VisualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "Channel is ready too =)", Toast.LENGTH_LONG).show();
         }
         startActivity(new Intent(this, MainActivity.class));
         finish();
