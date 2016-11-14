@@ -188,7 +188,7 @@ public class SignInActivity extends AppCompatActivity implements
         if (VisualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Channel didn't load correctly.", Toast.LENGTH_LONG).show();
         }
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, TileListActivity.class));
         finish();
     }
 

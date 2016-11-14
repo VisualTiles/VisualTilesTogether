@@ -96,7 +96,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
         if (VisualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
         }
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, TileListActivity.class));
         finish();
     }
 }
