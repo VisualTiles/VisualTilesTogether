@@ -60,7 +60,7 @@ public class CanvasView extends View {
     private List<Paint> paintLists = new ArrayList<Paint>();
 
     // for Eraser
-    private int baseColor = Color.WHITE;
+    private int baseColor = Color.BLACK;
 
     // for Undo, Redo
     private int historyPointer = 0;
@@ -72,8 +72,8 @@ public class CanvasView extends View {
 
     // for Paint
     private Paint.Style paintStyle = Paint.Style.STROKE;
-    private int paintStrokeColor   = Color.BLACK;
-    private int paintFillColor     = Color.BLACK;
+    private int paintStrokeColor   = Color.WHITE;
+    private int paintFillColor     = Color.WHITE;
     private float paintStrokeWidth = 3F;
     private int opacity            = 255;
     private float blur             = 0F;
