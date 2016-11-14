@@ -57,6 +57,37 @@ public class PresentationActivity extends AppCompatActivity implements
     private String channelId = "";
     private PresentLayout layout;
     private DatabaseReference database = null;
+    private Query dbTiles;
+    private ValueEventListener channelTileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if (layout == null) return;
+            long tileCount = dataSnapshot.getChildrenCount();
+            HashMap<Integer, Tile> loadedTiles = new HashMap<>();
+            int tilePos = 0;
+            for (DataSnapshot record : dataSnapshot.getChildren()) {
+                loadedTiles.put(tilePos++, record.getValue(Tile.class));
+            }
+            Log.i(TAG, "Tile count: " + tileCount);
+            // No tiles = no update.
+            if (tilePos == 0)
+                return;
+            for (int i = 0; i < layout.getTileCount(); i++) {
+                int pos = (int) (i % tileCount);
+                Log.i(TAG, "Loading tile index " + i + " with tile pos " + pos);
+                if (loadedTiles.get(pos) != null) {
+                    layout.setTile(i, loadedTiles.get(pos));
+                } else {
+                    Log.e(TAG, "WTF Tile is null!?: " + pos);
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,6 +121,8 @@ public class PresentationActivity extends AppCompatActivity implements
         });
         makeFullscreen();
     }
+
+
 
     private void makeFullscreen() {
         setFullscreen();
@@ -150,6 +183,8 @@ public class PresentationActivity extends AppCompatActivity implements
             unregisterSystemUiVisibility();
         }
         exitFullscreen();
+        if (dbTiles != null && channelTileListener != null)
+            dbTiles.removeEventListener(channelTileListener);
     }
 
     public static boolean isImmersiveAvailable() {
@@ -221,39 +256,10 @@ public class PresentationActivity extends AppCompatActivity implements
     }
     private void beginListeningForTiles() {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        Query dbTiles = dbRef.child(Tile.TABLE_NAME)
+        dbTiles = dbRef.child(Tile.TABLE_NAME)
                 .orderByChild(Tile.CHANNEL_ID)
                 .equalTo(VisualTilesTogetherApp.getUser().getChannelId());
-        dbTiles.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                long tileCount = dataSnapshot.getChildrenCount();
-                Log.i(TAG, "Tile count: " + tileCount);
-                HashMap<Integer, Tile> loadedTiles = new HashMap<>();
-                int tilePos = 0;
-                for (DataSnapshot record : dataSnapshot.getChildren()) {
-                    loadedTiles.put(tilePos++, record.getValue(Tile.class));
-                }
-                Log.i(TAG, "Tile count: " + tileCount);
-                // No tiles = no update.
-                if (tilePos == 0)
-                    return;
-                for (int i = 0; i < layout.getTileCount(); i++) {
-                    int pos = (int) (i % tileCount);
-                    Log.i(TAG, "Loading tile index " + i + " with tile pos " + pos);
-                    if (loadedTiles.get(pos) != null) {
-                        layout.setTile(i, loadedTiles.get(pos));
-                    } else {
-                        Log.e(TAG, "WTF Tile is null!?: " + pos);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        dbTiles.addValueEventListener(channelTileListener);
     }
 
     private ImageView buildTileView() {

@@ -42,6 +42,7 @@ dependencies {
     compile 'com.xgc1986.android:parallaxpagertransformer:1.0.4'
 
     testCompile 'junit:junit:4.12'
+    compile 'com.android.support:cardview-v7:25.0.0'
 }
 
 // Don't forget in main build.gradle to add:

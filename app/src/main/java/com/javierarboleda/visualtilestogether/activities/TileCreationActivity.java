@@ -2,6 +2,7 @@ package com.javierarboleda.visualtilestogether.activities;
 
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityTileCreationBinding;
 import com.javierarboleda.visualtilestogether.fragments.ChannelAddDialog;
 import com.javierarboleda.visualtilestogether.fragments.ShapeAddDialog;
@@ -31,8 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
 public class TileCreationActivity extends AppCompatActivity
-        implements ChannelAddDialog.OnFragmentInteractionListener,
-        ShapeAddDialog.OnFragmentInteractionListener {
+        implements ShapeAddDialog.OnFragmentInteractionListener {
 
     ActivityTileCreationBinding binding;
     CanvasView mCanvas;
@@ -43,19 +44,18 @@ public class TileCreationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_tile_creation);
 
-
         mCanvas = binding.cvVisualTile;
 
         Display d = getWindowManager().getDefaultDisplay();
         Point canvasDimen = new Point();
         d.getSize(canvasDimen);
         mCanvas.getLayoutParams().height = canvasDimen.x;
+        mCanvas.setBaseColor(Color.TRANSPARENT);
 
         mCanvas.setMode(CanvasView.Mode.DRAW);
         mCanvas.setDrawer(CanvasView.Drawer.PEN);
-
-        mCanvas.setPaintStrokeWidth(10F);
-
+        mCanvas.setPaintStrokeWidth(20F);
+        mCanvas.setPaintStrokeColor(Color.WHITE);
     }
 
     @Override
@@ -131,11 +131,6 @@ public class TileCreationActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFragmentInteraction(Channel channel) {
-
-    }
-
-    @Override
     public void onFragmentInteraction(Bitmap bitmap) {
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
@@ -146,7 +141,7 @@ public class TileCreationActivity extends AppCompatActivity
                 .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
                 .child("shapes");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         ByteArrayInputStream inputstream = new ByteArrayInputStream(baos .toByteArray());
         UploadTask uploadTask = shapesRef.child(key).putStream(inputstream);
         uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -159,6 +154,7 @@ public class TileCreationActivity extends AppCompatActivity
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 Tile tile = new Tile(false, 0, 0, null, downloadUrl.toString(), new Date());
+                tile.setChannelId(VisualTilesTogetherApp.getUser().getChannelId());
                 dbRef.child(key).setValue(tile);
             }
         });

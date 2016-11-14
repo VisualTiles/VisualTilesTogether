@@ -87,19 +87,19 @@ public class PresentLayout {
         layout.backgroundUrl = "https://firebasestorage.googleapis.com/v0/b/visual-tiles-together" +
                 ".appspot.com/o/backgrounds%2Fpresent_bg1.jpg?alt=media&token=4728d0d0-78f6-" +
                 "4f61-8e90-dad6672fc895";
-        layout.layoutSize = new Point(600, 360);
+        layout.layoutSize = new Point(640, 360);
         layout.tileCount = 10;
         layout.tilePositions = new Rect[]{
-                new Rect(10, 50, 130, 170),
-                new Rect(140, 10, 240, 110),
-                new Rect(260, 5, 340, 85),
-                new Rect(360, 10, 460, 110),
-                new Rect(470, 50, 590, 170),
-                new Rect(10, 190, 130, 310),
-                new Rect(140, 250, 240, 350),
-                new Rect(260, 275, 340, 355),
-                new Rect(360, 250, 460, 350),
-                new Rect(470, 190, 590, 310)
+                new Rect(0,30,150,180),
+                new Rect(150,0,270,120),
+                new Rect(270,0,370,100),
+                new Rect(370,0,490,120),
+                new Rect(490,30,640,180),
+                new Rect(0,180,150,330),
+                new Rect(150,240,270,360),
+                new Rect(270,260,370,360),
+                new Rect(370,240,490,360),
+                new Rect(490,180,640,330),
         };
 
         final String imgUrl = "https://firebasestorage.googleapis.com/v0/b/visual-tiles-together" +
@@ -119,9 +119,9 @@ public class PresentLayout {
         };
 
         layout.imageCount = 1;
-        layout.imagePositions = new Rect[]{new Rect(150, 130, 450, 230)};
+        layout.imagePositions = new Rect[]{new Rect(150, 120, 150+340, 120+120)};
         layout.imageUrls = new String[] {
-                "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"
+                "https://firebasestorage.googleapis.com/v0/b/visual-tiles-together.appspot.com/o/images%2Fvisualtiles.png?alt=media&token=a98451d5-dd02-4e85-8f0e-2c33c7000803"
         };
         layout.transitionMs = 500;
         return layout;
