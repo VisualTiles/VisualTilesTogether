@@ -2,6 +2,7 @@
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.javierarboleda.visualtilestogether.activities.TileCreationActivity">
 
     <RelativeLayout
@@ -30,7 +31,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:layout_below="@+id/cvTopEditBar">
+            android:layout_below="@+id/cvTopEditBar"
+            app:cardBackgroundColor="@android:color/black">
 
             <com.javierarboleda.visualtilestogether.views.CanvasView
                 android:id="@+id/cvVisualTile"

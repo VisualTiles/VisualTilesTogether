@@ -36,6 +36,7 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
 
@@ -108,7 +109,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 (Tile.class,
                         R.layout.tile_list_item,
                         TileViewholder.class,
-                        dbRef.child(Tile.TABLE_NAME)) {
+                        dbRef.child(Tile.TABLE_NAME)
+                                .orderByChild(Tile.CHANNEL_ID)
+                                .equalTo(VisualTilesTogetherApp.getUser().getChannelId())) {
 
             @Override
             protected void populateViewHolder(
@@ -220,6 +223,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_item_present:
+                startActivity(new Intent(this, PresentationActivity.class));
+                return true;
             case R.id.menu_item_sign_out:
                 getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
