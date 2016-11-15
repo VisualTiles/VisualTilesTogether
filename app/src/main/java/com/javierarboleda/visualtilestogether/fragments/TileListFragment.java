@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,7 +24,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.activities.TileListActivity;
@@ -43,8 +41,6 @@ public class TileListFragment extends Fragment {
     private FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
-    private StorageReference mShapesRef;
-    private GoogleApiClient mGoogleApiClient;
 
     public static void launchInstance(Context context, int container) {
         ((TileListActivity)context).getSupportFragmentManager()
@@ -74,9 +70,6 @@ public class TileListFragment extends Fragment {
 
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
-        mShapesRef = mFirebaseStorage
-                .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
-                .child("shapes");
     }
 
     @Nullable
