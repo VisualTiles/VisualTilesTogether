@@ -22,7 +22,7 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_uparrow_normal"
+            app:srcCompat="@drawable/ic_uparrow"
             android:layout_alignParentTop="true"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="8dp"
@@ -44,7 +44,7 @@
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_downarrow_normal"
+            app:srcCompat="@drawable/ic_downarrow"
             android:id="@+id/ibDownVote"
             android:layout_below="@+id/tvVotesTotal"
             android:layout_alignStart="@+id/tvVotesTotal"
