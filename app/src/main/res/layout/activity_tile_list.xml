@@ -8,29 +8,10 @@
     android:fitsSystemWindows="true"
     tools:context=".activities.TileListActivity" >
 
-    <RelativeLayout
-        android:id="@+id/activity_tile_list"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        tools:context="com.javierarboleda.visualtilestogether.activities.TileListActivity">
-
-        <android.support.v7.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/rvTileList"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true" />
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:id="@+id/progressBar" />
-    </RelativeLayout>
+        android:id="@+id/flTileListContainer" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
