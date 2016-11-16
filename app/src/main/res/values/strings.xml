@@ -7,4 +7,7 @@
     <string name="join_event">Join an event</string>
     <string name="join_button">Join</string>
     <string name="create_new_event">Create a new event</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
