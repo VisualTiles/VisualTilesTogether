@@ -17,25 +17,22 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
-import com.javierarboleda.visualtilestogether.activities.TileListActivity;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUid;
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUser;
 
-public class TileListFragment extends Fragment {
+public abstract class TileListFragment extends Fragment {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
 
     private ProgressBar mProgressBar;
@@ -43,15 +40,6 @@ public class TileListFragment extends Fragment {
     private FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
-    private StorageReference mShapesRef;
-    private GoogleApiClient mGoogleApiClient;
-
-    public static void launchInstance(Context context, int container) {
-        ((TileListActivity)context).getSupportFragmentManager()
-                .beginTransaction()
-                .replace(container, new TileListFragment())
-                .commit();
-    }
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
         ImageView ivShape;
@@ -74,9 +62,6 @@ public class TileListFragment extends Fragment {
 
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
-        mShapesRef = mFirebaseStorage
-                .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
-                .child("shapes");
     }
 
     @Nullable
@@ -98,9 +83,7 @@ public class TileListFragment extends Fragment {
                 (Tile.class,
                         R.layout.tile_list_item,
                         TileListFragment.TileViewholder.class,
-                        dbRef.child(Tile.TABLE_NAME)
-                                .orderByChild(Tile.CHANNEL_ID)
-                                .equalTo(VisualTilesTogetherApp.getUser().getChannelId())) {
+                        getDbQuery(dbRef.child(Tile.TABLE_NAME))) {
 
             @Override
             protected void populateViewHolder(
@@ -185,6 +168,8 @@ public class TileListFragment extends Fragment {
             }
         });
     }
+
+    abstract Query getDbQuery(DatabaseReference dbRef);
 
     @Override
     public void onDetach() {

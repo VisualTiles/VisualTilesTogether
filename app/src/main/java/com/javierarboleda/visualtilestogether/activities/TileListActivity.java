@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +24,7 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
+import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getFirebaseAuth;
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.resetUserame;
@@ -49,6 +53,10 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile_list);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
@@ -63,7 +71,11 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         });
 
         if (savedInstanceState == null) {
-            TileListFragment.launchInstance(this, R.id.flTileListContainer);
+            TileListPagerAdapter tileListPagerAdapter = new TileListPagerAdapter(getSupportFragmentManager());
+            ViewPager mViewPager = (ViewPager) findViewById(R.id.vpContainer);
+            mViewPager.setAdapter(tileListPagerAdapter);
+            TabLayout tabLayout = (TabLayout) findViewById(R.id.tlTabs);
+            tabLayout.setupWithViewPager(mViewPager);
         }
     }
 
