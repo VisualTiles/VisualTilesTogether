@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentFrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainLayout"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <android.support.percent.PercentFrameLayout
+        android:id="@+id/viewContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        app:layout_aspectRatio="167%"
+        app:layout_heightPercent="100%"
+        /> <!-- 15:9 -->
+</android.support.percent.PercentFrameLayout>
