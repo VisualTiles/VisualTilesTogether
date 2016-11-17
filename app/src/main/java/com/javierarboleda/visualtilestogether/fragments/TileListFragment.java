@@ -6,8 +6,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -46,6 +48,8 @@ public abstract class TileListFragment extends Fragment {
         ImageButton ibUpVote;
         ImageButton ibDownVote;
         TextView tvVotesTotal;
+        Toolbar tbTileListItem;
+        MenuItem miPublish;
 
         public TileViewholder(View itemView) {
             super(itemView);
@@ -53,6 +57,11 @@ public abstract class TileListFragment extends Fragment {
             ibUpVote = (ImageButton) itemView.findViewById(R.id.ibUpVote);
             ibDownVote = (ImageButton) itemView.findViewById(R.id.ibDownVote);
             tvVotesTotal = (TextView) itemView.findViewById(R.id.tvVotesTotal);
+            tbTileListItem = (Toolbar) itemView.findViewById((R.id.tbTileListItem));
+            tbTileListItem.inflateMenu(R.menu.tile_list_menu);
+            miPublish = tbTileListItem.getMenu().findItem(R.id.action_publish);
+
+
         }
     }
 
@@ -112,6 +121,24 @@ public abstract class TileListFragment extends Fragment {
                 });
 
                 viewHolder.tvVotesTotal.setText(String.valueOf(tile.getPosVotes() - tile.getNegVotes()));
+
+                viewHolder.miPublish.setIcon(tile.isApproved()?
+                        R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Log.d(LOG_TAG, "Clicked a toolbar item");
+                        switch (item.getItemId()) {
+                            case R.id.action_publish:
+                                onToggleApproval(tileRef);
+                                return true;
+                            case R.id.action_delete:
+                                onDeleteTile(tileRef);
+                                return true;
+                        }
+                        return false;
+                    }
+                });
             }
         };
 
@@ -140,6 +167,10 @@ public abstract class TileListFragment extends Fragment {
         return view;
     }
 
+    private void onDeleteTile(DatabaseReference tileRef) {
+        tileRef.removeValue();
+    }
+
     // run a transaction to uptick positive votes or negative votes
     // depending on the value of the vote increment
     private void onVoteClicked(DatabaseReference tileRef, final int voteIncrement) {
@@ -157,6 +188,30 @@ public abstract class TileListFragment extends Fragment {
                     // actually increments
                     tile.setNegVotes(tile.getNegVotes() - voteIncrement);
                 }
+
+                mutableData.setValue(tile);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+            }
+        });
+    }
+
+    // run a transaction to uptick positive votes or negative votes
+    // depending on the value of the vote increment
+    private void onToggleApproval(DatabaseReference tileRef) {
+        tileRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Tile tile = mutableData.getValue(Tile.class);
+                if (tile == null) {
+                    return Transaction.success(mutableData);
+                }
+
+                tile.setApproved(!tile.isApproved());
 
                 mutableData.setValue(tile);
                 return Transaction.success(mutableData);

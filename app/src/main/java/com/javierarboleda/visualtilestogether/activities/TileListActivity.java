@@ -8,16 +8,12 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -33,21 +29,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
 
     private GoogleApiClient mGoogleApiClient;
-
-    public static class TileViewholder extends RecyclerView.ViewHolder {
-        ImageView ivShape;
-        ImageButton ibUpVote;
-        ImageButton ibDownVote;
-        TextView tvVotesTotal;
-
-        public TileViewholder(View itemView) {
-            super(itemView);
-            ivShape = (ImageView) itemView.findViewById(R.id.ivShape);
-            ibUpVote = (ImageButton) itemView.findViewById(R.id.ibUpVote);
-            ibDownVote = (ImageButton) itemView.findViewById(R.id.ibDownVote);
-            tvVotesTotal = (TextView) itemView.findViewById(R.id.tvVotesTotal);
-        }
-    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
