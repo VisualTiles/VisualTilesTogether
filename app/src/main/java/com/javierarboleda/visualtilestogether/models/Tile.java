@@ -6,16 +6,30 @@ import java.util.Date;
 public class Tile {
     public static final String TABLE_NAME = "tiles";
     public static final String CHANNEL_ID = "channelId";
+    public static final String POS_VOTES_ID = "posVotes";
     private String shapeUrl;
     private String shapeFbStorage;
     private String creatorId;
     private String channelId;
+    private String tileId;  // Must be manually filled, only filled in the Application's tile cache.
     private int posVotes;
     private int negVotes;
     private Date submitTime;
     private boolean approved;
 
     public Tile() {
+    }
+
+    public boolean equalsValue(Tile t) {
+        return (t == null ||
+                (shapeUrl != null && shapeUrl.equals(t.getShapeUrl())) &&
+                (shapeFbStorage != null && shapeFbStorage.equals(t.getShapeFbStorage())) &&
+                (creatorId != null && creatorId.equals(t.getCreatorId())) &&
+                (channelId != null && channelId.equals(t.getChannelId())) &&
+                posVotes == t.getPosVotes() &&
+                negVotes == t.getNegVotes() &&
+                approved == t.approved &&
+                (submitTime != null && submitTime.compareTo(t.getSubmitTime()) == 0));
     }
 
     public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage,
@@ -102,5 +116,13 @@ public class Tile {
 
     public void setSubmitTime(Date submitTime) {
         this.submitTime = submitTime;
+    }
+
+    public String getTileId() {
+        return tileId;
+    }
+
+    public void setTileId(String tileId) {
+        this.tileId = tileId;
     }
 }
