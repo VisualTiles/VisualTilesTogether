@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class Channel {
     public static final String TABLE_NAME = "channels";
+    public static final String TILE_IDS = "tileIds";
     private String name;
     private Date startTime;
     private Date endTime;
