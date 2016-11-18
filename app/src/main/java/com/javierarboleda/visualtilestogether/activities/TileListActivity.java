@@ -73,6 +73,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
             case R.id.menu_item_present:
                 startActivity(new Intent(this, PresentationActivity.class));
                 return true;
+            case R.id.menu_item_moderator_console:
+                startActivity(new Intent(this, ModeratorConsoleActivity.class));
+                return true;
             case R.id.menu_item_sign_out:
                 getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);

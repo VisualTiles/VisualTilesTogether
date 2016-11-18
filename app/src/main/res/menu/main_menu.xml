@@ -6,6 +6,10 @@
         android:title="@string/present"
         app:showAsAction="ifRoom"/>
     <item
+        android:id="@+id/menu_item_moderator_console"
+        android:title="@string/console"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/menu_item_sign_out"
         android:title="@string/sign_out"
         app:showAsAction="never"/>
