@@ -20,10 +20,9 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
 
-import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getFirebaseAuth;
-import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.resetUserame;
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.normalizeDb;
 
 public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {

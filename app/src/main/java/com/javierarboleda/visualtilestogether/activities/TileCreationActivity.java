@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityTileCreationBinding;
 import com.javierarboleda.visualtilestogether.fragments.ShapeAddDialog;
 import com.javierarboleda.visualtilestogether.views.CanvasView;
@@ -117,6 +118,6 @@ public class TileCreationActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(Bitmap bitmap) {
-        createTile(bitmap);
+        createTile(bitmap, ((VisualTilesTogetherApp) getApplication()).getChannelId());
     }
 }

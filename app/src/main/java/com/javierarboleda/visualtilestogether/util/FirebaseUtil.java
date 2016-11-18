@@ -17,7 +17,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
@@ -62,7 +61,7 @@ public class FirebaseUtil {
     /**
      * Upload a bitmap to Storage and then create a Tile using the same key
      */
-    public static void createTile(Bitmap bitmap) {
+    public static void createTile(Bitmap bitmap, final String channelId) {
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(Tile.TABLE_NAME);
         final String key = dbRef.push().getKey();
@@ -84,7 +83,7 @@ public class FirebaseUtil {
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 Tile tile = new Tile(false, 0, 0, null, downloadUrl.toString(), new Date());
-                tile.setChannelId(VisualTilesTogetherApp.getUser().getChannelId());
+                tile.setChannelId(channelId);
                 dbRef.child(key).setValue(tile);
                 updateChannelTileId(key, tile);
             }

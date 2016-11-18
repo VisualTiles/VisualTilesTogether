@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(Bitmap bitmap) {
-        createTile(bitmap);
+        createTile(bitmap, ((VisualTilesTogetherApp) getApplication()).getChannelId());
     }
 
     @Override

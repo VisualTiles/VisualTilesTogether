@@ -9,8 +9,10 @@ import com.javierarboleda.visualtilestogether.models.Channel;
 public class TileListFragmentApproved extends TileListFragment {
     @Override
     Query getDbQuery(DatabaseReference dbRef) {
+        VisualTilesTogetherApp visualTilesTogetherApp = (VisualTilesTogetherApp) getActivity()
+                .getApplication();
         return dbRef
-                .child(VisualTilesTogetherApp.getUser().getChannelId())
+                .child(visualTilesTogetherApp.getUser().getChannelId())
                 .child(Channel.TILE_IDS)
                 .orderByValue()
                 .equalTo(true);
