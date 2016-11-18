@@ -26,28 +26,30 @@ public class CreateJoinActivity extends AppCompatActivity implements
         VisualTilesTogetherApp.VisualTilesListenerInterface {
     private static final String LOG_TAG = CreateJoinActivity.class.getSimpleName();
 
-    ActivityCreateJoinBinding binding;
+    private ActivityCreateJoinBinding binding;
+    private VisualTilesTogetherApp visualTilesTogetherApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
-        VisualTilesTogetherApp.addListener(this);
+        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
+        visualTilesTogetherApp.addListener(this);
     }
 
     @Override
     protected void onDestroy() {
-        VisualTilesTogetherApp.removeListener(this);
+        visualTilesTogetherApp.removeListener(this);
         super.onDestroy();
     }
 
     public void joinEventOnClick(View view) {
         String channel = binding.etEventCode.getText().toString();
         if (channel == null || channel.isEmpty()) {
-            VisualTilesTogetherApp.initChannel();
+            visualTilesTogetherApp.initChannel();
         } else {
-            VisualTilesTogetherApp.initChannel(channel);
+            visualTilesTogetherApp.initChannel(channel);
         }
 
 //        if (VisualTilesTogetherApp.getChannel() == null) {
@@ -74,9 +76,9 @@ public class CreateJoinActivity extends AppCompatActivity implements
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        VisualTilesTogetherApp.addListener(this);
-        VisualTilesTogetherApp.getUser().setChannelId(key);
-        VisualTilesTogetherApp.initChannel(key);
+        visualTilesTogetherApp.addListener(this);
+        visualTilesTogetherApp.getUser().setChannelId(key);
+        visualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }
 
@@ -87,16 +89,22 @@ public class CreateJoinActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onUserReady() {
-
+    public void onUserUpdated() {
+        // User updates may naturally happen (if channel ID changes for example).
+        // Do nothing.
     }
 
     @Override
-    public void onChannelReady() {
-        if (VisualTilesTogetherApp.getChannel() == null) {
+    public void onChannelUpdated() {
+        if (visualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
         }
         startActivity(new Intent(this, TileListActivity.class));
         finish();
+    }
+
+    @Override
+    public void onTilesUpdated() {
+        // Not interested at this point. Do nothing.
     }
 }

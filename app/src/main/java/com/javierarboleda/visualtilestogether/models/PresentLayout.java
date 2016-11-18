@@ -2,8 +2,8 @@ package com.javierarboleda.visualtilestogether.models;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.Date;
@@ -15,7 +15,7 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class PresentLayout {
     public interface PresentLayoutListener {
-        void updateTile(int position, Tile tile, int transitionMs);
+        void updateTile(int position, @Nullable Tile tile, int transitionMs);
     }
 
     private PresentLayoutListener listener;
@@ -48,7 +48,7 @@ public class PresentLayout {
         this.backgroundUrl = backgroundUrl;
     }
 
-    public void setTile(int position, Tile tile) {
+    public void setTile(int position, @Nullable Tile tile) {
         if (position >= getTileCount()) throw new ArrayIndexOutOfBoundsException();
         tiles[position] = tile;
         if (listener != null) listener.updateTile(position, tile, transitionMs);

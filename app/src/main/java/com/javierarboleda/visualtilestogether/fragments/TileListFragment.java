@@ -190,8 +190,11 @@ public abstract class TileListFragment extends Fragment {
         mLinearLayoutManager.setStackFromEnd(true);
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
-
         return view;
+    }
+
+    private void onDeleteTile(DatabaseReference tileRef) {
+        tileRef.removeValue();
     }
 
     // run a transaction to uptick positive votes or negative votes
@@ -211,6 +214,30 @@ public abstract class TileListFragment extends Fragment {
                     // actually increments
                     tile.setNegVotes(tile.getNegVotes() - voteIncrement);
                 }
+
+                mutableData.setValue(tile);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+            }
+        });
+    }
+
+    // run a transaction to uptick positive votes or negative votes
+    // depending on the value of the vote increment
+    private void onToggleApproval(DatabaseReference tileRef) {
+        tileRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Tile tile = mutableData.getValue(Tile.class);
+                if (tile == null) {
+                    return Transaction.success(mutableData);
+                }
+
+                tile.setApproved(!tile.isApproved());
 
                 mutableData.setValue(tile);
                 return Transaction.success(mutableData);

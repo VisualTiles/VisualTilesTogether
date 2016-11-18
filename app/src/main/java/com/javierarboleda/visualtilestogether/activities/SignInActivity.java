@@ -59,6 +59,7 @@ public class SignInActivity extends AppCompatActivity implements
     private Button btnJoinChannel;
 
     private GoogleApiClient mGoogleApiClient;
+    private VisualTilesTogetherApp visualTilesTogetherApp;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -78,7 +79,7 @@ public class SignInActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
                 // TODO(jav): FIX ME! This is allowing you in with a null channel!
-                onChannelReady();
+                onChannelUpdated();
             }
         });
 
@@ -99,7 +100,8 @@ public class SignInActivity extends AppCompatActivity implements
         mFirebaseAuth = FirebaseAuth.getInstance();
 
         // Listen for user and channel callbacks.
-        VisualTilesTogetherApp.addListener(this);
+        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
+        visualTilesTogetherApp.addListener(this);
 
         initTutorialView();
 
@@ -109,7 +111,7 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        VisualTilesTogetherApp.removeListener(this);
+        visualTilesTogetherApp.removeListener(this);
     }
 
     private void initTutorialView() {
@@ -144,6 +146,7 @@ public class SignInActivity extends AppCompatActivity implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Toast.makeText(this, "OnActivityResult called", Toast.LENGTH_LONG).show();
         super.onActivityResult(requestCode, resultCode, data);
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
@@ -177,15 +180,15 @@ public class SignInActivity extends AppCompatActivity implements
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            VisualTilesTogetherApp.initUser(task.getResult().getUser());
+                            visualTilesTogetherApp.initUser(task.getResult().getUser());
                         }
                     }
                 });
     }
 
     @Override
-    public void onChannelReady() {
-        if (VisualTilesTogetherApp.getChannel() == null) {
+    public void onChannelUpdated() {
+        if (visualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Channel didn't load correctly.", Toast.LENGTH_LONG).show();
         }
         startActivity(new Intent(this, TileListActivity.class));
@@ -204,18 +207,22 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void showPostSignInButtons() {
-
         Intent intent = new Intent(this, CreateJoinActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
         startActivity(intent);
         finish();
-
 //        preSignInButtons.setVisibility(View.GONE);
 //        postSignInButtons.setVisibility(View.VISIBLE);
     }
 
     @Override
-    public void onUserReady() {
+    public void onUserUpdated() {
         // Show channel creation or join buttons.
         showPostSignInButtons();
+    }
+
+    @Override
+    public void onTilesUpdated() {
+        // Do nothing with tiles.
     }
 }

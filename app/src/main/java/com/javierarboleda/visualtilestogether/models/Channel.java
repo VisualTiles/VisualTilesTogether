@@ -1,5 +1,6 @@
 package com.javierarboleda.visualtilestogether.models;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Channel {
@@ -8,6 +9,7 @@ public class Channel {
     private String name;
     private Date startTime;
     private Date endTime;
+    private ArrayList<String> positionToTileIds;
 
     public Channel() {
     }
@@ -18,10 +20,11 @@ public class Channel {
         this.endTime = endTime;
     }
 
-    public Channel(Date endTime, String name, Date startTime) {
+    public Channel(Date endTime, String name, Date startTime, ArrayList<String> positionToTileIds) {
         this.endTime = endTime;
         this.name = name;
         this.startTime = startTime;
+        this.positionToTileIds = positionToTileIds;
     }
 
     public Date getEndTime() {
@@ -46,6 +49,14 @@ public class Channel {
 
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
+    }
+
+    public ArrayList<String> getPositionToTileIds() {
+        return positionToTileIds;
+    }
+
+    public void setPositionToTileIds(ArrayList<String> positionToTileIds) {
+        this.positionToTileIds = positionToTileIds;
     }
 
     public void addTileId(int position, String tileId) {

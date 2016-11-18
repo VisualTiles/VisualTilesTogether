@@ -75,9 +75,8 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 startActivity(new Intent(this, PresentationActivity.class));
                 return true;
             case R.id.menu_item_sign_out:
-                getFirebaseAuth().signOut();
+                ((VisualTilesTogetherApp) getApplication()).getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                resetUserame();
                 startActivity(new Intent(this, SignInActivity.class));
                 return true;
             case R.id.menu_item_normalize_db:
