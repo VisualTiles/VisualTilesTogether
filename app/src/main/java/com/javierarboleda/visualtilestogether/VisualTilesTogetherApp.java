@@ -1,22 +1,27 @@
 package com.javierarboleda.visualtilestogether;
 
 import android.app.Application;
-import android.content.Intent;
+import android.databinding.ObservableArrayMap;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.javierarboleda.visualtilestogether.activities.SignInActivity;
 import com.javierarboleda.visualtilestogether.models.Channel;
+import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,18 +29,22 @@ import java.util.List;
 public class VisualTilesTogetherApp extends Application {
     private static final String LOG_TAG = VisualTilesTogetherApp.class.getSimpleName();
     private static final String ANONYMOUS = "anonymous";
-    private static String username;
-    private static FirebaseAuth firebaseAuth;
-    private static String uId;
-    private static User user = null;
-    private static Channel channel = null;
+    private FirebaseAuth firebaseAuth;
+    private String uId;
+    private User user = null;
+    private String channelId = null;
+    private Channel channel = null;
+    private ObservableArrayMap<String, Tile> tileObservableArrayMap =
+            new ObservableArrayMap<>();
 
     public interface VisualTilesListenerInterface {
         void onError(DatabaseError error);
 
-        void onUserReady();
+        void onTilesUpdated();
 
-        void onChannelReady();
+        void onUserUpdated();
+
+        void onChannelUpdated();
     }
 
     private static List<WeakReference<VisualTilesListenerInterface>> listeners = new ArrayList<>();
@@ -46,7 +55,6 @@ public class VisualTilesTogetherApp extends Application {
 
         // Initialize Firebase Auth.
         // Default username is anonymous.
-        username = ANONYMOUS;
         firebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         if (firebaseUser == null) {
@@ -55,117 +63,229 @@ public class VisualTilesTogetherApp extends Application {
             // outside of an activity context? I'm not sure why this is working.
             // startActivity(new Intent(this, SignInActivity.class));
             // Disabled because all other activities enforce valid user or channel.
-            return;
         } else {
             uId = firebaseUser.getUid();
-            username = firebaseUser.getDisplayName();
             initUser(firebaseUser);
         }
     }
 
-    public static FirebaseAuth getFirebaseAuth() {
+    public FirebaseAuth getFirebaseAuth() {
         return firebaseAuth;
     }
 
-    public static String getUid() {
+    public String getUid() {
         return uId;
     }
 
-    public static User getUser() {
+    public User getUser() {
         return user;
     }
 
-    public static Channel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
-    public static void resetUserame() {
-        username = ANONYMOUS;
+    public String getChannelId() {
+        return channelId;
     }
 
-    public static void initUser(final FirebaseUser fbu) {
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        final DatabaseReference dbUserRef = dbRef.child(User.TABLE_NAME).child(fbu.getUid());
-        dbUserRef.addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
-                            user = dataSnapshot.getValue(User.class);
-                        } else {
-                            // Create user for first time.
-                            user = User.fromFirebaseUser(fbu);
-                            dbUserRef.setValue(user);
-                        }
-                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                            if (listener.get() != null)
-                                listener.get().onUserReady();
-                        }
-                        // TODO(team): Add this back in when user can leave a channel
-                        // initChannel(user.getChannelId());
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                            if (listener.get() != null)
-                                listener.get().onError(databaseError);
-                        }
-                    }
-                });
+    public ObservableArrayMap<String, Tile> getTileObservableArrayMap() {
+        return tileObservableArrayMap;
     }
 
-    public static void initChannel() {
+    private ValueEventListener userValueEventListener =
+            new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.getKey() != uId) {
+                        // TODO(team): Refactor this out of here to a 'signout' state.
+                        channelId = null;
+                        channel = null;
+                        if (dbChannelRef != null)
+                            dbChannelRef.removeEventListener(channelValueEventListener);
+                        dbChannelRef = null;
+                        tileObservableArrayMap.clear();
+                        if (dbTileRef != null)
+                            dbTileRef.removeEventListener(tileEventListener);
+                    }
+                    if (dataSnapshot.exists()) {
+                        uId = dataSnapshot.getKey();
+                        user = dataSnapshot.getValue(User.class);
+                    } else {
+                        // Save the current user object if it's not in DB already.
+                        dbUserRef.setValue(user);
+                    }
+                    for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                        if (listener.get() != null)
+                            listener.get().onUserUpdated();
+                    }
+                    // TODO(team): Add this back in when user can leave a channel
+                    // initChannel(user.getChannelId());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                        if (listener.get() != null)
+                            listener.get().onError(databaseError);
+                    }
+                }
+            };
+    private static DatabaseReference dbUserRef;
+
+    public void initUser(final FirebaseUser fbu) {
+        // Create basic user from FBU. Has fewer fields (channel is null).
+        uId = fbu.getUid();
+        user = User.fromFirebaseUser(fbu);
+        if (dbUserRef != null) {
+            dbUserRef.removeEventListener(userValueEventListener);
+        }
+        // Try to load 'full'.
+        dbUserRef = FirebaseDatabase.getInstance().getReference().child(User.TABLE_NAME)
+                .child(fbu.getUid());
+        dbUserRef.addValueEventListener(userValueEventListener);
+    }
+
+    private ValueEventListener channelValueEventListener =
+            new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    channel = dataSnapshot.getValue(Channel.class);
+
+                    for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                        if (listener.get() != null)
+                            listener.get().onChannelUpdated();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                        if (listener.get() != null)
+                            listener.get().onError(databaseError);
+                    }
+                }
+            };
+
+    public void initChannel() {
         initChannel(user.getChannelId());
     }
 
-    public static void initChannel(String channelId) {
-        if (channelId == null) {
+    private DatabaseReference dbChannelRef;
+    public void initChannel(String newChannelId) {
+        if (newChannelId == null) {
             // Fallback channel for when it doesn't exist.
             // TODO(jav): Remove this once create/join login screen is working.
-            channelId = "-KWVuJtz9tfBvdQUn4F_";
+            newChannelId = "-KWVuJtz9tfBvdQUn4F_";
         }
+        // Already loaded, skip.
+        if (channelId != null && channelId.equals(newChannelId))
+            return;
+
+        if (dbChannelRef != null)
+            dbChannelRef.removeEventListener(channelValueEventListener);
+
+        channelId = newChannelId;
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference dbChannel = dbRef.child(Channel.TABLE_NAME);
-        dbChannel.child(channelId).addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        channel = dataSnapshot.getValue(Channel.class);
-
-                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                            if (listener.get() != null)
-                                listener.get().onChannelReady();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                            if (listener.get() != null)
-                                listener.get().onError(databaseError);
-                        }
-                    }
-                });
-
+        dbChannelRef = dbRef.child(Channel.TABLE_NAME).child(newChannelId);
+        dbChannelRef.addValueEventListener(channelValueEventListener);
         // Enforce that user and channel are in sync.
         if (user.getChannelId() != channelId) {
             Log.i(LOG_TAG, "User channel is not the same channel as intiChannel!");
             user.setChannelId(channelId);
-            DatabaseReference dbUserRef = dbRef.child(User.TABLE_NAME).child(uId);
-            dbUserRef.setValue(user);
+
+            // Update channel field in DB.
+            HashMap<String, Object> userUpdates = new HashMap<>();
+            userUpdates.put(User.CHANNEL_ID, channelId);
+            dbRef.child(User.TABLE_NAME).child(uId).updateChildren(userUpdates);
         }
+        initTilesForChannel();
     }
 
-    public static void addListener(VisualTilesListenerInterface listener) {
+    private ChildEventListener tileEventListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            String key = dataSnapshot.getKey();
+            Tile tile = dataSnapshot.getValue(Tile.class);
+            tile.setTileId(key);
+            Log.i(LOG_TAG, "onChildAdded key " + key);
+            if (!tileObservableArrayMap.containsKey(key) ||
+                    !tileObservableArrayMap.get(key).equalsValue(tile)) {
+                tileObservableArrayMap.put(key, tile);
+                Glide.with(VisualTilesTogetherApp.this)
+                        .load(tile.getShapeUrl())
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE);
+            }
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onTilesUpdated();
+            }
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            String key = dataSnapshot.getKey();
+            Tile tile = dataSnapshot.getValue(Tile.class);
+            tile.setTileId(key);
+            Log.i(LOG_TAG, "onChildChanged key " + key);
+            Tile mapTile = tileObservableArrayMap.get(key);
+            if (mapTile == null || !mapTile.equalsValue(tile)) {
+                tileObservableArrayMap.put(key, tile);
+            }
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onTilesUpdated();
+            }
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+            String key = dataSnapshot.getKey();
+            Log.i(LOG_TAG, "onChildRemoved key " + key);
+            Tile tile = dataSnapshot.getValue(Tile.class);
+            tile.setTileId(key);
+            if (tileObservableArrayMap.containsKey(key)) {
+                tileObservableArrayMap.remove(key);
+            }
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onTilesUpdated();
+            }
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            // Not interested in this, its covered by onChildChanged.
+            Log.i(LOG_TAG, "onChildMoved key " + dataSnapshot.getKey());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onError(databaseError);
+            }
+        }
+    };
+    private Query dbTileRef;
+    private void initTilesForChannel() {
+        dbTileRef = FirebaseDatabase.getInstance().getReference().child(Tile.TABLE_NAME)
+                .orderByChild(Tile.CHANNEL_ID).equalTo(channelId);
+        // Adds unnecessary complexity (onChildMoved):
+        // .orderByChild(Tile.POS_VOTES_ID);
+        dbTileRef.addChildEventListener(tileEventListener);
+        // dbTileRef.addValueEventListener(tileEventListener);
+    }
+
+    public void addListener(VisualTilesListenerInterface listener) {
         listeners.add(new WeakReference<>(listener));
     }
 
-    public static void removeListener(VisualTilesListenerInterface listener) {
+    public void removeListener(VisualTilesListenerInterface listener) {
         for (Iterator<WeakReference<VisualTilesListenerInterface>> iterator = listeners.iterator();
              iterator.hasNext(); ) {
             WeakReference<VisualTilesListenerInterface> weakRef = iterator.next();
-            if (weakRef.get() == listener) {
+            if (weakRef.get() == listener || weakRef.get() == null) {
                 iterator.remove();
             }
         }

@@ -26,11 +26,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
-
-import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUid;
-import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUser;
 
 public abstract class TileListFragment extends Fragment {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
@@ -40,6 +38,7 @@ public abstract class TileListFragment extends Fragment {
     private FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
+    private VisualTilesTogetherApp visualTilesTogetherApp;
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
         ImageView ivShape;
@@ -60,6 +59,7 @@ public abstract class TileListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
     }
@@ -71,7 +71,7 @@ public abstract class TileListFragment extends Fragment {
         // this should grab https://visual-tiles-together.firebaseio.com/
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
-        dbUsers.child(getUid()).setValue(getUser());
+        dbUsers.child(visualTilesTogetherApp.getUid()).setValue(visualTilesTogetherApp.getUser());
 
         View view = inflater.inflate(R.layout.fragment_tile_list, container, false);
 
@@ -136,7 +136,6 @@ public abstract class TileListFragment extends Fragment {
         mLinearLayoutManager.setStackFromEnd(true);
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
-
         return view;
     }
 

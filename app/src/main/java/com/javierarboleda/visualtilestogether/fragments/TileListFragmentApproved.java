@@ -14,6 +14,6 @@ public class TileListFragmentApproved extends TileListFragment {
 //         Need to implement a real solution
         return dbRef
                 .orderByChild(Tile.CHANNEL_ID)
-                .equalTo(VisualTilesTogetherApp.getUser().getChannelId());
+                .equalTo(((VisualTilesTogetherApp) getActivity().getApplication()).getChannelId());
     }
 }

@@ -23,18 +23,14 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.BuildConfig;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.PresentLayout;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -47,18 +43,19 @@ import java.util.Random;
  * create an instance of this fragment.
  */
 public class PresentationFragment extends Fragment
-        implements PresentLayout.PresentLayoutListener {
+        implements PresentLayout.PresentLayoutListener,
+        VisualTilesTogetherApp.VisualTilesListenerInterface {
     private static final String TAG = PresentationFragment.class.getSimpleName();
     private static final String ARG_EDITOR_MODE = "editor_mode";
 
-   private boolean isEditorMode;
+    private VisualTilesTogetherApp visualTilesTogetherApp;
+    private boolean isEditorMode;
     private PercentFrameLayout mainLayout;
     private PercentFrameLayout viewContainer;
     private HashMap<Integer, ImageView> images;
     private HashMap<Integer, ImageView> tiles;
 
     private PresentLayout layout;
-    private Query dbTiles;
 
     private PresentationFragmentListener mListener;
 
@@ -90,8 +87,8 @@ public class PresentationFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_presentation, container, false);
         images = new HashMap<>();
         tiles = new HashMap<>();
-        if (VisualTilesTogetherApp.getUser() == null ||
-            VisualTilesTogetherApp.getChannel() ==  null) {
+        if (visualTilesTogetherApp.getUser() == null ||
+                visualTilesTogetherApp.getChannel() ==  null) {
             return view;
         }
         if (layout == null) {
@@ -105,6 +102,7 @@ public class PresentationFragment extends Fragment
         viewContainer = (PercentFrameLayout) view.findViewById(R.id.viewContainer);
         mainLayout = (PercentFrameLayout) view.findViewById(R.id.mainLayout);
         drawLayout(savedInstanceState);
+        loadTilesForChannel();
         return view;
     }
 
@@ -117,14 +115,15 @@ public class PresentationFragment extends Fragment
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+        visualTilesTogetherApp = (VisualTilesTogetherApp) getActivity().getApplication();
+        visualTilesTogetherApp.addListener(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        if (dbTiles != null && channelTileListener != null)
-            dbTiles.removeEventListener(channelTileListener);
+        visualTilesTogetherApp.removeListener(this);
     }
 
     public interface PresentationFragmentListener {
@@ -157,7 +156,10 @@ public class PresentationFragment extends Fragment
         }
         Tile tile = layout.getTiles()[position];
         if (tile == null) {
-            Log.e(TAG, "Null tile reference in loadTile for position " + position);
+            Log.i(TAG, "Null tile reference in loadTile for position " + position);
+            // TODO: Maybe expect this null to unload a tile.
+            view.setTag(null);
+            view.setImageResource(android.R.color.transparent);
             return;
         }
         if (tile.getShapeUrl() == null) {
@@ -174,7 +176,6 @@ public class PresentationFragment extends Fragment
     public void updateTile(int position, Tile tile, int transitionMs) {
         loadTile(position, tiles.get(position), transitionMs);
     }
-
 
     public PresentLayout stepLayout(PresentLayout left, PresentLayout right, float stepPercent) {
         // TODO(chris): This enables animation.
@@ -224,45 +225,28 @@ public class PresentationFragment extends Fragment
                             }
                         }
                 );
-        beginListeningForTiles();
     }
 
-    private ValueEventListener channelTileListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            if (layout == null) return;
-            long tileCount = dataSnapshot.getChildrenCount();
-            HashMap<Integer, Tile> loadedTiles = new HashMap<>();
-            int tilePos = 0;
-            for (DataSnapshot record : dataSnapshot.getChildren()) {
-                loadedTiles.put(tilePos++, record.getValue(Tile.class));
-            }
-            Log.i(TAG, "Tile count: " + tileCount);
-            // No tiles = no update.
-            if (tilePos == 0)
-                return;
-            for (int i = 0; i < layout.getTileCount(); i++) {
-                int pos = (int) (i % tileCount);
-                Log.i(TAG, "Loading tile index " + i + " with tile pos " + pos);
-                if (loadedTiles.get(pos) != null) {
-                    layout.setTile(i, loadedTiles.get(pos));
-                } else {
-                    Log.e(TAG, "WTF Tile is null!?: " + pos);
+    private void loadTilesForChannel() {
+        if (layout == null) return;
+        ArrayList<String> posToTileIds = visualTilesTogetherApp.getChannel()
+                .getPositionToTileIds();
+        if (posToTileIds == null)
+            return;
+        for (int i = 0; i < layout.getTileCount(); i++) {
+            if (posToTileIds.size() > i) {
+                String tileId = posToTileIds.get(i);
+                // Unset fields are markers.
+                // TODO(team): Load a placeholder image in this case?
+                if (tileId.isEmpty()) {
+                    layout.setTile(i, null);
                 }
+                Tile loadTile = visualTilesTogetherApp.getTileObservableArrayMap()
+                        .get(tileId);
+                layout.setTile(i, loadTile);
             }
+            Log.i(TAG, "Loading tile index " + i);
         }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-    private void beginListeningForTiles() {
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        dbTiles = dbRef.child(Tile.TABLE_NAME)
-                .orderByChild(Tile.CHANNEL_ID)
-                .equalTo(VisualTilesTogetherApp.getUser().getChannelId());
-        dbTiles.addValueEventListener(channelTileListener);
     }
 
     private ImageView buildTileView(final int position, Bundle savedInstanceState) {
@@ -326,5 +310,26 @@ public class PresentationFragment extends Fragment
     };
     private void beginFunAnimation() {
         tintAnimationHandler.post(tintAnimation);
+    }
+
+    @Override
+    public void onChannelUpdated() {
+        // Listens for effects and loads tiles.
+        loadTilesForChannel();
+    }
+
+    @Override
+    public void onError(DatabaseError error) {
+        // Activity handles errors.
+    }
+
+    @Override
+    public void onTilesUpdated() {
+        // Does nothing.
+    }
+
+    @Override
+    public void onUserUpdated() {
+        // Activity is responsible.
     }
 }

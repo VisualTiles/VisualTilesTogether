@@ -22,9 +22,7 @@ import com.google.firebase.storage.UploadTask;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityTileCreationBinding;
-import com.javierarboleda.visualtilestogether.fragments.ChannelAddDialog;
 import com.javierarboleda.visualtilestogether.fragments.ShapeAddDialog;
-import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.views.CanvasView;
 
@@ -154,7 +152,7 @@ public class TileCreationActivity extends AppCompatActivity
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 Tile tile = new Tile(false, 0, 0, null, downloadUrl.toString(), new Date());
-                tile.setChannelId(VisualTilesTogetherApp.getUser().getChannelId());
+                tile.setChannelId(((VisualTilesTogetherApp) getApplication()).getChannelId());
                 dbRef.child(key).setValue(tile);
             }
         });
