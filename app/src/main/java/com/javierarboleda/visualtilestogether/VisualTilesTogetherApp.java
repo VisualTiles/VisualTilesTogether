@@ -53,7 +53,8 @@ public class VisualTilesTogetherApp extends Application {
             // Not signed in, launch the Sign In activity
             // NOTE(chris): This may cause a runtime exception, because startActivity is happening
             // outside of an activity context? I'm not sure why this is working.
-            startActivity(new Intent(this, SignInActivity.class));
+            // startActivity(new Intent(this, SignInActivity.class));
+            // Disabled because all other activities enforce valid user or channel.
             return;
         } else {
             uId = firebaseUser.getUid();
