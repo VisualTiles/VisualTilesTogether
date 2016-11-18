@@ -20,10 +20,8 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
-
-import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getFirebaseAuth;
-import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.resetUserame;
 
 public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
@@ -77,9 +75,8 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 startActivity(new Intent(this, ModeratorConsoleActivity.class));
                 return true;
             case R.id.menu_item_sign_out:
-                getFirebaseAuth().signOut();
+                ((VisualTilesTogetherApp) getApplication()).getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                resetUserame();
                 startActivity(new Intent(this, SignInActivity.class));
                 return true;
             default:

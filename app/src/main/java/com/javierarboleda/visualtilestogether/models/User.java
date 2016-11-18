@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class User {
     public static final String TABLE_NAME = "users";
+    public static final String CHANNEL_ID = "channelId";
     @Nullable
     private String channelId;
     private String name;

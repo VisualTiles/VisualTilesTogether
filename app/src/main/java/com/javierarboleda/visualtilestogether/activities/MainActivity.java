@@ -35,14 +35,16 @@ public class MainActivity extends AppCompatActivity
         ShapeAddDialog.OnFragmentInteractionListener {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private UploadTask uploadTask;
+    private VisualTilesTogetherApp visualTilesTogetherApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (VisualTilesTogetherApp.getUser() == null ||
-                VisualTilesTogetherApp.getChannel() ==  null) {
+        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
+        if (visualTilesTogetherApp.getUser() == null ||
+                visualTilesTogetherApp.getChannel() ==  null) {
             finish();
         }
 
@@ -74,7 +76,7 @@ public class MainActivity extends AppCompatActivity
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
         // TODO(jav): Save user when channel is defined; so they don't get stuck in a loop.
-        VisualTilesTogetherApp.initChannel(key);
+        visualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }
 
