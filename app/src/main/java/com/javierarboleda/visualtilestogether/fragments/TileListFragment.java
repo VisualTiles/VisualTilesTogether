@@ -26,8 +26,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
 
@@ -39,7 +41,7 @@ public abstract class TileListFragment extends Fragment {
 
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
-    private FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<Boolean, TileListFragment.TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
 
@@ -78,7 +80,7 @@ public abstract class TileListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         // this should grab https://visual-tiles-together.firebaseio.com/
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
         dbUsers.child(getUid()).setValue(getUser());
 
@@ -88,57 +90,74 @@ public abstract class TileListFragment extends Fragment {
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
 
         // bind the tiles table to the RecyclerView
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder>
-                (Tile.class,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Boolean, TileListFragment.TileViewholder>
+                (Boolean.class,
                         R.layout.tile_list_item,
                         TileListFragment.TileViewholder.class,
-                        getDbQuery(dbRef.child(Tile.TABLE_NAME))) {
+                        getDbQuery(dbRef.child(Channel.TABLE_NAME))) {
 
             @Override
             protected void populateViewHolder(
-                    final TileListFragment.TileViewholder viewHolder, final Tile tile, int position) {
-                final DatabaseReference tileRef = getRef(position);
+                    final TileListFragment.TileViewholder viewHolder, final Boolean bool, int position) {
+                final DatabaseReference tileRef = dbRef.child(Tile.TABLE_NAME)
+                        .child(getRef(position).getKey());
+                Log.d(LOG_TAG, "populateViewHolder key, tileref: " + getRef(position).getKey() + ", " + tileRef);
 
-                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                if (tile.getShapeUrl() != null && mContext != null) {
-                    Glide.with(mContext)
-                            .load(tile.getShapeUrl())
-                            .into(viewHolder.ivShape);
-                }
-
-                viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
+                tileRef.addValueEventListener(new ValueEventListener() {
                     @Override
-                    public void onClick(View view) {
-                        onVoteClicked(tileRef, 1);
-                    }
-                });
-
-                viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        onVoteClicked(tileRef, -1);
-                    }
-                });
-
-                viewHolder.tvVotesTotal.setText(String.valueOf(tile.getPosVotes() - tile.getNegVotes()));
-
-                viewHolder.miPublish.setIcon(tile.isApproved()?
-                        R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
-                viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        Log.d(LOG_TAG, "Clicked a toolbar item");
-                        switch (item.getItemId()) {
-                            case R.id.action_publish:
-                                onToggleApproval(tileRef);
-                                return true;
-                            case R.id.action_delete:
-                                onDeleteTile(tileRef);
-                                return true;
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Tile tile = dataSnapshot.getValue(Tile.class);
+                        Log.d(LOG_TAG, "onDataChange tile: " + tile);
+                        mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                        if (tile.getShapeUrl() != null && mContext != null) {
+                            Glide.with(mContext)
+                                    .load(tile.getShapeUrl())
+                                    .into(viewHolder.ivShape);
                         }
-                        return false;
+
+                        viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                onVoteClicked(tileRef, 1);
+                            }
+                        });
+
+                        viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                onVoteClicked(tileRef, -1);
+                            }
+                        });
+
+                        viewHolder.tvVotesTotal.setText(String.valueOf(tile.getPosVotes() - tile.getNegVotes()));
+
+                        viewHolder.miPublish.setIcon(tile.isApproved()?
+                                R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                        viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                Log.d(LOG_TAG, "Clicked a toolbar item");
+                                switch (item.getItemId()) {
+                                    case R.id.action_publish:
+                                        onToggleApproval(tileRef);
+                                        return true;
+                                    case R.id.action_delete:
+                                        onDeleteTile(tileRef);
+                                        return true;
+                                }
+                                return false;
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
                     }
                 });
+
+
             }
         };
 

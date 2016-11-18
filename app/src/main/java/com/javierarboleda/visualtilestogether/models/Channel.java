@@ -1,11 +1,11 @@
 package com.javierarboleda.visualtilestogether.models;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 public class Channel {
     public static final String TABLE_NAME = "channels";
+    public static final String TILE_IDS = "TileIds";
     private String name;
     private Date startTime;
     private Date endTime;
