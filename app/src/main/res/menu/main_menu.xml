@@ -9,4 +9,8 @@
         android:id="@+id/menu_item_sign_out"
         android:title="@string/sign_out"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_item_normalize_db"
+        android:title="@string/menu_normalize_database"
+        app:showAsAction="never"/>
 </menu>

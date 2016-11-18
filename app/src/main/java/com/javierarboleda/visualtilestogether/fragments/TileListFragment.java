@@ -35,6 +35,8 @@ import com.javierarboleda.visualtilestogether.models.User;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUid;
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.getUser;
+import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.deleteTile;
+import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTileApproval;
 
 public abstract class TileListFragment extends Fragment {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
@@ -52,6 +54,7 @@ public abstract class TileListFragment extends Fragment {
         TextView tvVotesTotal;
         Toolbar tbTileListItem;
         MenuItem miPublish;
+        ValueEventListener tileEventListener;
 
         public TileViewholder(View itemView) {
             super(itemView);
@@ -62,8 +65,7 @@ public abstract class TileListFragment extends Fragment {
             tbTileListItem = (Toolbar) itemView.findViewById((R.id.tbTileListItem));
             tbTileListItem.inflateMenu(R.menu.tile_list_menu);
             miPublish = tbTileListItem.getMenu().findItem(R.id.action_publish);
-
-
+            tileEventListener = null;
         }
     }
 
@@ -84,7 +86,7 @@ public abstract class TileListFragment extends Fragment {
         DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
         dbUsers.child(getUid()).setValue(getUser());
 
-        View view = inflater.inflate(R.layout.fragment_tile_list, container, false);
+        final View view = inflater.inflate(R.layout.fragment_tile_list, container, false);
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
@@ -99,15 +101,22 @@ public abstract class TileListFragment extends Fragment {
             @Override
             protected void populateViewHolder(
                     final TileListFragment.TileViewholder viewHolder, final Boolean bool, int position) {
+                final String tileId = getRef(position).getKey();
                 final DatabaseReference tileRef = dbRef.child(Tile.TABLE_NAME)
-                        .child(getRef(position).getKey());
+                        .child(tileId);
                 Log.d(LOG_TAG, "populateViewHolder key, tileref: " + getRef(position).getKey() + ", " + tileRef);
 
-                tileRef.addValueEventListener(new ValueEventListener() {
+                if (viewHolder.tileEventListener != null) {
+                    tileRef.removeEventListener(viewHolder.tileEventListener);
+                }
+                viewHolder.tileEventListener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Tile tile = dataSnapshot.getValue(Tile.class);
+                        final Tile tile = dataSnapshot.getValue(Tile.class);
                         Log.d(LOG_TAG, "onDataChange tile: " + tile);
+                        if (tile == null) {
+                            return;
+                        }
                         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                         if (tile.getShapeUrl() != null && mContext != null) {
                             Glide.with(mContext)
@@ -139,25 +148,24 @@ public abstract class TileListFragment extends Fragment {
                                 Log.d(LOG_TAG, "Clicked a toolbar item");
                                 switch (item.getItemId()) {
                                     case R.id.action_publish:
-                                        onToggleApproval(tileRef);
+                                        toggleTileApproval(tileRef);
                                         return true;
                                     case R.id.action_delete:
-                                        onDeleteTile(tileRef);
+                                        deleteTile(tileRef, tileId, tile.getChannelId());
                                         return true;
                                 }
                                 return false;
                             }
                         });
-
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 
                     }
-                });
+                };
 
-
+                tileRef.addValueEventListener(viewHolder.tileEventListener);
             }
         };
 
@@ -186,10 +194,6 @@ public abstract class TileListFragment extends Fragment {
         return view;
     }
 
-    private void onDeleteTile(DatabaseReference tileRef) {
-        tileRef.removeValue();
-    }
-
     // run a transaction to uptick positive votes or negative votes
     // depending on the value of the vote increment
     private void onVoteClicked(DatabaseReference tileRef, final int voteIncrement) {
@@ -207,30 +211,6 @@ public abstract class TileListFragment extends Fragment {
                     // actually increments
                     tile.setNegVotes(tile.getNegVotes() - voteIncrement);
                 }
-
-                mutableData.setValue(tile);
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
-            }
-        });
-    }
-
-    // run a transaction to uptick positive votes or negative votes
-    // depending on the value of the vote increment
-    private void onToggleApproval(DatabaseReference tileRef) {
-        tileRef.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
-                Tile tile = mutableData.getValue(Tile.class);
-                if (tile == null) {
-                    return Transaction.success(mutableData);
-                }
-
-                tile.setApproved(!tile.isApproved());
 
                 mutableData.setValue(tile);
                 return Transaction.success(mutableData);

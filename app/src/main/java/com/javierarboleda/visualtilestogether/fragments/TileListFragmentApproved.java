@@ -13,6 +13,6 @@ public class TileListFragmentApproved extends TileListFragment {
                 .child(VisualTilesTogetherApp.getUser().getChannelId())
                 .child(Channel.TILE_IDS)
                 .orderByValue()
-                .equalTo(false);
+                .equalTo(true);
     }
 }
