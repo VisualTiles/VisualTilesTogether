@@ -86,7 +86,7 @@ public abstract class TileListFragment extends Fragment {
             mConsoleMode = getArguments().getBoolean("consoleMode", false);
         }
 
-        Log.d(LOG_TAG, "enter onCreate");
+//        Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
