@@ -8,7 +8,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -51,7 +50,6 @@ public abstract class TileListFragment extends Fragment {
 
     // For moderator console mode
     public boolean mConsoleMode;
-    private SparseBooleanArray mSelectedItems;
     private RelativeLayout mLastChecked;
     private String mSelectedTileRefId;
 
@@ -83,8 +81,6 @@ public abstract class TileListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mSelectedItems = new SparseBooleanArray();
 
         if (getArguments() != null) {
             mConsoleMode = getArguments().getBoolean("consoleMode", false);
@@ -161,6 +157,11 @@ public abstract class TileListFragment extends Fragment {
         // hook up the RecyclerView
         mLinearLayoutManager = new LinearLayoutManager(mContext);
         mLinearLayoutManager.setStackFromEnd(true);
+
+        if (mConsoleMode) {
+            mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        }
+
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
         Log.d(LOG_TAG, "exit onCreateView");
@@ -267,18 +268,8 @@ public abstract class TileListFragment extends Fragment {
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
-        // hook up the RecyclerView
-        mLinearLayoutManager = new LinearLayoutManager(mContext);
-        mLinearLayoutManager.setStackFromEnd(true);
-
-        if (mConsoleMode) {
-            mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        }
-
-        mRvTileList.setLayoutManager(mLinearLayoutManager);
-        mRvTileList.setAdapter(mFirebaseAdapter);
-        return view;
-    }
+            }
+        };
 
         tileRef.addValueEventListener(viewHolder.tileEventListener);
     }
