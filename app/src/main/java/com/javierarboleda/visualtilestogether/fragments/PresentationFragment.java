@@ -1,11 +1,8 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
-import android.animation.Animator;
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
 import android.content.Context;
+import android.databinding.ObservableMap;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -29,10 +27,11 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.PresentLayout;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.models.TileEffect;
+import com.javierarboleda.visualtilestogether.util.TileEffectTransformer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -48,12 +47,17 @@ public class PresentationFragment extends Fragment
     private static final String TAG = PresentationFragment.class.getSimpleName();
     private static final String ARG_EDITOR_MODE = "editor_mode";
 
-    private VisualTilesTogetherApp visualTilesTogetherApp;
+    private VisualTilesTogetherApp app;
     private boolean isEditorMode;
     private PercentFrameLayout mainLayout;
     private PercentFrameLayout viewContainer;
-    private HashMap<Integer, ImageView> images;
-    private HashMap<Integer, ImageView> tiles;
+    private HashMap<Integer, ImageView> imageResourceImageViews;
+    private HashMap<Integer, ImageView> tileFrontImageViews;
+    private HashMap<Integer, Animation> tileAnimations;
+    private Animation defaultAnimation;
+    private Handler animationHandler = new Handler();
+    private TileEffect defaultEffect;
+    private TileEffectTransformer tileEffectTransformer;
 
     private PresentLayout layout;
 
@@ -85,10 +89,11 @@ public class PresentationFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment.
         View view = inflater.inflate(R.layout.fragment_presentation, container, false);
-        images = new HashMap<>();
-        tiles = new HashMap<>();
-        if (visualTilesTogetherApp.getUser() == null ||
-                visualTilesTogetherApp.getChannel() ==  null) {
+        imageResourceImageViews = new HashMap<>();
+        tileFrontImageViews = new HashMap<>();
+        tileAnimations = new HashMap<>();
+        if (app.getUser() == null ||
+                app.getChannel() ==  null) {
             return view;
         }
         if (layout == null) {
@@ -98,7 +103,10 @@ public class PresentationFragment extends Fragment
                 database.setValue(layout);
             }*/
         }
+        tileEffectTransformer = new TileEffectTransformer(getContext(),
+                app.getChannel().getMasterEffectDuration());
         layout.setListener(this);
+        setupTileListListener();
         viewContainer = (PercentFrameLayout) view.findViewById(R.id.viewContainer);
         mainLayout = (PercentFrameLayout) view.findViewById(R.id.mainLayout);
         drawLayout(savedInstanceState);
@@ -106,6 +114,32 @@ public class PresentationFragment extends Fragment
         return view;
     }
 
+    private void setupTileListListener() {
+        app.getTileObservableArrayMap().addOnMapChangedCallback(
+                new ObservableMap.OnMapChangedCallback<ObservableMap<String, Tile>, String, Tile>() {
+                    @Override
+                    public void onMapChanged(ObservableMap<String, Tile> sender, String key) {
+                        if (layout == null)
+                            return;
+                        final Tile newTile = sender.get(key);
+                        for (int i = 0; i < layout.getTileCount(); i++) {
+                            final int position = i;
+                            Tile tile = layout.getTiles()[i];
+                            if (tile != null && tile.getTileId().equals(key)) {
+                                // Found the tile that updated. Update it in layout.
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        layout.setTile(position, newTile);
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }
+        );
+    }
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -115,15 +149,15 @@ public class PresentationFragment extends Fragment
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
-        visualTilesTogetherApp = (VisualTilesTogetherApp) getActivity().getApplication();
-        visualTilesTogetherApp.addListener(this);
+        app = (VisualTilesTogetherApp) getActivity().getApplication();
+        app.addListener(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        visualTilesTogetherApp.removeListener(this);
+        app.removeListener(this);
     }
 
     public interface PresentationFragmentListener {
@@ -145,7 +179,7 @@ public class PresentationFragment extends Fragment
         view.invalidate();
     }
 
-    private void loadTile(int position, ImageView view, int durationMs) {
+    private void loadTile(int position, ImageView view) {
         if (view == null) {
             Log.e(TAG, "Null imageview reference in loadTile for position " + position);
             return;
@@ -168,13 +202,14 @@ public class PresentationFragment extends Fragment
         }
         Glide.with(this).load(tile.getShapeUrl())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .crossFade(durationMs)
+                .crossFade(layout.getTransitionMs())
                 .into(view);
     }
 
     @Override
-    public void updateTile(int position, Tile tile, int transitionMs) {
-        loadTile(position, tiles.get(position), transitionMs);
+    public void updateTile(int position, Tile tile) {
+        loadTile(position, tileFrontImageViews.get(position));
+        scheduleTileAnimation(position, true);
     }
 
     public PresentLayout stepLayout(PresentLayout left, PresentLayout right, float stepPercent) {
@@ -186,33 +221,33 @@ public class PresentationFragment extends Fragment
         if (layout == null) return;
         for (int i = 0; i < layout.getTileCount(); i++) {
             ImageView view = null;
-            if (tiles.get(i) == null) {
+            if (tileFrontImageViews.get(i) == null) {
                 view = buildTileView(i, savedInstanceState);
                 viewContainer.addView(view);
-                tiles.put(i, view);
+                tileFrontImageViews.put(i, view);
             }
             moveRelativeView(view, layout.getTilePositions()[i]);
-            loadTile(i, view, 0);
+            loadTile(i, view);
         }
-        // Delete stale tiles.
-        for (int i = layout.getTileCount(); i < tiles.size(); i++) {
-            viewContainer.removeView(tiles.get(i));
+        // Delete stale tileFrontImageViews.
+        for (int i = layout.getTileCount(); i < tileFrontImageViews.size(); i++) {
+            viewContainer.removeView(tileFrontImageViews.get(i));
         }
         for (int i = 0; i < layout.getImageCount(); i++) {
             ImageView view = null;
-            if (images.get(i) == null) {
+            if (imageResourceImageViews.get(i) == null) {
                 view = buildTileView(i, savedInstanceState);
                 viewContainer.addView(view);
-                images.put(i, view);
+                imageResourceImageViews.put(i, view);
             }
             moveRelativeView(view, layout.getImagePositions()[i]);
             Glide.with(this).load(layout.getImageUrls()[i])
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .into(view);
         }
-        // Delete stale images.
-        for (int i = layout.getImageCount(); i < images.size(); i++) {
-            viewContainer.removeView(images.get(i));
+        // Delete stale imageResourceImageViews.
+        for (int i = layout.getImageCount(); i < imageResourceImageViews.size(); i++) {
+            viewContainer.removeView(imageResourceImageViews.get(i));
         }
         Glide.with(this).load(layout.getBackgroundUrl()).asBitmap()
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
@@ -229,7 +264,7 @@ public class PresentationFragment extends Fragment
 
     private void loadTilesForChannel() {
         if (layout == null) return;
-        ArrayList<String> posToTileIds = visualTilesTogetherApp.getChannel()
+        ArrayList<String> posToTileIds = app.getChannel()
                 .getPositionToTileIds();
         if (posToTileIds == null)
             return;
@@ -241,12 +276,15 @@ public class PresentationFragment extends Fragment
                 if (tileId.isEmpty()) {
                     layout.setTile(i, null);
                 }
-                Tile loadTile = visualTilesTogetherApp.getTileObservableArrayMap()
+                Tile loadTile = app.getTileObservableArrayMap()
                         .get(tileId);
                 layout.setTile(i, loadTile);
             }
             Log.i(TAG, "Loading tile index " + i);
         }
+        defaultEffect = app.getChannel().getDefaultEffect();
+        invalidateAllTileAnimations();
+        resyncAndStartAnimation();
     }
 
     private ImageView buildTileView(final int position, Bundle savedInstanceState) {
@@ -262,59 +300,67 @@ public class PresentationFragment extends Fragment
         return iv;
     }
 
-
-    private int lastColor = 0;
-    private Handler tintAnimationHandler = new Handler();
-    private Runnable tintAnimation = new Runnable() {
+    private Runnable animationRunner = new Runnable() {
         @Override
         public void run() {
-            Random random = new Random();
-            int colorTo = Color.argb(255, random.nextInt(256), random.nextInt(256), random
-                    .nextInt(256));
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                    lastColor, colorTo);
-            colorAnimation.setDuration(1000);
-            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    for (ImageView iv : tiles.values()) {
-                        iv.setColorFilter((int) valueAnimator.getAnimatedValue());
-                    }
-                }
-            });
-            colorAnimation.start();
-            colorAnimation.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animator) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animator) {
-                    // Start another.
-                    tintAnimationHandler.postDelayed(tintAnimation, 1000);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animator) {
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animator) {
-
-                }
-            });
-            lastColor = colorTo;
+            if (layout == null) return;
+            animationHandler.postDelayed(animationRunner,
+                    app.getChannel().getMasterEffectDuration());
+            for (int i = 0; i < layout.getTileCount(); i++) {
+                scheduleTileAnimation(i, false);
+            }
         }
     };
-    private void beginFunAnimation() {
-        tintAnimationHandler.post(tintAnimation);
+
+    private void invalidateAllTileAnimations() {
+        for (int i = 0; i < layout.getTileCount(); i++) {
+            scheduleTileAnimation(i, true);
+        }
+    }
+    private void scheduleTileAnimation(int i, boolean invalidate) {
+        ImageView tileIv = tileFrontImageViews.get(i);
+        if (tileIv == null)
+            return;
+        // tileIv.clearAnimation();
+        Tile loadedTile = layout.getTiles()[i];
+        if (loadedTile == null)
+            return;
+        Animation effect = null;
+        if (invalidate) {
+            defaultAnimation = tileEffectTransformer.processTileEffect(defaultEffect);
+            if (tileAnimations.get(i) != null) {
+                tileAnimations.get(i).cancel();
+            }
+            if (loadedTile.hasEffect()) {
+                effect = tileEffectTransformer.processTileEffect(loadedTile.getTileEffect());
+                tileAnimations.put(i, effect);
+            }
+        } else {
+            if (tileAnimations.get(i) != null) {
+                effect = tileAnimations.get(i);
+            } else {
+                effect = defaultAnimation;
+            }
+        }
+        if (effect != null) {
+            tileIv.startAnimation(effect);
+        }
+    }
+
+    private void resyncAndStartAnimation() {
+        animationHandler.removeCallbacks(animationRunner);
+        long syncTime = app.getChannel().getChannelSyncTime();
+        long duration = app.getChannel().getMasterEffectDuration();
+        if (duration == 0L) duration = 1000L;
+        // Run some fraction of the duration different between now and remote sync time.
+        long delay = (System.currentTimeMillis() - syncTime) % duration;
+        animationHandler.postDelayed(animationRunner, delay);
     }
 
     @Override
     public void onChannelUpdated() {
-        // Listens for effects and loads tiles.
+        // Listens for effects and loads tileFrontImageViews.
+        tileEffectTransformer.setStageDuration(app.getChannel().getMasterEffectDuration());
         loadTilesForChannel();
     }
 
@@ -325,7 +371,8 @@ public class PresentationFragment extends Fragment
 
     @Override
     public void onTilesUpdated() {
-        // Does nothing.
+        // This is too inefficient since it doesn't return what tile changed. Listens to tile
+        // changes are handled by setupTileListListener.
     }
 
     @Override

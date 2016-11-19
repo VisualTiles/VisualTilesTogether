@@ -1,7 +1,9 @@
 package com.javierarboleda.visualtilestogether.models;
 
-import java.util.Date;
+import com.google.firebase.database.DatabaseReference;
 
+import java.util.Date;
+import java.util.HashMap;
 
 public class Tile {
     public static final String TABLE_NAME = "tiles";
@@ -16,9 +18,9 @@ public class Tile {
     private int negVotes;
     private Date submitTime;
     private boolean approved;
+    private TileEffect tileEffect;
 
-    public Tile() {
-    }
+    public Tile() {}
 
     public boolean equalsValue(Tile t) {
         return (t == null ||
@@ -124,5 +126,35 @@ public class Tile {
 
     public void setTileId(String tileId) {
         this.tileId = tileId;
+    }
+
+    public boolean hasEffect() {
+        return tileEffect != null;
+    }
+
+    public TileEffect getTileEffect() {
+        return tileEffect;
+    }
+
+    public void setTileEffect(TileEffect tileEffect) {
+        this.tileEffect = tileEffect;
+    }
+
+    /**
+     * Updates the start time of the effect.
+     * Does nothing without calling saveEffect().
+     */
+    public void fireEffect() {
+        tileEffect.setStartTimeMillis(System.currentTimeMillis());
+    }
+
+    /**
+     * Saves the tile's effect to the database.
+     * @param ref A database reference of this Tile.
+     */
+    public void saveEffect(DatabaseReference ref) {
+        HashMap<String, Object> change = new HashMap<>();
+        change.put("tileEffect", tileEffect);
+        ref.updateChildren(change);
     }
 }

@@ -11,6 +11,6 @@
         android:layout_height="0dp"
         android:layout_gravity="center"
         app:layout_aspectRatio="177%"
-        app:layout_heightPercent="100%"
-        />
+        app:layout_widthPercent="100%"
+        /> <!-- 16:9 -->
 </android.support.percent.PercentFrameLayout>
