@@ -15,7 +15,7 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class PresentLayout {
     public interface PresentLayoutListener {
-        void updateTile(int position, @Nullable Tile tile, int transitionMs);
+        void updateTile(int position, @Nullable Tile tile);
     }
 
     private PresentLayoutListener listener;
@@ -51,7 +51,7 @@ public class PresentLayout {
     public void setTile(int position, @Nullable Tile tile) {
         if (position >= getTileCount()) throw new ArrayIndexOutOfBoundsException();
         tiles[position] = tile;
-        if (listener != null) listener.updateTile(position, tile, transitionMs);
+        if (listener != null) listener.updateTile(position, tile);
     }
 
     public String[] getImageUrls() {
