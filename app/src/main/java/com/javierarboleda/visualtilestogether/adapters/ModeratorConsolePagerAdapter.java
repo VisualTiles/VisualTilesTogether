@@ -22,7 +22,7 @@ public class ModeratorConsolePagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new TileSelectFragment();
+                return TileSelectFragment.newInstance();
             case 1:
                 return new EffectSelectFragment();
             case 2:
