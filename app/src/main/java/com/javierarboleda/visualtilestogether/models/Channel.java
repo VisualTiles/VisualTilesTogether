@@ -6,6 +6,7 @@ import java.util.Date;
 public class Channel {
     public static final String TABLE_NAME = "channels";
     public static final String TILE_IDS = "tileIds";
+    public static final String POS_TO_TILE_IDS = "positionToTileIds";
     private String name;
     private Date startTime;
     private Date endTime;
