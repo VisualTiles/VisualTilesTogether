@@ -23,6 +23,8 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
 
+import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.normalizeDb;
+
 public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
 
@@ -78,6 +80,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 ((VisualTilesTogetherApp) getApplication()).getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 startActivity(new Intent(this, SignInActivity.class));
+                return true;
+            case R.id.menu_item_normalize_db:
+                normalizeDb();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

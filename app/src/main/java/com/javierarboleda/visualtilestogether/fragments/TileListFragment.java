@@ -28,18 +28,23 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
+import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
+
+import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.deleteTile;
+import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTileApproval;
 
 public abstract class TileListFragment extends Fragment {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
 
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
-    private FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<Object, TileListFragment.TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
     private VisualTilesTogetherApp visualTilesTogetherApp;
@@ -58,6 +63,7 @@ public abstract class TileListFragment extends Fragment {
         TextView tvVotesTotal;
         Toolbar tbTileListItem;
         MenuItem miPublish;
+        ValueEventListener tileEventListener;
         RelativeLayout rlMain;
 
         public TileViewholder(View itemView) {
@@ -70,6 +76,7 @@ public abstract class TileListFragment extends Fragment {
             tbTileListItem.inflateMenu(R.menu.tile_list_menu);
             miPublish = tbTileListItem.getMenu().findItem(R.id.action_publish);
             rlMain = (RelativeLayout) itemView.findViewById(R.id.rlMain);
+            tileEventListener = null;
         }
     }
 
@@ -83,17 +90,18 @@ public abstract class TileListFragment extends Fragment {
             mConsoleMode = getArguments().getBoolean("consoleMode", false);
         }
 
+        Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
+        Log.d(LOG_TAG, "exit onCreate");
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        // this should grab https://visual-tiles-together.firebaseio.com/
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        Log.d(LOG_TAG, "enter onCreateView");
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
         dbUsers.child(visualTilesTogetherApp.getUid()).setValue(visualTilesTogetherApp.getUser());
 
@@ -103,18 +111,79 @@ public abstract class TileListFragment extends Fragment {
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
 
         // bind the tiles table to the RecyclerView
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<Tile, TileListFragment.TileViewholder>
-                (Tile.class,
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Object, TileListFragment.TileViewholder>
+                (Object.class,
                         //if this is console mode, then different list item layout file
                         mConsoleMode ? R.layout.tile_selector_list_item: R.layout.tile_list_item,
                         TileListFragment.TileViewholder.class,
-                        getDbQuery(dbRef.child(Tile.TABLE_NAME))) {
+                        getDbQuery(dbRef.child(Channel.TABLE_NAME))) {
 
             @Override
             protected void populateViewHolder(
-                    final TileListFragment.TileViewholder viewHolder, final Tile tile, final int position) {
-                final DatabaseReference tileRef = getRef(position);
+                    final TileListFragment.TileViewholder viewHolder, final Object object, int position) {
+                if (getRef(position).getKey().charAt(0) == '-') {
+                    doTheWork(viewHolder, getRef(position).getKey());
+                } else {
+                    Log.d(LOG_TAG, "adding listener to positionToTileIds entry");
+                    getRef(position).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Log.d(LOG_TAG, "receiving value from positionToTileIds entry: " + dataSnapshot.getValue(String.class));
+                            doTheWork(viewHolder, dataSnapshot.getValue(String.class));
+                        }
 
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+            }
+        };
+
+        // watch for realtime changes
+        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                int tileCount = mFirebaseAdapter.getItemCount();
+                int lastVisiblePosition = mLinearLayoutManager.
+                        findLastCompletelyVisibleItemPosition();
+                if (lastVisiblePosition == -1 ||
+                        (positionStart >= (tileCount - 1) &&
+                                lastVisiblePosition == (positionStart - 1))) {
+                    mRvTileList.scrollToPosition(positionStart);
+                }
+            }
+        });
+
+        // hook up the RecyclerView
+        mLinearLayoutManager = new LinearLayoutManager(mContext);
+        mLinearLayoutManager.setStackFromEnd(true);
+        mRvTileList.setLayoutManager(mLinearLayoutManager);
+        mRvTileList.setAdapter(mFirebaseAdapter);
+        Log.d(LOG_TAG, "exit onCreateView");
+        return view;
+    }
+
+    protected void doTheWork(final TileViewholder viewHolder, final String tileId) {
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        final DatabaseReference tileRef = dbRef.child(Tile.TABLE_NAME)
+                .child(tileId);
+//                Log.d(LOG_TAG, "populateViewHolder key, tileref: " + getRef(position).getKey() + ", " + tileRef);
+
+        if (viewHolder.tileEventListener != null) {
+            tileRef.removeEventListener(viewHolder.tileEventListener);
+        }
+        viewHolder.tileEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final Tile tile = dataSnapshot.getValue(Tile.class);
+//                        Log.d(LOG_TAG, "onDataChange tile: " + tile);
+                if (tile == null) {
+                    return;
+                }
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null && mContext != null) {
                     Glide.with(mContext)
@@ -143,13 +212,13 @@ public abstract class TileListFragment extends Fragment {
                 viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        Log.d(LOG_TAG, "Clicked a toolbar item");
+//                                Log.d(LOG_TAG, "Clicked a toolbar item");
                         switch (item.getItemId()) {
                             case R.id.action_publish:
-                                onToggleApproval(tileRef);
+                                toggleTileApproval(tileRef);
                                 return true;
                             case R.id.action_delete:
-                                onDeleteTile(tileRef);
+                                deleteTile(tileRef, tileId, tile.getChannelId());
                                 return true;
                         }
                         return false;
@@ -194,23 +263,9 @@ public abstract class TileListFragment extends Fragment {
                     });
                 }
             }
-        };
 
-        // watch for realtime changes
-        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-                int tileCount = mFirebaseAdapter.getItemCount();
-                int lastVisiblePosition = mLinearLayoutManager.
-                        findLastCompletelyVisibleItemPosition();
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (tileCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    mRvTileList.scrollToPosition(positionStart);
-                }
-            }
-        });
+            public void onCancelled(DatabaseError databaseError) {
 
         // hook up the RecyclerView
         mLinearLayoutManager = new LinearLayoutManager(mContext);
@@ -225,8 +280,7 @@ public abstract class TileListFragment extends Fragment {
         return view;
     }
 
-    private void onDeleteTile(DatabaseReference tileRef) {
-        tileRef.removeValue();
+        tileRef.addValueEventListener(viewHolder.tileEventListener);
     }
 
     // run a transaction to uptick positive votes or negative votes
@@ -253,31 +307,7 @@ public abstract class TileListFragment extends Fragment {
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
-            }
-        });
-    }
-
-    // run a transaction to uptick positive votes or negative votes
-    // depending on the value of the vote increment
-    private void onToggleApproval(DatabaseReference tileRef) {
-        tileRef.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
-                Tile tile = mutableData.getValue(Tile.class);
-                if (tile == null) {
-                    return Transaction.success(mutableData);
-                }
-
-                tile.setApproved(!tile.isApproved());
-
-                mutableData.setValue(tile);
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
             }
         });
     }
