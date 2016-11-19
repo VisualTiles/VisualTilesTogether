@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -47,6 +48,12 @@ public abstract class TileListFragment extends Fragment {
     private LinearLayoutManager mLinearLayoutManager;
     private VisualTilesTogetherApp visualTilesTogetherApp;
 
+    // For moderator console mode
+    public boolean mConsoleMode;
+    private RelativeLayout mLastChecked;
+    private String mSelectedTileRefId;
+
+
     public static class TileViewholder extends RecyclerView.ViewHolder {
         ImageView ivShape;
         ImageButton ibUpVote;
@@ -55,6 +62,7 @@ public abstract class TileListFragment extends Fragment {
         Toolbar tbTileListItem;
         MenuItem miPublish;
         ValueEventListener tileEventListener;
+        RelativeLayout rlMain;
 
         public TileViewholder(View itemView) {
             super(itemView);
@@ -65,6 +73,7 @@ public abstract class TileListFragment extends Fragment {
             tbTileListItem = (Toolbar) itemView.findViewById((R.id.tbTileListItem));
             tbTileListItem.inflateMenu(R.menu.tile_list_menu);
             miPublish = tbTileListItem.getMenu().findItem(R.id.action_publish);
+            rlMain = (RelativeLayout) itemView.findViewById(R.id.rlMain);
             tileEventListener = null;
         }
     }
@@ -72,6 +81,10 @@ public abstract class TileListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getArguments() != null) {
+            mConsoleMode = getArguments().getBoolean("consoleMode", false);
+        }
 
         Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
@@ -96,7 +109,8 @@ public abstract class TileListFragment extends Fragment {
         // bind the tiles table to the RecyclerView
         mFirebaseAdapter = new FirebaseRecyclerAdapter<Object, TileListFragment.TileViewholder>
                 (Object.class,
-                        R.layout.tile_list_item,
+                        //if this is console mode, then different list item layout file
+                        mConsoleMode ? R.layout.tile_selector_list_item: R.layout.tile_list_item,
                         TileListFragment.TileViewholder.class,
                         getDbQuery(dbRef.child(Channel.TABLE_NAME))) {
 
@@ -143,6 +157,11 @@ public abstract class TileListFragment extends Fragment {
         // hook up the RecyclerView
         mLinearLayoutManager = new LinearLayoutManager(mContext);
         mLinearLayoutManager.setStackFromEnd(true);
+
+        if (mConsoleMode) {
+            mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        }
+
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
         Log.d(LOG_TAG, "exit onCreateView");
@@ -206,6 +225,44 @@ public abstract class TileListFragment extends Fragment {
                         return false;
                     }
                 });
+
+                if (mConsoleMode) {
+                    viewHolder.ivShape.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+
+                            if (mLastChecked == null) {
+
+                                viewHolder.rlMain.setSelected(true);
+                                mSelectedTileRefId = tileRef.getKey();
+                                mLastChecked = viewHolder.rlMain;
+
+                            } else if (mSelectedTileRefId.equals(tileRef.getKey())) {
+
+                                viewHolder.rlMain.setSelected(false);
+                                mSelectedTileRefId = null;
+                                mLastChecked = null;
+
+                            } else {
+
+                                mLastChecked.setSelected(false);
+                                viewHolder.rlMain.setSelected(true);
+                                mSelectedTileRefId = tileRef.getKey();
+                                mLastChecked = viewHolder.rlMain;
+                            }
+
+//                            // Save the selected positions to the SparseBooleanArray
+//                            if (mSelectedItems.get(position, false)) {
+//                                mSelectedItems.delete(position);
+//                                viewHolder.rlMain.setSelected(false);
+//                            }
+//                            else {
+//                                mSelectedItems.put(position, true);
+//                                viewHolder.rlMain.setSelected(true);
+//                            }
+                        }
+                    });
+                }
             }
 
             @Override
