@@ -5,11 +5,20 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.adapters.ModeratorConsolePagerAdapter;
-import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsoleBinding;
+import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsole1Binding;
 import com.javierarboleda.visualtilestogether.fragments.PresentationFragment;
+import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
+import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
 /**
@@ -17,15 +26,18 @@ import com.javierarboleda.visualtilestogether.models.Tile;
  */
 
 public class ModeratorConsoleActivity extends AppCompatActivity
-                implements PresentationFragment.PresentationFragmentListener {
+                implements PresentationFragment.PresentationFragmentListener,
+                    TileListFragment.TileListFragmentListener {
 
-    ActivityModeratorConsoleBinding binding;
+    ActivityModeratorConsole1Binding binding;
+
+    Tile mSelectedTile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console_1);
 
         setUpToolbar();
 
@@ -50,14 +62,48 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         setSupportActionBar(binding.toolbar);
     }
 
+    // run a transaction to to update the tileId of the position in channel
+    private void updatePositionToTileId(DatabaseReference channelRef, final Tile tile,
+                               final int position) {
+
+        channelRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Channel channel = mutableData.getValue(Channel.class);
+                if (channel == null) {
+                    return Transaction.success(mutableData);
+                }
+
+                channel.getPositionToTileIds().set(position, mSelectedTile.getTileId());
+
+                mutableData.setValue(channel);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+            }
+        });
+    }
+
     @Override
     public void onTileTapped(int position, Tile tile) {
 
+        if (mSelectedTile != null) {
+
+            final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+            final DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME)
+                    .child(tile.getChannelId());
+
+            updatePositionToTileId(channelRef, tile, position);
+        }
+
+        Toast.makeText(this, "position:" + position + " tileId:" + tile.getTileId(), Toast.LENGTH_SHORT).show();
     }
 
-//    @Override
-//    protected void onResumeFragments() {
-//        super.onResumeFragments();
-//        resizeFragment(mPresentationFragment, 100, 100);
-//    }
+    @Override
+    public void updateSelectedTile(Tile tile) {
+        mSelectedTile = tile;
+    }
 }

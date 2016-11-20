@@ -28,6 +28,7 @@ public class TileSelectFragment extends TileListFragment {
         return dbRef
                 .child(visualTilesTogetherApp.getUser().getChannelId())
                 .child(Channel.TILE_IDS)
-                .orderByKey();
+                .orderByValue()
+                .equalTo(true);
     }
 }

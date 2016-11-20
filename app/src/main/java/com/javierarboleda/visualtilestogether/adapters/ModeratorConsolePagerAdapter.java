@@ -25,15 +25,15 @@ public class ModeratorConsolePagerAdapter extends FragmentPagerAdapter {
                 return TileSelectFragment.newInstance();
             case 1:
                 return new EffectSelectFragment();
-            case 2:
-                return new ColorSelectFragment();
+//            case 2:
+//                return new ColorSelectFragment();
         }
         return null;
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return 2;
     }
 
     @Override
@@ -44,8 +44,8 @@ public class ModeratorConsolePagerAdapter extends FragmentPagerAdapter {
                 return "Tiles";
             case 1:
                 return "Effects";
-            case 2:
-                return "Color";
+//            case 2:
+//                return "Color";
         }
 
         return super.getPageTitle(position);

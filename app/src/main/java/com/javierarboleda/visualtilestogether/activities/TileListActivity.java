@@ -27,11 +27,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
+import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
+import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.normalizeDb;
 
-public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class TileListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,
+        TileListFragment.TileListFragmentListener  {
     private static final String LOG_TAG = TileListActivity.class.getSimpleName();
     private static final String CHANNEL_NAME = "channel name";
 
@@ -136,5 +139,10 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         // be available.
         Log.d(LOG_TAG, "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void updateSelectedTile(Tile tile) {
+        // Doing nothing here
     }
 }

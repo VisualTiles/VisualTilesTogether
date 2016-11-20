@@ -15,6 +15,7 @@ public class Channel {
     private Date startTime;
     private Date endTime;
     private ArrayList<String> positionToTileIds;
+    private HashMap<String, Boolean> tileIds;
 
     // Effect fields.
     /**
@@ -42,6 +43,17 @@ public class Channel {
         this.name = name;
         this.startTime = startTime;
         this.positionToTileIds = positionToTileIds;
+    }
+
+    public Channel(String name, Date startTime, Date endTime, ArrayList<String> positionToTileIds, HashMap<String, Boolean> tileIds, Long channelSyncTime, Long masterEffectDuration, TileEffect defaultEffect) {
+        this.name = name;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.positionToTileIds = positionToTileIds;
+        this.tileIds = tileIds;
+        this.channelSyncTime = channelSyncTime;
+        this.masterEffectDuration = masterEffectDuration;
+        this.defaultEffect = defaultEffect;
     }
 
     public Date getEndTime() {
@@ -118,5 +130,13 @@ public class Channel {
     public long getChannelSyncTime() {
         if (channelSyncTime == null) return 0L;
         return channelSyncTime;
+    }
+
+    public HashMap<String, Boolean> getTileIds() {
+        return tileIds;
+    }
+
+    public void setTileIds(HashMap<String, Boolean> tileIds) {
+        this.tileIds = tileIds;
     }
 }

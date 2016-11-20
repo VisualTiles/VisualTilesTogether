@@ -51,6 +51,7 @@ public abstract class TileListFragment extends Fragment {
     public boolean mConsoleMode;
     private RelativeLayout mLastChecked;
     private String mSelectedTileRefId;
+    private TileListFragmentListener mListener;
 
 
     public static class TileViewholder extends RecyclerView.ViewHolder {
@@ -271,11 +272,16 @@ public abstract class TileListFragment extends Fragment {
                         @Override
                         public void onClick(View view) {
 
+
+                            // Handle selection and make sure only one item selected at a time
                             if (mLastChecked == null) {
 
                                 viewHolder.rlMain.setSelected(true);
                                 mSelectedTileRefId = tileRef.getKey();
                                 mLastChecked = viewHolder.rlMain;
+
+                                tile.setTileId(tileRef.getKey());
+                                mListener.updateSelectedTile(tile);
 
                             } else if (mSelectedTileRefId.equals(tileRef.getKey())) {
 
@@ -283,23 +289,18 @@ public abstract class TileListFragment extends Fragment {
                                 mSelectedTileRefId = null;
                                 mLastChecked = null;
 
+                                mListener.updateSelectedTile(null);
+
                             } else {
 
                                 mLastChecked.setSelected(false);
                                 viewHolder.rlMain.setSelected(true);
                                 mSelectedTileRefId = tileRef.getKey();
                                 mLastChecked = viewHolder.rlMain;
-                            }
 
-//                            // Save the selected positions to the SparseBooleanArray
-//                            if (mSelectedItems.get(position, false)) {
-//                                mSelectedItems.delete(position);
-//                                viewHolder.rlMain.setSelected(false);
-//                            }
-//                            else {
-//                                mSelectedItems.put(position, true);
-//                                viewHolder.rlMain.setSelected(true);
-//                            }
+                                tile.setTileId(tileRef.getKey());
+                                mListener.updateSelectedTile(tile);
+                            }
                         }
                     });
                 }
@@ -351,5 +352,17 @@ public abstract class TileListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         mContext = context;
+
+        if (context instanceof TileListFragmentListener) {
+            mListener = (TileListFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+
+    }
+
+    public interface TileListFragmentListener {
+        void updateSelectedTile(Tile tile);
     }
 }
