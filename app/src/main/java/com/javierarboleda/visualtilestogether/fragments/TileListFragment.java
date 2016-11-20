@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -83,21 +82,22 @@ public abstract class TileListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        Log.d(LOG_TAG, "enter onCreate");
         if (getArguments() != null) {
             mConsoleMode = getArguments().getBoolean("consoleMode", false);
         }
 
-        Log.d(LOG_TAG, "enter onCreate");
+//        Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
         // get the shapes folder of Firebase Storage for this app
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
-        Log.d(LOG_TAG, "exit onCreate");
+//        Log.d(LOG_TAG, "exit onCreate");
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "enter onCreateView");
+//        Log.d(LOG_TAG, "enter onCreateView");
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
         dbUsers.child(visualTilesTogetherApp.getUid()).setValue(visualTilesTogetherApp.getUser());
@@ -121,11 +121,11 @@ public abstract class TileListFragment extends Fragment {
                 if (getRef(position).getKey().charAt(0) == '-') {
                     doTheWork(viewHolder, getRef(position).getKey());
                 } else {
-                    Log.d(LOG_TAG, "adding listener to positionToTileIds entry");
+//                    Log.d(LOG_TAG, "adding listener to positionToTileIds entry");
                     getRef(position).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            Log.d(LOG_TAG, "receiving value from positionToTileIds entry: " + dataSnapshot.getValue(String.class));
+//                            Log.d(LOG_TAG, "receiving value from positionToTileIds entry: " + dataSnapshot.getValue(String.class));
                             doTheWork(viewHolder, dataSnapshot.getValue(String.class));
                         }
 
@@ -165,7 +165,7 @@ public abstract class TileListFragment extends Fragment {
 
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
-        Log.d(LOG_TAG, "exit onCreateView");
+//        Log.d(LOG_TAG, "exit onCreateView");
         return view;
     }
 

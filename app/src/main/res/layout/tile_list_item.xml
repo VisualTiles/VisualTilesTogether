@@ -58,6 +58,7 @@
             android:background="@android:color/transparent"
             android:theme="?attr/actionBarTheme"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="60dp"
             android:minHeight="?attr/actionBarSize"
             android:id="@+id/tbTileListItem"
             android:layout_below="@+id/ivShape"
