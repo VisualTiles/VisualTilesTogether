@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -97,6 +98,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
             updatePositionToTileId(channelRef, tile, position);
         }
+
+        Toast.makeText(this, "position:" + position + " tileId:" + tile.getTileId(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
