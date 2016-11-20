@@ -240,6 +240,7 @@ public abstract class TileListFragment extends Fragment {
                                 mSelectedTileRefId = tileRef.getKey();
                                 mLastChecked = viewHolder.rlMain;
 
+                                tile.setTileId(tileRef.getKey());
                                 mListener.updateSelectedTile(tile);
 
                             } else if (mSelectedTileRefId.equals(tileRef.getKey())) {
@@ -257,6 +258,7 @@ public abstract class TileListFragment extends Fragment {
                                 mSelectedTileRefId = tileRef.getKey();
                                 mLastChecked = viewHolder.rlMain;
 
+                                tile.setTileId(tileRef.getKey());
                                 mListener.updateSelectedTile(tile);
                             }
                         }

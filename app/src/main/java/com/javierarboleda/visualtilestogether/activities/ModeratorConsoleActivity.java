@@ -74,7 +74,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     return Transaction.success(mutableData);
                 }
 
-                channel.getPositionToTileIds().add(position, tile.getChannelId());
+                channel.getPositionToTileIds().set(position, mSelectedTile.getTileId());
 
                 mutableData.setValue(channel);
                 return Transaction.success(mutableData);
