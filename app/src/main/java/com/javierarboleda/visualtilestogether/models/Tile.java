@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class Tile {
     public static final String TABLE_NAME = "tiles";
     public static final String CHANNEL_ID = "channelId";
-    public static final String POS_VOTES_ID = "posVotes";
+    public static final String USER_VOTES = "userVotes";
     private String shapeUrl;
     private String shapeFbStorage;
     private String creatorId;

@@ -15,12 +15,12 @@
         <ImageView
             android:layout_width="200dp"
             android:layout_height="200dp"
-            app:srcCompat="@mipmap/ic_launcher"
             android:id="@+id/ivShape"
             android:layout_marginTop="8dp"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:background="@android:color/black" />
+            android:background="@android:color/black"
+            tools:srcCompat="@mipmap/ic_launcher" />
 
         <LinearLayout
             android:orientation="vertical"
@@ -32,7 +32,7 @@
             <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_arrow_up_bold"
+                app:srcCompat="@drawable/ic_arrow_up"
                 android:id="@+id/ibUpVote"
                 style="?android:attr/borderlessButtonStyle" />
 
@@ -47,7 +47,7 @@
             <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_arrow_down_bold"
+                app:srcCompat="@drawable/ic_arrow_down"
                 android:id="@+id/ibDownVote"
                 style="?android:attr/borderlessButtonStyle" />
         </LinearLayout>

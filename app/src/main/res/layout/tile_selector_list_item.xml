@@ -17,7 +17,7 @@
         <ImageButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_arrow_up_bold"
+            app:srcCompat="@drawable/ic_arrow_up_enabled"
             android:id="@+id/ibUpVote"
             style="?android:attr/borderlessButtonStyle"
             android:visibility="gone"/>
@@ -25,7 +25,7 @@
         <ImageButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_arrow_down_bold"
+            app:srcCompat="@drawable/ic_arrow_down_enabled"
             android:id="@+id/ibDownVote"
             style="?android:attr/borderlessButtonStyle"
             android:visibility="gone" />
