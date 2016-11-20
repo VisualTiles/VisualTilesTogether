@@ -117,14 +117,13 @@ public abstract class TileListFragment extends Fragment {
             @Override
             protected void populateViewHolder(
                     final TileListFragment.TileViewholder viewHolder, final Object object, int position) {
+                // if the key starts with a '-' then it must be a tileId...
                 if (getRef(position).getKey().charAt(0) == '-') {
                     doTheWork(viewHolder, getRef(position).getKey());
-                } else {
-//                    Log.d(LOG_TAG, "adding listener to positionToTileIds entry");
+                } else { // ...otherwise the tileId is the value, which we now have to go get
                     getRef(position).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-//                            Log.d(LOG_TAG, "receiving value from positionToTileIds entry: " + dataSnapshot.getValue(String.class));
                             doTheWork(viewHolder, dataSnapshot.getValue(String.class));
                         }
 
@@ -134,7 +133,6 @@ public abstract class TileListFragment extends Fragment {
                         }
                     });
                 }
-
             }
         };
 
@@ -192,17 +190,59 @@ public abstract class TileListFragment extends Fragment {
                             .into(viewHolder.ivShape);
                 }
 
+                viewHolder.ibUpVote.setEnabled(true);
+                viewHolder.ibDownVote.setEnabled(true);
+
+                final String userId = visualTilesTogetherApp.getUid();
+
+                if (dataSnapshot.child(Tile.USER_VOTES).child(userId).exists()) {
+                    boolean userVote = dataSnapshot.child(Tile.USER_VOTES)
+                            .child(userId)
+                            .getValue(boolean.class);
+                    if (userVote) {
+                        // the user has already voted "yes"
+                        viewHolder.ibUpVote.setEnabled(false);
+                    } else {
+                        // the user has already voted "no"
+                        viewHolder.ibDownVote.setEnabled(false);
+                    }
+                }
+
                 viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        onVoteClicked(tileRef, 1);
+                        if (viewHolder.ibDownVote.isEnabled()) {
+                            // the user has voted "yes"
+                            onVoteClicked(tileRef, 1, 0);
+                            tileRef.child(Tile.USER_VOTES)
+                                    .child(userId)
+                                    .setValue(true);
+                        } else {
+                            // the user has retracted a "no" vote
+                            onVoteClicked(tileRef, 0, -1);
+                            tileRef.child(Tile.USER_VOTES)
+                                    .child(userId)
+                                    .removeValue();
+                        }
                     }
                 });
 
                 viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        onVoteClicked(tileRef, -1);
+                        if (viewHolder.ibUpVote.isEnabled()) {
+                            // the user has voted "no"
+                            onVoteClicked(tileRef, 0, 1);
+                            tileRef.child(Tile.USER_VOTES)
+                                    .child(userId)
+                                    .setValue(false);
+                        } else {
+                            // the user has retracted a "yes" vote
+                            onVoteClicked(tileRef, -1, 0);
+                            tileRef.child(Tile.USER_VOTES)
+                                    .child(userId)
+                                    .removeValue();
+                        }
                     }
                 });
 
@@ -276,7 +316,7 @@ public abstract class TileListFragment extends Fragment {
 
     // run a transaction to uptick positive votes or negative votes
     // depending on the value of the vote increment
-    private void onVoteClicked(DatabaseReference tileRef, final int voteIncrement) {
+    private void onVoteClicked(DatabaseReference tileRef, final int posVote, final int negVote) {
         tileRef.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
@@ -285,12 +325,8 @@ public abstract class TileListFragment extends Fragment {
                     return Transaction.success(mutableData);
                 }
 
-                if (voteIncrement > 0) {
-                    tile.setPosVotes(tile.getPosVotes() + voteIncrement);
-                } else if (voteIncrement < 0) {
-                    // actually increments
-                    tile.setNegVotes(tile.getNegVotes() - voteIncrement);
-                }
+                tile.setPosVotes(tile.getPosVotes() + posVote);
+                tile.setNegVotes(tile.getNegVotes() + negVote);
 
                 mutableData.setValue(tile);
                 return Transaction.success(mutableData);
