@@ -23,6 +23,8 @@ import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.TileEffect;
 
+import java.util.ArrayList;
+
 /**
  * Created on 11/15/16.
  */
@@ -101,7 +103,27 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     return Transaction.success(mutableData);
                 }
 
-                channel.getPositionToTileIds().set(position, mSelectedTile.getTileId());
+                ArrayList<String> positionToTileIds = channel.getPositionToTileIds();
+
+                if (positionToTileIds == null) {
+                    positionToTileIds = new ArrayList<>();
+                    channel.setPositionToTileIds(positionToTileIds);
+                }
+                try {
+                    positionToTileIds.get(position);
+                } catch ( IndexOutOfBoundsException e ) {
+
+                    for (int i = 0; i <= position; i++) {
+                        try {
+                            positionToTileIds.get(i);
+                        } catch (IndexOutOfBoundsException ex) {
+                            positionToTileIds.add(i, "");
+                        }
+                    }
+
+                } finally {
+                    channel.getPositionToTileIds().set(position, mSelectedTile.getTileId());
+                }
 
                 mutableData.setValue(channel);
                 return Transaction.success(mutableData);
