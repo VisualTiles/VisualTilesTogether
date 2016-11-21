@@ -48,9 +48,9 @@ import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.util.barcode.BarcodeGraphic;
 import com.javierarboleda.visualtilestogether.util.barcode.BarcodeTrackerFactory;
-import com.javierarboleda.visualtilestogether.util.camera.CameraSource;
-import com.javierarboleda.visualtilestogether.util.camera.CameraSourcePreview;
-import com.javierarboleda.visualtilestogether.util.camera.GraphicOverlay;
+import com.javierarboleda.visualtilestogether.util.barcode.camera.CameraSource;
+import com.javierarboleda.visualtilestogether.util.barcode.camera.CameraSourcePreview;
+import com.javierarboleda.visualtilestogether.util.barcode.camera.GraphicOverlay;
 
 import java.io.IOException;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.javierarboleda.visualtilestogether.util.camera;
+package com.javierarboleda.visualtilestogether.util.barcode.camera;
 
 import android.Manifest;
 import android.content.Context;

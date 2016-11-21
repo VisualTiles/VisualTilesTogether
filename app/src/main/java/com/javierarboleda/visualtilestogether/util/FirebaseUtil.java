@@ -42,8 +42,8 @@ public class FirebaseUtil {
      */
     public static void normalizeDb() {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference dbTiles = dbRef.child(Tile.TABLE_NAME);
 
+        DatabaseReference dbTiles = dbRef.child(Tile.TABLE_NAME);
         dbTiles.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -59,6 +59,24 @@ public class FirebaseUtil {
 
             }
         });
+
+        DatabaseReference dbChannels = dbRef.child(Channel.TABLE_NAME);
+        dbChannels.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    String channelId = postSnapshot.getKey();
+                    setChannelQrCode(channelId);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     /**

@@ -15,7 +15,7 @@
  */
 package com.javierarboleda.visualtilestogether.util.barcode;
 
-import com.javierarboleda.visualtilestogether.util.camera.GraphicOverlay;
+import com.javierarboleda.visualtilestogether.util.barcode.camera.GraphicOverlay;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;

@@ -35,17 +35,6 @@
         android:layout_marginTop="47dp"
         android:id="@+id/tvJoinEventLabel"/>
 
-    <Button
-        android:text="@string/join_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/etEventCode"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="14dp"
-        android:id="@+id/btnJoinEvent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:onClick="joinEventOnClick"/>
-
     <View
         style="@style/divider"
         android:layout_marginTop="12dp"
@@ -60,6 +49,28 @@
         android:id="@+id/btnCreateEvent"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:onClick="createNewEventOnClick"/>
+
+    <Button
+        android:text="@string/join_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:id="@+id/btnJoinEvent"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:onClick="joinEventOnClick"
+        android:layout_below="@+id/etEventCode"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:text="QR Code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnQrCode"
+        android:layout_alignBaseline="@+id/tvJoinEventLabel"
+        android:layout_alignBottom="@+id/tvJoinEventLabel"
+        android:layout_toEndOf="@+id/btnJoinEvent"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:onClick="joinEventOnQrCode" />
 
 </RelativeLayout>
 
