@@ -14,12 +14,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.ModeratorConsolePagerAdapter;
 import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsole1Binding;
+import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.PresentationFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.models.TileEffect;
 
 /**
  * Created on 11/15/16.
@@ -27,17 +30,24 @@ import com.javierarboleda.visualtilestogether.models.Tile;
 
 public class ModeratorConsoleActivity extends AppCompatActivity
                 implements PresentationFragment.PresentationFragmentListener,
-                    TileListFragment.TileListFragmentListener {
+                    TileListFragment.TileListFragmentListener,
+                    EffectSelectFragment.EffectSelectFragmentListener{
 
-    ActivityModeratorConsole1Binding binding;
+    private ActivityModeratorConsole1Binding binding;
+    private VisualTilesTogetherApp app;
 
-    Tile mSelectedTile;
+    private int mPagePosition = 0;
+    private Tile mSelectedTile;
+    private String mSelectedEffect;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console_1);
+
+        app = (VisualTilesTogetherApp) getApplication();
 
         setUpToolbar();
 
@@ -55,6 +65,25 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         ModeratorConsolePagerAdapter pagerAdapter =
                 new ModeratorConsolePagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(pagerAdapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+                mPagePosition = position;
+
+                Toast.makeText(ModeratorConsoleActivity.this, "page pos=" + position, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
         binding.tabLayout.setupWithViewPager(viewPager);
     }
 
@@ -63,8 +92,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     }
 
     // run a transaction to to update the tileId of the position in channel
-    private void updatePositionToTileId(DatabaseReference channelRef, final Tile tile,
-                               final int position) {
+    private void updateDbPositionToTileId(DatabaseReference channelRef, final Tile tile,
+                                          final int position) {
 
         channelRef.runTransaction(new Transaction.Handler() {
             @Override
@@ -81,7 +110,43 @@ public class ModeratorConsoleActivity extends AppCompatActivity
             }
 
             @Override
-            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+            public void onComplete(DatabaseError databaseError, boolean b,
+                                   DataSnapshot dataSnapshot) {
+//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+            }
+        });
+    }
+
+    // run a transaction to to update the tileId of the position in channel
+    private void updateDbTileEffect(DatabaseReference channelRef, final Tile tile,
+                               final int position) {
+
+        channelRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Tile tile = mutableData.getValue(Tile.class);
+                if (tile == null) {
+                    return Transaction.success(mutableData);
+                }
+
+                if (tile.getTileEffect() == null) {
+                    TileEffect tileEffect = new TileEffect();
+                    tileEffect.setEffectDurationPct(1.0);
+                    tileEffect.setEffectOffsetPct(0.0);
+                    tileEffect.setStartTimeMillis(1L);
+                    tileEffect.setEffectType(mSelectedEffect);
+                    tile.setTileEffect(tileEffect);
+                } else {
+                    tile.getTileEffect().setEffectType(mSelectedEffect);
+                }
+
+                mutableData.setValue(tile);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b,
+                                   DataSnapshot dataSnapshot) {
 //                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
             }
         });
@@ -90,13 +155,22 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     @Override
     public void onTileTapped(int position, Tile tile) {
 
-        if (mSelectedTile != null) {
+        if (mSelectedTile != null && mPagePosition == 0) {
 
             final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
             final DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME)
-                    .child(tile.getChannelId());
+                    .child(app.getChannelId());
 
-            updatePositionToTileId(channelRef, tile, position);
+            updateDbPositionToTileId(channelRef, tile, position);
+        } else if (mSelectedEffect != null && !mSelectedEffect.isEmpty() && mPagePosition == 1) {
+
+            String tileKey = app.getChannel().getPositionToTileIds().get(position);
+
+            final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+            final DatabaseReference channelRef = dbRef.child(Tile.TABLE_NAME)
+                    .child(tileKey);
+
+            updateDbTileEffect(channelRef, tile, position);
         }
 
         Toast.makeText(this, "position:" + position + " tileId:" + tile.getTileId(), Toast.LENGTH_SHORT).show();
@@ -105,5 +179,10 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     @Override
     public void updateSelectedTile(Tile tile) {
         mSelectedTile = tile;
+    }
+
+    @Override
+    public void updateSelectedEffect(String effect) {
+        mSelectedEffect = effect;
     }
 }

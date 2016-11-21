@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+<LinearLayout
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
@@ -21,7 +22,8 @@
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/ic_single_tile_select_24dp"
-            style="?android:attr/borderlessButtonStyle" />
+            style="?android:attr/borderlessButtonStyle"
+            android:visibility="gone"/>
 
         <ImageButton
             android:id="@+id/ibAllTileSelect"
@@ -31,7 +33,8 @@
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/ic_all_tile_select_24dp"
-            style="?android:attr/borderlessButtonStyle" />
+            style="?android:attr/borderlessButtonStyle"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
@@ -49,6 +52,7 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/butFadeHalf"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -59,6 +63,7 @@
                 />
 
             <Button
+                android:id="@+id/butFlip"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -69,6 +74,7 @@
                 />
 
             <Button
+                android:id="@+id/butFlyAway"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -89,6 +95,7 @@
 
 
             <Button
+                android:id="@+id/butRotateLeft"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -99,6 +106,7 @@
                 />
 
             <Button
+                android:id="@+id/butRotateRight"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -109,6 +117,7 @@
                 />
 
             <Button
+                android:id="@+id/butNone"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -124,3 +133,4 @@
     </LinearLayout>
 
 </LinearLayout>
+</layout>
