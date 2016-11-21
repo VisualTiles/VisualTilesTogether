@@ -28,8 +28,8 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
-import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.Channel;
+import com.javierarboleda.visualtilestogether.models.Tile;
 
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.normalizeDb;
 

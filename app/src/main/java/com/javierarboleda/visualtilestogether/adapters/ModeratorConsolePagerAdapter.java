@@ -4,7 +4,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.javierarboleda.visualtilestogether.fragments.ColorSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileSelectFragment;
 
