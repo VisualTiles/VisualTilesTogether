@@ -229,7 +229,7 @@ public class PresentationFragment extends Fragment
             Log.i(TAG, "Null tile reference in loadTileImage for position " + position);
             // TODO: Maybe expect this null to unload a tile.
             view.setTag(null);
-            view.setImageResource(android.R.color.transparent);
+            view.setImageResource(android.R.color.black);
             return;
         }
         if (tile.getShapeUrl() == null) {
