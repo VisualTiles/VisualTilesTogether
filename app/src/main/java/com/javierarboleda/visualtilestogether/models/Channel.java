@@ -11,6 +11,7 @@ public class Channel {
     public static final String TILE_IDS = "tileIds";
     public static final String POS_TO_TILE_IDS = "positionToTileIds";
     public static final String CHANNEL_NAME = "name";
+    public static final String QRCODE_URL = "qrCodeUrl";
     private String name;
     private Date startTime;
     private Date endTime;

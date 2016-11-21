@@ -2,6 +2,7 @@ package com.javierarboleda.visualtilestogether.util;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -16,6 +17,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
@@ -23,9 +28,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Date;
 
-/**
- * Created by chris on 11/12/16.
- */
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.WHITE;
 
 public class FirebaseUtil {
     private static final String LOG_TAG = FirebaseUtil.class.getSimpleName();
@@ -154,4 +158,61 @@ public class FirebaseUtil {
         }
     }
 
+    public static void setChannelQrCode(String key) {
+        new QrTask().execute(key);
+    }
+
+    private static class QrTask extends AsyncTask<String, Integer, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... strings) {
+            final String key = strings[0];
+            try {
+                BitMatrix bitMatrix = new MultiFormatWriter()
+                        .encode(key, BarcodeFormat.QR_CODE, 400, 400);
+                Bitmap bitmap = createBitmap(bitMatrix);
+                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+                final DatabaseReference channelRef = FirebaseDatabase
+                        .getInstance()
+                        .getReference()
+                        .child(Channel.TABLE_NAME);
+                StorageReference qrCodesRef = firebaseStorage
+                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
+                        .child("qrCodes");
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
+                UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        channelRef.child(key).child(Channel.QRCODE_URL).setValue(downloadUrl.toString());
+                    }
+                });
+                return true;
+            } catch (WriterException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
+        private static Bitmap createBitmap(BitMatrix bitMatrix) {
+            int w = bitMatrix.getWidth();
+            int h = bitMatrix.getHeight();
+            int[] pixels = new int[w * h];
+            for (int y = 0; y < h; y++) {
+                int offset = y * w;
+                for (int x = 0; x < w; x++) {
+                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : WHITE;
+                }
+            }
+            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+            return bitmap;
+        }
+    }
 }

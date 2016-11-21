@@ -17,6 +17,8 @@ import com.javierarboleda.visualtilestogether.databinding.ActivityCreateJoinBind
 import com.javierarboleda.visualtilestogether.fragments.ChannelAddDialog;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
+import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChannelQrCode;
+
 /**
  * Created on 11/13/16.
  */
@@ -76,6 +78,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
+        setChannelQrCode(key);
         visualTilesTogetherApp.addListener(this);
         visualTilesTogetherApp.getUser().setChannelId(key);
         visualTilesTogetherApp.initChannel(key);
