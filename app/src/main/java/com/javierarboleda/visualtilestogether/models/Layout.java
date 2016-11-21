@@ -1,5 +1,7 @@
 package com.javierarboleda.visualtilestogether.models;
 
+import android.graphics.Color;
+
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
@@ -18,12 +20,12 @@ public class Layout {
     private ArrayList<Rect> imagePositions;
     private String layoutName;
     private String backgroundUrl;
-    private int backgroundColor;
+    private int backgroundColor = Color.BLACK;
     private int layoutWidth;
     private int layoutHeight;
     private int tileCount;
     private int imageCount;
-    private int defaultTileColor;
+    private int defaultTileColor = Color.WHITE;
 
     public Layout() {}
 

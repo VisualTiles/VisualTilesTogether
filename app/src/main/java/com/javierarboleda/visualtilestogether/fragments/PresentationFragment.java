@@ -2,12 +2,12 @@ package com.javierarboleda.visualtilestogether.fragments;
 
 import android.content.Context;
 import android.databinding.ObservableMap;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.percent.PercentFrameLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +17,9 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.ViewTarget;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -239,6 +240,17 @@ public class PresentationFragment extends Fragment
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 // .crossFade((int) app.getChannel().getMasterEffectDuration())
                 .into(view);
+        view.setColorFilter(ContextCompat.getColor(getContext(), resolveTileColor(tile)));
+    }
+
+    private int resolveTileColor(Tile tile) {
+        if (tile.getTileColor() != null)
+            return tile.getTileColor();
+        Integer channelColor = app.getChannel().getDefaultTileColor();
+        if (channelColor != null)
+            return channelColor;
+        // Should always be defined.
+        return layout.getDefaultTileColor();
     }
 
     public void updateTile(int position, Tile tile, boolean runNow) {
@@ -305,18 +317,15 @@ public class PresentationFragment extends Fragment
         }
         String backgroundUrl = layout.getBackgroundUrl();
         if (backgroundUrl != null) {
-            Glide.with(this).load(backgroundUrl).asBitmap()
+            Glide.with(this).load(backgroundUrl)
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    // .placeholder(ColorDrawable.)
-                    .into(new SimpleTarget<Bitmap>() {
+                    .placeholder(new ColorDrawable(layout.getBackgroundColor()))
+                    .into(new ViewTarget<View, GlideDrawable>(mainLayout) {
                               @Override
-                              public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap>
-                                      glideAnimation) {
-                                  // TODO(team): This misses cross fade.
-                                  mainLayout.setBackground(new BitmapDrawable(resource));
+                              public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                  this.view.setBackground(resource);
                               }
-                          }
-                    );
+                          });
         }
     }
 
