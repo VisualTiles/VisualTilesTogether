@@ -1,21 +1,22 @@
 package com.javierarboleda.visualtilestogether.models;
 
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-@IgnoreExtraProperties
 public class Channel {
     public static final String TABLE_NAME = "channels";
     public static final String TILE_IDS = "tileIds";
+    public static final String POS_TO_TILE_IDS = "positionToTileIds";
+    public static final String CHANNEL_NAME = "name";
     private String name;
     private Date startTime;
     private Date endTime;
     private ArrayList<String> positionToTileIds;
     private String layoutId;
+    private HashMap<String, Boolean> tileIds;
 
     // Effect fields.
     /**
@@ -43,6 +44,17 @@ public class Channel {
         this.name = name;
         this.startTime = startTime;
         this.positionToTileIds = positionToTileIds;
+    }
+
+    public Channel(String name, Date startTime, Date endTime, ArrayList<String> positionToTileIds, HashMap<String, Boolean> tileIds, Long channelSyncTime, Long masterEffectDuration, TileEffect defaultEffect) {
+        this.name = name;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.positionToTileIds = positionToTileIds;
+        this.tileIds = tileIds;
+        this.channelSyncTime = channelSyncTime;
+        this.masterEffectDuration = masterEffectDuration;
+        this.defaultEffect = defaultEffect;
     }
 
     public Date getEndTime() {
@@ -133,5 +145,13 @@ public class Channel {
     public long getChannelSyncTime() {
         if (channelSyncTime == null) return 0L;
         return channelSyncTime;
+    }
+
+    public HashMap<String, Boolean> getTileIds() {
+        return tileIds;
+    }
+
+    public void setTileIds(HashMap<String, Boolean> tileIds) {
+        this.tileIds = tileIds;
     }
 }

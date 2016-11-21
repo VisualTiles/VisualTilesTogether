@@ -3,7 +3,6 @@ package com.javierarboleda.visualtilestogether.util;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -135,7 +134,7 @@ public class FirebaseUtil {
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
+//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
             }
         });
     }

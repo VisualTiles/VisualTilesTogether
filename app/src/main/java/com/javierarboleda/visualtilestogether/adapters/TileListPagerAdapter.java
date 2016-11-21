@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import com.javierarboleda.visualtilestogether.fragments.TileListFragmentApproved;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragmentInChannel;
+import com.javierarboleda.visualtilestogether.fragments.TileListFragmentNowPlaying;
 
 public class TileListPagerAdapter extends FragmentPagerAdapter {
 
@@ -22,13 +23,16 @@ public class TileListPagerAdapter extends FragmentPagerAdapter {
             case 1: {
                 return new TileListFragmentApproved();
             }
+            case 2: {
+                return new TileListFragmentNowPlaying();
+            }
         }
         return null;
     }
 
     @Override
     public int getCount() {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -37,6 +41,8 @@ public class TileListPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return "All";
             case 1:
+                return "Selected";
+            case 2:
                 return "Now Playing";
         }
         return null;
