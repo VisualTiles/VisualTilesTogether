@@ -228,7 +228,7 @@ public class PresentationFragment extends Fragment
         if (tile == null) {
             Log.i(TAG, "Null tile reference in loadTileImage for position " + position);
             // TODO: Maybe expect this null to unload a tile.
-            view.setTag(null);
+g            view.setTag(null);
             view.setImageResource(android.R.color.black);
             return;
         }
