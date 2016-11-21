@@ -2,12 +2,13 @@ package com.javierarboleda.visualtilestogether.fragments;
 
 import android.content.Context;
 import android.databinding.ObservableMap;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.percent.PercentFrameLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -238,9 +239,13 @@ public class PresentationFragment extends Fragment
         }
         Glide.with(this).load(tile.getShapeUrl())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                /*
+                .bitmapTransform(new ColorFilterTransformation(
+                        getContext(), resolveTileColor(tile)))*/
                 // .crossFade((int) app.getChannel().getMasterEffectDuration())
                 .into(view);
-        view.setColorFilter(ContextCompat.getColor(getContext(), resolveTileColor(tile)));
+        view.setColorFilter(new PorterDuffColorFilter(resolveTileColor(tile) | 0xFF000000,
+                PorterDuff.Mode.MULTIPLY));
     }
 
     private int resolveTileColor(Tile tile) {
