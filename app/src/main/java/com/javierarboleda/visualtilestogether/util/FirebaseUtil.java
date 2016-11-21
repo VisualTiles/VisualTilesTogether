@@ -158,6 +158,10 @@ public class FirebaseUtil {
         }
     }
 
+    /**
+     * Generate a QR code for the channel,
+     * for now just use the key as the encoded string
+     */
     public static void setChannelQrCode(String key) {
         new QrTask().execute(key);
     }
@@ -167,20 +171,21 @@ public class FirebaseUtil {
         protected Boolean doInBackground(String... strings) {
             final String key = strings[0];
             try {
+                // generate the QR code
                 BitMatrix bitMatrix = new MultiFormatWriter()
                         .encode(key, BarcodeFormat.QR_CODE, 400, 400);
                 Bitmap bitmap = createBitmap(bitMatrix);
-                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-                final DatabaseReference channelRef = FirebaseDatabase
-                        .getInstance()
-                        .getReference()
-                        .child(Channel.TABLE_NAME);
-                StorageReference qrCodesRef = firebaseStorage
-                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
-                        .child("qrCodes");
+
+                // convert it to an input stream so it can be uploaded
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
                 ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
+
+                // upload it to Firebase Storage
+                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+                StorageReference qrCodesRef = firebaseStorage
+                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
+                        .child("qrCodes");
                 UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -189,7 +194,12 @@ public class FirebaseUtil {
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // set the channel's QR code url to point to the QR code image
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        DatabaseReference channelRef = FirebaseDatabase
+                                .getInstance()
+                                .getReference()
+                                .child(Channel.TABLE_NAME);
                         channelRef.child(key).child(Channel.QRCODE_URL).setValue(downloadUrl.toString());
                     }
                 });
