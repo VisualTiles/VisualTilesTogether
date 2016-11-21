@@ -1,10 +1,12 @@
 package com.javierarboleda.visualtilestogether.models;
 
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.Date;
 import java.util.HashMap;
 
+@IgnoreExtraProperties
 public class Tile {
     public static final String TABLE_NAME = "tiles";
     public static final String CHANNEL_ID = "channelId";

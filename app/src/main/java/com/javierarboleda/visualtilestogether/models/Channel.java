@@ -1,11 +1,13 @@
 package com.javierarboleda.visualtilestogether.models;
 
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+@IgnoreExtraProperties
 public class Channel {
     public static final String TABLE_NAME = "channels";
     public static final String TILE_IDS = "tileIds";
@@ -13,6 +15,7 @@ public class Channel {
     private Date startTime;
     private Date endTime;
     private ArrayList<String> positionToTileIds;
+    private String layoutId;
 
     // Effect fields.
     /**
@@ -75,16 +78,30 @@ public class Channel {
     }
 
     public void addTileId(int position, String tileId) {
+        this.positionToTileIds.set(position, tileId);
+    }
 
+    public void setMasterEffectDuration(Long masterEffectDuration) {
+        this.masterEffectDuration = masterEffectDuration;
+    }
+
+    public String getLayoutId() {
+        return layoutId;
+    }
+
+    public void setLayoutId(String layoutId) {
+        this.layoutId = layoutId;
+    }
+
+    public void setChannelSyncTime(Long channelSyncTime) {
+        this.channelSyncTime = channelSyncTime;
     }
 
     public long getMasterEffectDuration() {
-        if (masterEffectDuration == null) return 0L;
+        // Default to 5 second duration if it's not set.
+        // TODO(team): Make this a constant.
+        if (masterEffectDuration == null) return 5000L;
         return masterEffectDuration;
-    }
-
-    public void setMasterEffectDuration(long masterEffectDuration) {
-        this.masterEffectDuration = masterEffectDuration;
     }
 
     public TileEffect getDefaultEffect() {
