@@ -106,7 +106,7 @@ public abstract class TileListFragment extends Fragment {
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
         // for now don't light up the ProgressBar
-        // TODO: show "no tiles" instead of ProgressBar when tile list is empty
+        // TODO: show "no tiles" instead of ProgressBar when tile list is empty`
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
         // bind the tiles table to the RecyclerView
