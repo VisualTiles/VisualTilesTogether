@@ -105,6 +105,9 @@ public abstract class TileListFragment extends Fragment {
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
+        // for now don't light up the ProgressBar
+        // TODO: show "no tiles" instead of ProgressBar when tile list is empty
+        mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
         // bind the tiles table to the RecyclerView
         mFirebaseAdapter = new FirebaseRecyclerAdapter<Object, TileListFragment.TileViewholder>
@@ -183,7 +186,6 @@ public abstract class TileListFragment extends Fragment {
                 if (tile == null) {
                     return;
                 }
-                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
                 if (tile.getShapeUrl() != null && mContext != null) {
                     Glide.with(mContext)
                             .load(tile.getShapeUrl())
