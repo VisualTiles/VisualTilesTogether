@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -140,6 +141,17 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 app.getFirebaseAuth().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 startActivity(new Intent(this, SignInActivity.class));
+                return true;
+            case R.id.menu_item_show_code:
+                final Snackbar snackBar = Snackbar.make(findViewById(R.id.clMainLayout), app.getChannelId(), Snackbar.LENGTH_INDEFINITE);
+
+                snackBar.setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        snackBar.dismiss();
+                    }
+                });
+                snackBar.show();
                 return true;
             case R.id.menu_item_normalize_db:
                 normalizeDb();
