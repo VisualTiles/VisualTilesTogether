@@ -18,7 +18,7 @@ public class Tile {
     private String tileId;  // Must be manually filled, only filled in the Application's tile cache.
     private int posVotes;
     private int negVotes;
-    private Date submitTime;
+    private long submitTimeMs;
     private boolean approved;
     private TileEffect tileEffect;
 
@@ -33,21 +33,21 @@ public class Tile {
                 posVotes == t.getPosVotes() &&
                 negVotes == t.getNegVotes() &&
                 approved == t.approved &&
-                (submitTime != null && submitTime.compareTo(t.getSubmitTime()) == 0));
+                submitTimeMs == t.getSubmitTimeMs());
     }
 
     public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage,
-                String shapeUrl, Date submitTime) {
+                String shapeUrl, long submitTimeMs) {
         this.approved = approved;
         this.negVotes = negVotes;
         this.posVotes = posVotes;
         this.shapeFbStorage = shapeFbStorage;
         this.shapeUrl = shapeUrl;
-        this.submitTime = submitTime;
+        this.submitTimeMs = submitTimeMs;
     }
 
     public Tile(boolean approved, String channelId, String creatorId, int negVotes, int posVotes,
-                String shapeFbStorage, String shapeUrl, Date submitTime) {
+                String shapeFbStorage, String shapeUrl, long submitTimeMs) {
         this.approved = approved;
         this.channelId = channelId;
         this.creatorId = creatorId;
@@ -55,7 +55,7 @@ public class Tile {
         this.posVotes = posVotes;
         this.shapeFbStorage = shapeFbStorage;
         this.shapeUrl = shapeUrl;
-        this.submitTime = submitTime;
+        this.submitTimeMs = submitTimeMs;
     }
 
     public String getChannelId() {
@@ -114,12 +114,16 @@ public class Tile {
         this.shapeFbStorage = shapeFbStorage;
     }
 
-    public Date getSubmitTime() {
-        return submitTime;
+    public long getSubmitTimeMs() {
+        return submitTimeMs;
+    }
+
+    public void setSubmitTimeMs(long submitTimeMs) {
+        this.submitTimeMs = submitTimeMs;
     }
 
     public void setSubmitTime(Date submitTime) {
-        this.submitTime = submitTime;
+        this.submitTimeMs = submitTime.getTime();
     }
 
     public String getTileId() {

@@ -228,7 +228,7 @@ public class PresentationFragment extends Fragment
         if (tile == null) {
             Log.i(TAG, "Null tile reference in loadTileImage for position " + position);
             // TODO: Maybe expect this null to unload a tile.
-g            view.setTag(null);
+            view.setTag(null);
             view.setImageResource(android.R.color.black);
             return;
         }
@@ -238,7 +238,7 @@ g            view.setTag(null);
         }
         Glide.with(this).load(tile.getShapeUrl())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .crossFade((int) app.getChannel().getMasterEffectDuration())
+                // .crossFade((int) app.getChannel().getMasterEffectDuration())
                 .into(view);
     }
 
@@ -278,7 +278,7 @@ g            view.setTag(null);
             if (imgUrl != null) {
                 Glide.with(this).load(imgUrl)
                         .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                        .crossFade((int) app.getChannel().getMasterEffectDuration())
+                        // .crossFade((int) app.getChannel().getMasterEffectDuration())
                         .into(view);
             }
         }

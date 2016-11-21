@@ -32,8 +32,10 @@ public class TileEffectTransformer {
     public Animation processTileEffect(TileEffect effect) {
         if (effect == null) return null;
         AnimationSet as = new AnimationSet(true);
-        as.setFillBefore(false);
-        final long delay = (long) (effect.getEffectOffsetPct() * this.stageDuration);
+        as.setInterpolator(new LinearInterpolator());
+        as.setFillBefore(true);
+        as.setFillAfter(true);
+        as.setFillEnabled(true);        final long delay = (long) (effect.getEffectOffsetPct() * this.stageDuration);
         final long duration = (long) (effect.getEffectDurationPct() * this.stageDuration);
         final long halfDuration = duration / 2;
         final long thirdDuration = duration / 3;
@@ -81,14 +83,17 @@ public class TileEffectTransformer {
                 as.addAnimation(trans1);
                 break;
             case NONE:
+                as.setFillBefore(false);
+                as.setFillAfter(false);
+                as.setFillEnabled(false);
+            case FREEZE:
+                // Fill is enabled... so the animation just pauses at where it left off when this
+                // animation was triggered.
+                as.setFillBefore(true);
+                as.setFillAfter(true);
+                as.setFillEnabled(true);
                 break;
         }
-        as.setFillBefore(true);
-        as.setFillAfter(true);
-        as.setFillEnabled(true);
-
-        as.setInterpolator(new LinearInterpolator());
-        //as.setInterpolator(new LinearOutSlowInInterpolator());
         return as;
     }
 
