@@ -170,4 +170,12 @@ public class Channel {
         }
         return false;
     }
+
+    public Integer getDefaultTileColor() {
+        return defaultTileColor;
+    }
+
+    public void setDefaultTileColor(Integer defaultTileColor) {
+        this.defaultTileColor = defaultTileColor;
+    }
 }
