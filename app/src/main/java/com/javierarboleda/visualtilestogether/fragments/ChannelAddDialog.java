@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
 import java.util.Date;
@@ -20,6 +21,7 @@ public class ChannelAddDialog extends DialogFragment {
     final static String LOG_TAG = ChannelAddDialog.class.getSimpleName();
 
     private OnFragmentInteractionListener mListener;
+    private VisualTilesTogetherApp app;
 
     public ChannelAddDialog() {
         // required public empty constructor
@@ -32,6 +34,7 @@ public class ChannelAddDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        app = (VisualTilesTogetherApp) getActivity().getApplication();
     }
 
     @Nullable
@@ -53,7 +56,8 @@ public class ChannelAddDialog extends DialogFragment {
 //                        Date.valueOf(etStartTime.getText().toString()),
 //                        Date.valueOf(etEndTime.getText().toString())));
                         new Date(2016, 11, 11),
-                        new Date(2016, 11, 12)));
+                        new Date(2016, 11, 12),
+                        app.getUid()));
                 dismiss();
             }
         });

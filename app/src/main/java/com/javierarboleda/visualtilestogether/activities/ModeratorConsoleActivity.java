@@ -14,6 +14,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.ModeratorConsolePagerAdapter;
 import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsole1Binding;
 import com.javierarboleda.visualtilestogether.fragments.PresentationFragment;
@@ -30,12 +31,17 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     TileListFragment.TileListFragmentListener {
 
     ActivityModeratorConsole1Binding binding;
+    VisualTilesTogetherApp app;
 
     Tile mSelectedTile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Check user is moderator.
+        app = (VisualTilesTogetherApp) getApplication();
+        if (!app.isChannelModerator()) finish();
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console_1);
 

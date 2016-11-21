@@ -3,6 +3,7 @@ package com.javierarboleda.visualtilestogether.models;
 import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -17,6 +18,7 @@ public class Channel {
     private ArrayList<String> positionToTileIds;
     private String layoutId;
     private HashMap<String, Boolean> tileIds;
+    private ArrayList<String> moderators;
 
     // Effect fields.
     /**
@@ -29,32 +31,19 @@ public class Channel {
      */
     private Long masterEffectDuration;
     private TileEffect defaultEffect;
+    /**
+     * Optional: If set, overrides Layout.defaultTileColor for this channel.
+     */
+    private Integer defaultTileColor;
 
     public Channel() {
     }
 
-    public Channel(String name, Date startTime, Date endTime) {
+    public Channel(String name, Date startTime, Date endTime, String userId) {
         this.name = name;
         this.startTime = startTime;
         this.endTime = endTime;
-    }
-
-    public Channel(Date endTime, String name, Date startTime, ArrayList<String> positionToTileIds) {
-        this.endTime = endTime;
-        this.name = name;
-        this.startTime = startTime;
-        this.positionToTileIds = positionToTileIds;
-    }
-
-    public Channel(String name, Date startTime, Date endTime, ArrayList<String> positionToTileIds, HashMap<String, Boolean> tileIds, Long channelSyncTime, Long masterEffectDuration, TileEffect defaultEffect) {
-        this.name = name;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.positionToTileIds = positionToTileIds;
-        this.tileIds = tileIds;
-        this.channelSyncTime = channelSyncTime;
-        this.masterEffectDuration = masterEffectDuration;
-        this.defaultEffect = defaultEffect;
+        this.moderators = new ArrayList<>(Collections.singletonList(userId));
     }
 
     public Date getEndTime() {
@@ -153,5 +142,32 @@ public class Channel {
 
     public void setTileIds(HashMap<String, Boolean> tileIds) {
         this.tileIds = tileIds;
+    }
+
+    public ArrayList<String> getModerators() {
+        return moderators;
+    }
+
+    public void setModerators(ArrayList<String> moderators) {
+        this.moderators = moderators;
+    }
+
+    public void addModerator(String moderator) {
+        if (this.moderators != null)
+            this.moderators.add(moderator);
+    }
+
+    public void removeModerator(String moderator) {
+        if (this.moderators != null)
+            this.moderators.remove(moderator);
+    }
+
+    public boolean hasModerator(String moderator) {
+        if (this.moderators == null) return false;
+        for (String mod : moderators) {
+            if (mod.equals(moderator))
+                return true;
+        }
+        return false;
     }
 }

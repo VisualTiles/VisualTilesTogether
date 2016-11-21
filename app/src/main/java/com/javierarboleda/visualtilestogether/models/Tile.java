@@ -21,6 +21,11 @@ public class Tile {
     private long submitTimeMs;
     private boolean approved;
     private TileEffect tileEffect;
+    /**
+     * Optional: If set, overrides Layout.defaultTileColor and Channel.defaultTileColor for this
+     * tile.
+     */
+    private Integer tileColor;
 
     public Tile() {}
 
@@ -162,5 +167,13 @@ public class Tile {
         HashMap<String, Object> change = new HashMap<>();
         change.put("tileEffect", tileEffect);
         ref.updateChildren(change);
+    }
+
+    public Integer getTileColor() {
+        return tileColor;
+    }
+
+    public void setTileColor(Integer tileColor) {
+        this.tileColor = tileColor;
     }
 }

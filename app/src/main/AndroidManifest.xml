@@ -25,19 +25,14 @@
             android:screenOrientation="landscape"
             android:theme="@style/FullscreenAppTheme">
         </activity>
-        <activity android:name=".activities.MainActivity"
-            android:allowBackup="true"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme"
-                  android:screenOrientation="portrait">
-        </activity>
         <activity android:name=".activities.CreateGroupActivity"
                   android:icon="@mipmap/ic_launcher"
                   android:label="@string/app_name"
                   android:allowBackup="true"
                   android:theme="@style/AppTheme"
-                  android:screenOrientation="portrait" />
+                  android:screenOrientation="portrait"
+                  android:launchMode="singleTop"
+                  android:noHistory="true" />
         <activity
             android:name=".activities.TileCreationActivity"
             android:label="@string/app_name"

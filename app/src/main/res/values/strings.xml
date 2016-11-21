@@ -6,6 +6,7 @@
     <string name="enter_event_code">Enter event code</string>
     <string name="join_event">Join an event</string>
     <string name="join_button">Join</string>
+    <string name="leave_channel">Leave Channel</string>
     <string name="create_new_event">Create a new event</string>
 
     <!-- TODO: Remove or change this placeholder text -->

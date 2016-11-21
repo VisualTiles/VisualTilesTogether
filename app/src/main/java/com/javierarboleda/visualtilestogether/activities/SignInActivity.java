@@ -34,6 +34,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -69,6 +70,10 @@ public class SignInActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 
+        // Listen for user and channel callbacks.
+        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
+        visualTilesTogetherApp.addListener(this);
+
         // Assign fields
         mSignInButton = (SignInButton) findViewById(R.id.sign_in_button);
         preSignInButtons = findViewById(R.id.pre_sign_in_buttons);
@@ -86,6 +91,8 @@ public class SignInActivity extends AppCompatActivity implements
         // Set click listeners
         mSignInButton.setOnClickListener(this);
 
+        checkIfSignedIn();
+
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -98,10 +105,6 @@ public class SignInActivity extends AppCompatActivity implements
 
         // Initialize FirebaseAuth.
         mFirebaseAuth = FirebaseAuth.getInstance();
-
-        // Listen for user and channel callbacks.
-        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
-        visualTilesTogetherApp.addListener(this);
 
         initTutorialView();
 
@@ -166,6 +169,13 @@ public class SignInActivity extends AppCompatActivity implements
         Log.d(LOG_TAG, "firebaseAuthWithGooogle:" + acct.getId());
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mFirebaseAuth.signInWithCredential(credential)
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(SignInActivity.this, "Google Auth failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -189,9 +199,9 @@ public class SignInActivity extends AppCompatActivity implements
     public void onChannelUpdated() {
         if (visualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Channel didn't load correctly.", Toast.LENGTH_LONG).show();
+            return;
         }
-        startActivity(new Intent(this, TileListActivity.class));
-        finish();
+        launchChannelActivity();
     }
 
     @Override
@@ -205,19 +215,31 @@ public class SignInActivity extends AppCompatActivity implements
         postSignInButtons.setVisibility(View.GONE);
     }
 
-    private void showPostSignInButtons() {
+    private void checkIfSignedIn() {
+        if (visualTilesTogetherApp.getUser() != null) {
+            if (visualTilesTogetherApp.getChannel() != null) {
+                launchChannelActivity();
+            } else {
+                launchGroupCreationActivity();
+            }
+        }
+    }
+
+    private void launchGroupCreationActivity() {
         Intent intent = new Intent(this, CreateJoinActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
-//        preSignInButtons.setVisibility(View.GONE);
-//        postSignInButtons.setVisibility(View.VISIBLE);
+    }
+    private void launchChannelActivity() {
+        startActivity(new Intent(this, TileListActivity.class));
+        finish();
     }
 
     @Override
     public void onUserUpdated() {
         // Show channel creation or join buttons.
-        showPostSignInButtons();
+        launchGroupCreationActivity();
     }
 
     @Override

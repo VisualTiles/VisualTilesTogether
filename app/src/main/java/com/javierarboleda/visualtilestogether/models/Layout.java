@@ -18,10 +18,12 @@ public class Layout {
     private ArrayList<Rect> imagePositions;
     private String layoutName;
     private String backgroundUrl;
+    private int backgroundColor;
     private int layoutWidth;
     private int layoutHeight;
     private int tileCount;
     private int imageCount;
+    private int defaultTileColor;
 
     public Layout() {}
 
@@ -39,6 +41,14 @@ public class Layout {
 
     public void setTileCount(int tileCount) {
         this.tileCount = tileCount;
+    }
+
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
     }
 
     public String getBackgroundUrl() {
@@ -138,5 +148,13 @@ public class Layout {
                 "https://firebasestorage.googleapis.com/v0/b/visual-tiles-together.appspot.com/o/images%2Fvisualtiles.png?alt=media&token=a98451d5-dd02-4e85-8f0e-2c33c7000803"
         ));
         return layout;
+    }
+
+    public int getDefaultTileColor() {
+        return defaultTileColor;
+    }
+
+    public void setDefaultTileColor(int defaultTileColor) {
+        this.defaultTileColor = defaultTileColor;
     }
 }

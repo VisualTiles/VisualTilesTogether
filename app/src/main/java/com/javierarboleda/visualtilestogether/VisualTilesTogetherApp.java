@@ -282,6 +282,22 @@ public class VisualTilesTogetherApp extends Application {
         // dbTileRef.addValueEventListener(tileEventListener);
     }
 
+    public void leaveChannel() {
+        this.channel = null;
+        this.channelId = null;
+        if (this.user != null && dbUserRef != null) {
+            user.setChannelId(null);
+            dbUserRef.child(User.CHANNEL_ID).setValue(null);
+        }
+    }
+
+    public boolean isChannelModerator() {
+        if (user == null || channel == null) {
+            return false;
+        }
+        return channel.hasModerator(uId);
+    }
+
     public void addListener(VisualTilesListenerInterface listener) {
         listeners.add(new WeakReference<>(listener));
     }

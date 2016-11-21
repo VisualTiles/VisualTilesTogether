@@ -112,11 +112,10 @@ public class PresentationFragment extends Fragment
         viewContainer = (PercentFrameLayout) view.findViewById(R.id.viewContainer);
         mainLayout = (PercentFrameLayout) view.findViewById(R.id.mainLayout);
         loadChannelData();
-        setupTileListListener();
         return view;
     }
 
-    private ValueEventListener layoutChangedEventListener = new ValueEventListener() {
+    private final ValueEventListener layoutChangedEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             if (!dataSnapshot.exists()) {
@@ -133,34 +132,32 @@ public class PresentationFragment extends Fragment
         }
     };
 
-    private void setupTileListListener() {
-        app.getTileObservableArrayMap().addOnMapChangedCallback(
-                new ObservableMap.OnMapChangedCallback<ObservableMap<String, Tile>, String, Tile>() {
-                    @Override
-                    public void onMapChanged(ObservableMap<String, Tile> sender, String key) {
-                        if (layout == null)
-                            return;
-                        final Tile newTile = sender.get(key);
-                        for (int i = 0; i < layout.getTileCount(); i++) {
-                            final int position = i;
-                            Tile tile = tileCache.get(i);
-                            if (tile != null && tile.getTileId().equals(key)) {
-                                // Found the tile that updated. Update it in layout.
-                                // I'm pretty sure this event handler doesn't run on the UI thread,
-                                // so enqueue it in UI later.
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        updateTile(position, newTile, true);
-                                    }
-                                });
-                                break;
-                            }
+    private final ObservableMap.OnMapChangedCallback<ObservableMap<String, Tile>, String, Tile>
+            tilesChangedCallback = new ObservableMap.OnMapChangedCallback<ObservableMap<String,
+            Tile>, String, Tile>() {
+                @Override
+                public void onMapChanged(ObservableMap<String, Tile> sender, String key) {
+                    if (layout == null)
+                        return;
+                    final Tile newTile = sender.get(key);
+                    for (int i = 0; i < layout.getTileCount(); i++) {
+                        final int position = i;
+                        Tile tile = tileCache.get(i);
+                        if (tile != null && tile.getTileId().equals(key)) {
+                            // Found the tile that updated. Update it in layout.
+                            // I'm pretty sure this event handler doesn't run on the UI thread,
+                            // so enqueue it in UI later.
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateTile(position, newTile, true);
+                                }
+                            });
+                            break;
                         }
                     }
                 }
-        );
-    }
+            };
 
     @Override
     public void onAttach(Context context) {
@@ -173,6 +170,7 @@ public class PresentationFragment extends Fragment
         }
         app = (VisualTilesTogetherApp) getActivity().getApplication();
         app.addListener(this);
+        app.getTileObservableArrayMap().addOnMapChangedCallback(tilesChangedCallback);
         if (layoutId != null) {
             FirebaseDatabase.getInstance().getReference(Layout.TABLE_NAME).child(layoutId)
                     .addValueEventListener(layoutChangedEventListener);
@@ -185,6 +183,7 @@ public class PresentationFragment extends Fragment
         mListener = null;
         app.removeListener(this);
         isPaused = true;
+        app.getTileObservableArrayMap().removeOnMapChangedCallback(tilesChangedCallback);
         if (layoutId != null) {
             FirebaseDatabase.getInstance().getReference(Layout.TABLE_NAME).child(layoutId)
                     .removeEventListener(layoutChangedEventListener);
@@ -308,6 +307,7 @@ public class PresentationFragment extends Fragment
         if (backgroundUrl != null) {
             Glide.with(this).load(backgroundUrl).asBitmap()
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                    // .placeholder(ColorDrawable.)
                     .into(new SimpleTarget<Bitmap>() {
                               @Override
                               public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap>
