@@ -35,7 +35,6 @@ public class TileEffectTransformer {
         as.setInterpolator(new LinearInterpolator());
         as.setFillBefore(true);
         as.setFillAfter(false);
-        as.setFillEnabled(true);
         final long delay = (long) (effect.getEffectOffsetPct() * this.stageDuration);
         final long duration = (long) (effect.getEffectDurationPct() * this.stageDuration);
         final long halfDuration = duration / 2;
@@ -86,14 +85,12 @@ public class TileEffectTransformer {
             case NONE:
                 as.setFillBefore(false);
                 as.setFillAfter(false);
-                as.setFillEnabled(false);
                 break;
             case FREEZE:
                 // Fill is enabled... so the animation just pauses at where it left off when this
                 // animation was triggered.
                 as.setFillBefore(true);
                 as.setFillAfter(true);
-                as.setFillEnabled(true);
                 break;
         }
         return as;

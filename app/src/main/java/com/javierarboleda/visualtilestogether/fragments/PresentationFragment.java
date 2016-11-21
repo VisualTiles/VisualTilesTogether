@@ -13,7 +13,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -137,29 +140,29 @@ public class PresentationFragment extends Fragment
     private final ObservableMap.OnMapChangedCallback<ObservableMap<String, Tile>, String, Tile>
             tilesChangedCallback = new ObservableMap.OnMapChangedCallback<ObservableMap<String,
             Tile>, String, Tile>() {
-                @Override
-                public void onMapChanged(ObservableMap<String, Tile> sender, String key) {
-                    if (layout == null)
-                        return;
-                    final Tile newTile = sender.get(key);
-                    for (int i = 0; i < layout.getTileCount(); i++) {
-                        final int position = i;
-                        Tile tile = tileCache.get(i);
-                        if (tile != null && tile.getTileId().equals(key)) {
-                            // Found the tile that updated. Update it in layout.
-                            // I'm pretty sure this event handler doesn't run on the UI thread,
-                            // so enqueue it in UI later.
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateTile(position, newTile, true);
-                                }
-                            });
-                            break;
+        @Override
+        public void onMapChanged(ObservableMap<String, Tile> sender, String key) {
+            if (layout == null)
+                return;
+            final Tile newTile = sender.get(key);
+            for (int i = 0; i < layout.getTileCount(); i++) {
+                final int position = i;
+                Tile tile = tileCache.get(i);
+                if (tile != null && tile.getTileId().equals(key)) {
+                    // Found the tile that updated. Update it in layout.
+                    // I'm pretty sure this event handler doesn't run on the UI thread,
+                    // so enqueue it in UI later.
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateTile(position, newTile, true);
                         }
-                    }
+                    });
+                    break;
                 }
-            };
+            }
+        }
+    };
 
     @Override
     public void onAttach(Context context) {
@@ -267,7 +270,7 @@ public class PresentationFragment extends Fragment
         loadTileImage(position, tileFrontImageViews.get(position));
         // Fire animation onw because the effect is the only mutable field.
         // TODO(team): Adjust tile start to reflect its delta from master channel start time.
-        scheduleTileAnimation(position, true, runNow);
+        scheduleTileAnimation(position, true, runNow, getStartTime());
     }
 
     private void drawLayout() {
@@ -299,21 +302,55 @@ public class PresentationFragment extends Fragment
             }
         }
         Iterator<Map.Entry<Integer, ImageView>> iterator = tileFrontImageViews.entrySet().iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Map.Entry<Integer, ImageView> entry = iterator.next();
             int key = entry.getKey();
             if (key >= 0 && key < layout.getTileCount())
                 break;
             if (tileAnimations.containsKey(key)) {
-                tileAnimations.get(key).cancel();
-                tileAnimations.remove(key);
+                // tileAnimations.remove(key);
             }
-            entry.getValue().clearAnimation();
-            viewContainer.removeView(entry.getValue());
+            final View discardedView = entry.getValue();
+            if (discardedView.getAnimation() != null) {
+                discardedView.getAnimation().cancel();
+                final Animation.AnimationListener listener = new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        viewContainer.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        viewContainer.removeView(discardedView);
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                };
+                Animation deathAnimation = new AlphaAnimation(0f, 0f);
+                deathAnimation.setDuration(1);
+                deathAnimation.setInterpolator(new LinearInterpolator());
+                deathAnimation.setAnimationListener(listener);
+                discardedView.startAnimation(deathAnimation);
+            } else {
+                viewContainer.removeView(discardedView);
+            }
             iterator.remove();
         }
         iterator = imageResourceImageViews.entrySet().iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Map.Entry<Integer, ImageView> entry = iterator.next();
             if (entry.getKey() >= 0 && entry.getKey() < layout.getImageCount())
                 break;
@@ -326,12 +363,13 @@ public class PresentationFragment extends Fragment
                     .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .placeholder(new ColorDrawable(layout.getBackgroundColor()))
                     .into(new ViewTarget<View, GlideDrawable>(mainLayout) {
-                              @Override
-                              public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                                  this.view.setBackground(resource);
-                              }
-                          });
+                        @Override
+                        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                            this.view.setBackground(resource);
+                        }
+                    });
         }
+        viewContainer.invalidate();
     }
 
     private void loadChannelData() {
@@ -391,15 +429,22 @@ public class PresentationFragment extends Fragment
         return iv;
     }
 
+    private long getStartTime() {
+        long syncTime = app.getChannel().getChannelSyncTime();
+        long time = AnimationUtils.currentAnimationTimeMillis();
+        long delay = (time - syncTime) % masterEffectDuration;
+        long startTime = time - delay;
+        return startTime;
+    }
     private Runnable animationRunner = new Runnable() {
         @Override
         public void run() {
             // Keep heartbeat going reagrdless of if the layout is ready.
             animationHandler.postDelayed(animationRunner, masterEffectDuration);
-
+            long startTime = getStartTime();
             if (layout == null) return;
             for (int i = 0; i < layout.getTileCount(); i++) {
-                scheduleTileAnimation(i, false, true);
+                scheduleTileAnimation(i, false, true, startTime);
             }
         }
     };
@@ -408,12 +453,13 @@ public class PresentationFragment extends Fragment
         // This function can be skipped when layout is not ready, because drawLayout handles this.
         if (layout == null)
             return;
+        long startTime = getStartTime();
         for (int i = 0; i < layout.getTileCount(); i++) {
-            scheduleTileAnimation(i, true, runNow);
+            scheduleTileAnimation(i, true, runNow, startTime);
         }
     }
 
-    private void scheduleTileAnimation(int i, boolean invalidate, boolean runNow) {
+    private void scheduleTileAnimation(int i, boolean invalidate, boolean runNow, long startTime) {
         ImageView tileIv = tileFrontImageViews.get(i);
         if (tileIv == null)
             return;
@@ -439,17 +485,17 @@ public class PresentationFragment extends Fragment
             }
             effect = defaultAnimation;
         }
-        if (effect != null && runNow) {
-            tileIv.startAnimation(effect);
+        if (effect != null) {
+            effect.setStartTime(startTime);
+            if (runNow) {
+                tileIv.startAnimation(effect);
+            }
         }
     }
 
     private void resyncAndStartAnimation() {
         animationHandler.removeCallbacks(animationRunner);
-        long syncTime = app.getChannel().getChannelSyncTime();
-        // Run some fraction of the duration different between now and remote sync time.
-        long delay = (System.currentTimeMillis() - syncTime) % masterEffectDuration;
-        animationHandler.postDelayed(animationRunner, delay);
+        animationHandler.post(animationRunner);
         // Note: This function always waits an entire revolution... maybe have it run in the past?
         // tile animations will need to be seeded with delay - duration as their start time.
     }
