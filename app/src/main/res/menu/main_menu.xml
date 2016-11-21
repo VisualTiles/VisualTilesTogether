@@ -13,6 +13,10 @@
         android:id="@+id/menu_item_sign_out"
         android:title="@string/sign_out"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_item_show_code"
+        android:title="@string/show_code"
+        app:showAsAction="never"/>
 
     <group android:id="@+id/menu_moderator_controls"
         android:visible="false">
