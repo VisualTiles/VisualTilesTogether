@@ -178,9 +178,14 @@ public class VisualTilesTogetherApp extends Application {
             // TODO(jav): Remove this once create/join login screen is working.
             newChannelId = "-KWVuJtz9tfBvdQUn4F_";
         }
-        // Already loaded, skip.
-        if (channelId != null && channelId.equals(newChannelId))
+        // Already loaded, notify the activity and then skip.
+        if (channelId != null && channelId.equals(newChannelId)) {
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onChannelUpdated();
+            }
             return;
+        }
 
         if (dbChannelRef != null)
             dbChannelRef.removeEventListener(channelValueEventListener);
