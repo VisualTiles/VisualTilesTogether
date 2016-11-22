@@ -1,6 +1,7 @@
 package com.javierarboleda.visualtilestogether.util;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
@@ -16,6 +17,7 @@ import com.javierarboleda.visualtilestogether.models.TileEffect;
  */
 
 public class TileEffectTransformer {
+    private static final String TAG = TileEffectTransformer.class.getSimpleName();
     private Context context;
     private long stageDuration;
     public TileEffectTransformer(Context context, long duration) {
@@ -30,15 +32,21 @@ public class TileEffectTransformer {
     public Animation processTileEffect(TileEffect effect) {
         if (effect == null) return null;
         AnimationSet as = new AnimationSet(true);
-        as.setFillBefore(false);
+        as.setInterpolator(new LinearInterpolator());
+        as.setFillBefore(true);
+        as.setFillAfter(false);
         final long delay = (long) (effect.getEffectOffsetPct() * this.stageDuration);
         final long duration = (long) (effect.getEffectDurationPct() * this.stageDuration);
         final long halfDuration = duration / 2;
         final long thirdDuration = duration / 3;
 
         if (effect.getEffectType() == null) return null;
-        TileEffect.EffectType effectType = TileEffect.EffectType.valueOf(effect.getEffectType());
-
+        TileEffect.EffectType effectType = TileEffect.EffectType.NONE;
+        try {
+            effectType = TileEffect.EffectType.valueOf(effect.getEffectType());
+        } catch(IllegalArgumentException ex) {
+            Log.e(TAG, "Invalid tile effect " + effect.getEffectType() + " seen in tile!");
+        }
         switch (effectType) {
             case FADE_HALF:
                 Animation fadeOut = AnimationUtils.loadAnimation(context, R.anim.fade_out);
@@ -75,19 +83,16 @@ public class TileEffectTransformer {
                 as.addAnimation(trans1);
                 break;
             case NONE:
+                as.setFillBefore(false);
+                as.setFillAfter(false);
+                break;
+            case FREEZE:
+                // Fill is enabled... so the animation just pauses at where it left off when this
+                // animation was triggered.
+                as.setFillBefore(true);
+                as.setFillAfter(true);
                 break;
         }
-        // Bug fix??
-        Animation nullAnimation = new TranslateAnimation(0.0f, 0.0f, 0.0f, 0.0f);
-        nullAnimation.setStartOffset(duration);
-        nullAnimation.setDuration(1);
-        as.setFillBefore(true);
-        as.setFillAfter(true);
-        as.setFillEnabled(true);
-        as.addAnimation(nullAnimation);
-
-        as.setInterpolator(new LinearInterpolator());
-        //as.setInterpolator(new LinearOutSlowInInterpolator());
         return as;
     }
 

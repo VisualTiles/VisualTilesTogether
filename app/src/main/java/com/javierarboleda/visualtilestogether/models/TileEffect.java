@@ -17,6 +17,7 @@ public class TileEffect {
         FADE_HALF,
         FLIP_HORIZONTAL,
         FLY_AWAY,
+        FREEZE,
         ROTATE_LEFT,
         ROTATE_RIGHT,
     }

@@ -6,10 +6,19 @@
     <string name="enter_event_code">Enter event code</string>
     <string name="join_event">Join an event</string>
     <string name="join_button">Join</string>
+    <string name="leave_channel">Leave Channel</string>
     <string name="create_new_event">Create a new event</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="menu_normalize_database">Normalize database</string>
     <string name="console">Console</string>
+    <string name="show_code">Show Code</string>
+
+    <string name="ok">OK</string>
+    <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
+    <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
+    <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
+    <string name="pref_useflash">Flash</string>
+    <string name="pref_autofocus">Autofocus</string>
 </resources>
