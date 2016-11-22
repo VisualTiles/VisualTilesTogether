@@ -6,15 +6,27 @@
         android:title="@string/present"
         app:showAsAction="ifRoom"/>
     <item
-        android:id="@+id/menu_item_moderator_console"
-        android:title="@string/console"
-        app:showAsAction="ifRoom"/>
+        android:id="@+id/menu_item_leave_channel"
+        android:title="@string/leave_channel"
+        app:showAsAction="never"/>
     <item
         android:id="@+id/menu_item_sign_out"
         android:title="@string/sign_out"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/menu_item_normalize_db"
-        android:title="@string/menu_normalize_database"
+        android:id="@+id/menu_item_show_code"
+        android:title="@string/show_code"
         app:showAsAction="never"/>
+
+    <group android:id="@+id/menu_moderator_controls"
+        android:visible="false">
+        <item
+            android:id="@+id/menu_item_moderator_console"
+            android:title="@string/console"
+            app:showAsAction="ifRoom"/>
+        <item
+            android:id="@+id/menu_item_normalize_db"
+            android:title="@string/menu_normalize_database"
+            app:showAsAction="never"/>
+    </group>
 </menu>

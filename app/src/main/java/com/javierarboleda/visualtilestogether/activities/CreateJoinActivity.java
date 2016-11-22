@@ -41,7 +41,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
         visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
         visualTilesTogetherApp.addListener(this);
@@ -111,19 +110,9 @@ public class CreateJoinActivity extends AppCompatActivity implements
         } else {
             visualTilesTogetherApp.initChannel(channel);
         }
-
-//        if (VisualTilesTogetherApp.getChannel() == null) {
-//            Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
-//        } else {
-//            Toast.makeText(this, "Channel is ready too =)", Toast.LENGTH_LONG).show();
-//        }
-//        startActivity(new Intent(this, MainActivity.class));
-//        finish();
-
     }
 
     public void createNewEventOnClick(View view) {
-
         ChannelAddDialog.newInstance().show(getSupportFragmentManager(), "new channel");
     }
 

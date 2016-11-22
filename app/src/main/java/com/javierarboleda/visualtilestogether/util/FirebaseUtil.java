@@ -26,7 +26,6 @@ import com.javierarboleda.visualtilestogether.models.Tile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Date;
 
 import static android.graphics.Color.BLACK;
 import static android.graphics.Color.WHITE;
@@ -103,7 +102,8 @@ public class FirebaseUtil {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Tile tile = new Tile(false, 0, 0, null, downloadUrl.toString(), new Date());
+                Tile tile = new Tile(false, 0, 0, null, downloadUrl.toString(),
+                        System.currentTimeMillis());
                 tile.setChannelId(channelId);
                 dbRef.child(key).setValue(tile);
                 updateChannelTileId(key, tile);
