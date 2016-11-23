@@ -20,16 +20,11 @@ import android.widget.Toast;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
-import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.normalizeDb;
@@ -56,32 +51,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         app = (VisualTilesTogetherApp) getApplication();
         app.addListener(this);
 
-        // we want the channel name in the action bar.
-        // either we already have it or we need to go get it.
-        if (savedInstanceState != null) {
-            mChannelName = savedInstanceState.getString(CHANNEL_NAME);
-            if (mChannelName != null) {
-                actionBar.setTitle(mChannelName);
-            }
-        } else {
-            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-            DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME);
-            channelRef.child(app.getChannelId()).child(Channel.CHANNEL_NAME)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    mChannelName = dataSnapshot.getValue(String.class);
-                    if (mChannelName != null) {
-                        actionBar.setTitle(mChannelName);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    // Do something?
-                }
-            });
-        }
+        actionBar.setTitle(app.getChannel().getName());
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -159,11 +129,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(CHANNEL_NAME, mChannelName);
     }
 
     @Override
