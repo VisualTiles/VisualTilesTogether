@@ -34,22 +34,18 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTil
 public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewholder> {
 
     private final Context mContext;
-    private final boolean mConsoleMode;
-    private RelativeLayout mLastChecked;
-    private String mSelectedTileRefId;
-    private TileListFragment.TileListFragmentListener mListener;
+    TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
 
 
     public TileListRecyclerViewAdapter(Context context,
-                                       boolean consoleMode,
+                                       int itemLayout,
                                        Query query,
                                        VisualTilesTogetherApp visualTilesTogetherApp) {
         super(Object.class,
-                consoleMode ? R.layout.tile_selector_list_item : R.layout.tile_list_item,
+                itemLayout,
                 TileViewholder.class,
                 query);
-        mConsoleMode = consoleMode;
         mContext = context;
         mListener = (TileListFragment.TileListFragmentListener) context;
         mVisualTilesTogetherApp = visualTilesTogetherApp;
@@ -78,24 +74,24 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
     protected void doTheWork(final TileViewholder viewHolder, final String tileId) {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        final DatabaseReference tileRef = dbRef.child(Tile.TABLE_NAME)
+        viewHolder.tileRef = dbRef.child(Tile.TABLE_NAME)
                 .child(tileId);
-//                Log.d(LOG_TAG, "populateViewHolder key, tileref: " + getRef(position).getKey() + ", " + tileRef);
+//                Log.d(LOG_TAG, "populateViewHolder key, tileref: " + getRef(position).getKey() + ", " + viewHolder.tileRef);
 
         if (viewHolder.tileEventListener != null) {
-            tileRef.removeEventListener(viewHolder.tileEventListener);
+            viewHolder.tileRef.removeEventListener(viewHolder.tileEventListener);
         }
         viewHolder.tileEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                final Tile tile = dataSnapshot.getValue(Tile.class);
+                viewHolder.tile = dataSnapshot.getValue(Tile.class);
 //                        Log.d(LOG_TAG, "onDataChange tile: " + tile);
-                if (tile == null) {
+                if (viewHolder.tile == null) {
                     return;
                 }
-                if (tile.getShapeUrl() != null && mContext != null) {
+                if (viewHolder.tile.getShapeUrl() != null && mContext != null) {
                     Glide.with(mContext)
-                            .load(tile.getShapeUrl())
+                            .load(viewHolder.tile.getShapeUrl())
                             .into(viewHolder.ivShape);
                 }
 
@@ -122,14 +118,14 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                     public void onClick(View view) {
                         if (viewHolder.ibDownVote.isEnabled()) {
                             // the user has voted "yes"
-                            onVoteClicked(tileRef, 1, 0);
-                            tileRef.child(Tile.USER_VOTES)
+                            onVoteClicked(viewHolder.tileRef, 1, 0);
+                            viewHolder.tileRef.child(Tile.USER_VOTES)
                                     .child(userId)
                                     .setValue(true);
                         } else {
                             // the user has retracted a "no" vote
-                            onVoteClicked(tileRef, 0, -1);
-                            tileRef.child(Tile.USER_VOTES)
+                            onVoteClicked(viewHolder.tileRef, 0, -1);
+                            viewHolder.tileRef.child(Tile.USER_VOTES)
                                     .child(userId)
                                     .removeValue();
                         }
@@ -141,23 +137,24 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                     public void onClick(View view) {
                         if (viewHolder.ibUpVote.isEnabled()) {
                             // the user has voted "no"
-                            onVoteClicked(tileRef, 0, 1);
-                            tileRef.child(Tile.USER_VOTES)
+                            onVoteClicked(viewHolder.tileRef, 0, 1);
+                            viewHolder.tileRef.child(Tile.USER_VOTES)
                                     .child(userId)
                                     .setValue(false);
                         } else {
                             // the user has retracted a "yes" vote
-                            onVoteClicked(tileRef, -1, 0);
-                            tileRef.child(Tile.USER_VOTES)
+                            onVoteClicked(viewHolder.tileRef, -1, 0);
+                            viewHolder.tileRef.child(Tile.USER_VOTES)
                                     .child(userId)
                                     .removeValue();
                         }
                     }
                 });
 
-                viewHolder.tvVotesTotal.setText(String.valueOf(tile.getPosVotes() - tile.getNegVotes()));
+                viewHolder.tvVotesTotal.setText(String.valueOf(viewHolder.tile.getPosVotes()
+                        - viewHolder.tile.getNegVotes()));
 
-                viewHolder.miPublish.setIcon(tile.isApproved() ?
+                viewHolder.miPublish.setIcon(viewHolder.tile.isApproved() ?
                         R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
                 viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                     @Override
@@ -165,53 +162,16 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 //                                Log.d(LOG_TAG, "Clicked a toolbar item");
                         switch (item.getItemId()) {
                             case R.id.action_publish:
-                                toggleTileApproval(tileRef);
+                                toggleTileApproval(viewHolder.tileRef);
                                 return true;
                             case R.id.action_delete:
-                                deleteTile(tileRef, tileId, tile.getChannelId());
+                                deleteTile(viewHolder.tileRef, tileId,
+                                        viewHolder.tile.getChannelId());
                                 return true;
                         }
                         return false;
                     }
                 });
-
-                if (mConsoleMode) {
-                    viewHolder.ivShape.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-
-
-                            // Handle selection and make sure only one item selected at a time
-                            if (mLastChecked == null) {
-
-                                viewHolder.rlMain.setSelected(true);
-                                mSelectedTileRefId = tileRef.getKey();
-                                mLastChecked = viewHolder.rlMain;
-
-                                tile.setTileId(tileRef.getKey());
-                                mListener.updateSelectedTile(tile);
-
-                            } else if (mSelectedTileRefId.equals(tileRef.getKey())) {
-
-                                viewHolder.rlMain.setSelected(false);
-                                mSelectedTileRefId = null;
-                                mLastChecked = null;
-
-                                mListener.updateSelectedTile(null);
-
-                            } else {
-
-                                mLastChecked.setSelected(false);
-                                viewHolder.rlMain.setSelected(true);
-                                mSelectedTileRefId = tileRef.getKey();
-                                mLastChecked = viewHolder.rlMain;
-
-                                tile.setTileId(tileRef.getKey());
-                                mListener.updateSelectedTile(tile);
-                            }
-                        }
-                    });
-                }
             }
 
             @Override
@@ -220,7 +180,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
             }
         };
 
-        tileRef.addValueEventListener(viewHolder.tileEventListener);
+        viewHolder.tileRef.addValueEventListener(viewHolder.tileEventListener);
     }
 
     // run a transaction to uptick positive votes or negative votes
@@ -257,6 +217,8 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         MenuItem miPublish;
         ValueEventListener tileEventListener;
         RelativeLayout rlMain;
+        Tile tile;
+        DatabaseReference tileRef;
 
         public TileViewholder(View itemView) {
             super(itemView);

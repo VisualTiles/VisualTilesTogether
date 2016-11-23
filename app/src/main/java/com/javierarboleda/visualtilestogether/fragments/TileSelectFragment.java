@@ -1,10 +1,12 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
-import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
+import com.javierarboleda.visualtilestogether.R;
+import com.javierarboleda.visualtilestogether.adapters.TileListRecyclerViewAdapter;
+import com.javierarboleda.visualtilestogether.adapters.TileSelectRecyclerViewAdapter;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
 /**
@@ -13,22 +15,27 @@ import com.javierarboleda.visualtilestogether.models.Channel;
 
 public class TileSelectFragment extends TileListFragment {
 
-    public static TileSelectFragment newInstance() {
-        TileSelectFragment fragmentDemo = new TileSelectFragment();
-        Bundle args = new Bundle();
-        args.putBoolean("consoleMode", true);
-        fragmentDemo.setArguments(args);
-        return fragmentDemo;
-    }
-
-    @Override
     Query getDbQuery(DatabaseReference dbRef) {
-        VisualTilesTogetherApp visualTilesTogetherApp = (VisualTilesTogetherApp) getActivity()
-                .getApplication();
         return dbRef
                 .child(visualTilesTogetherApp.getUser().getChannelId())
                 .child(Channel.TILE_IDS)
                 .orderByValue()
                 .equalTo(true);
+    }
+
+    @Override
+    TileListRecyclerViewAdapter getAdapter(DatabaseReference dbRef) {
+        return new TileSelectRecyclerViewAdapter(getContext(),
+                R.layout.tile_selector_list_item,
+                getDbQuery(dbRef.child(Channel.TABLE_NAME)),
+                visualTilesTogetherApp);
+    }
+
+    @Override
+    LinearLayoutManager getLayoutManager() {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setStackFromEnd(true);
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        return layoutManager;
     }
 }
