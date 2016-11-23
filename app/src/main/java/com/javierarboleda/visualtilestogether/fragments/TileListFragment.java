@@ -14,12 +14,9 @@ import android.widget.ProgressBar;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.storage.FirebaseStorage;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListRecyclerViewAdapter;
-import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
 
@@ -31,10 +28,8 @@ public abstract class TileListFragment extends Fragment {
     private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewholder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
-    private VisualTilesTogetherApp visualTilesTogetherApp;
+    VisualTilesTogetherApp visualTilesTogetherApp;
 
-    // For moderator console mode
-    public boolean mConsoleMode;
     private TileListFragmentListener mListener;
 
     @Override
@@ -42,14 +37,7 @@ public abstract class TileListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
 //        Log.d(LOG_TAG, "enter onCreate");
-        if (getArguments() != null) {
-            mConsoleMode = getArguments().getBoolean("consoleMode", false);
-        }
-
-//        Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
-        // get the shapes folder of Firebase Storage for this app
-        FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
 //        Log.d(LOG_TAG, "exit onCreate");
     }
 
@@ -70,10 +58,7 @@ public abstract class TileListFragment extends Fragment {
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
         // bind the tiles table to the RecyclerView
-        mFirebaseAdapter = new TileListRecyclerViewAdapter(mContext,
-                mConsoleMode,
-                getDbQuery(dbRef.child(Channel.TABLE_NAME)),
-                visualTilesTogetherApp);
+        mFirebaseAdapter = getAdapter(dbRef);
 
         // watch for realtime changes
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -92,22 +77,16 @@ public abstract class TileListFragment extends Fragment {
         });
 
         // hook up the RecyclerView
-        mLinearLayoutManager = new LinearLayoutManager(mContext);
-        mLinearLayoutManager.setStackFromEnd(true);
-
-        if (mConsoleMode) {
-            mLinearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        }
-
+        mLinearLayoutManager = getLayoutManager();
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
 //        Log.d(LOG_TAG, "exit onCreateView");
         return view;
     }
 
+    abstract TileListRecyclerViewAdapter getAdapter(DatabaseReference dbRef);
 
-
-    abstract Query getDbQuery(DatabaseReference dbRef);
+    abstract LinearLayoutManager getLayoutManager();
 
     @Override
     public void onDetach() {
