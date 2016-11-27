@@ -165,8 +165,10 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                 toggleTileApproval(viewHolder.tileRef);
                                 return true;
                             case R.id.action_delete:
-                                deleteTile(viewHolder.tileRef, tileId,
-                                        viewHolder.tile.getChannelId());
+                                deleteTile(viewHolder.tileRef,
+                                        tileId,
+                                        viewHolder.tile.getChannelId(),
+                                        viewHolder.tile.getCreatorId());
                                 return true;
                         }
                         return false;

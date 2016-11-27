@@ -23,6 +23,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.models.User;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,7 +36,8 @@ public class FirebaseUtil {
 
     /**
      * Build the Channel tileIds by going through the Tiles
-     * and setting up its Channel's tileIds entry.
+     * and setting up its Channel's tileIds entry,
+     * and setting up the tileIds entry in the creator's User table entry.
      *
      * Shouldn't really ever need to use this
      */
@@ -50,6 +52,7 @@ public class FirebaseUtil {
                     Tile tile = postSnapshot.getValue(Tile.class);
                     String tileId = postSnapshot.getKey();
                     updateChannelTileId(tileId, tile);
+                    updateUsrerTileId(tileId, tile);
                 }
             }
 
@@ -81,7 +84,7 @@ public class FirebaseUtil {
     /**
      * Upload a bitmap to Storage and then create a Tile using the same key
      */
-    public static void createTile(Bitmap bitmap, final String channelId) {
+    public static void createTile(Bitmap bitmap, final String channelId, final String uId) {
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(Tile.TABLE_NAME);
         final String key = dbRef.push().getKey();
@@ -102,11 +105,12 @@ public class FirebaseUtil {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Tile tile = new Tile(false, 0, 0, null, downloadUrl.toString(),
+                Tile tile = new Tile(false, channelId, uId, 0, 0, null, downloadUrl.toString(),
                         System.currentTimeMillis());
                 tile.setChannelId(channelId);
                 dbRef.child(key).setValue(tile);
                 updateChannelTileId(key, tile);
+                updateUsrerTileId(key, tile);
             }
         });
     }
@@ -115,12 +119,22 @@ public class FirebaseUtil {
      * Delete a Tile, after deleting any reference to it in its Channel's tileId list.
      * Then delete its corresponding graphic in Storage
      */
-    public static void deleteTile(DatabaseReference tileRef, @NonNull String tileId, String channelId) {
+    public static void deleteTile(DatabaseReference tileRef,
+                                  @NonNull String tileId,
+                                  String channelId,
+                                  String uId) {
         if (channelId != null) {
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME).child(channelId);
             if (channelRef != null) {
                 DatabaseReference tileIdRef = channelRef.child(Channel.TILE_IDS).child(tileId);
+                if (tileIdRef != null) {
+                    tileIdRef.removeValue();
+                }
+            }
+            DatabaseReference userRef = dbRef.child(User.TABLE_NAME).child(uId);
+            if (userRef != null) {
+                DatabaseReference tileIdRef = userRef.child(User.TILE_IDS).child(tileId);
                 if (tileIdRef != null) {
                     tileIdRef.removeValue();
                 }
@@ -172,6 +186,21 @@ public class FirebaseUtil {
             DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME).child(tile.getChannelId());
             if (channelRef != null) {
                 channelRef.child(Channel.TILE_IDS).child(tileId).setValue(tile.isApproved());
+            }
+        }
+    }
+
+    /**
+     * Make sure that any Channel this Tile points to
+     * has a corresponding entry in its tileId list,
+     * set to true for approved and false if not
+     */
+    public static void updateUsrerTileId(String tileId, Tile tile) {
+        if (tile.getCreatorId() != null) {
+            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+            DatabaseReference userRef = dbRef.child(User.TABLE_NAME).child(tile.getCreatorId());
+            if (userRef != null) {
+                userRef.child(User.TILE_IDS).child(tileId).setValue(true);
             }
         }
     }

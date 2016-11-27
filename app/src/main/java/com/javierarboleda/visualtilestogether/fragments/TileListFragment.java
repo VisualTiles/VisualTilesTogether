@@ -18,7 +18,6 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListRecyclerViewAdapter;
 import com.javierarboleda.visualtilestogether.models.Tile;
-import com.javierarboleda.visualtilestogether.models.User;
 
 public abstract class TileListFragment extends Fragment {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
@@ -46,8 +45,8 @@ public abstract class TileListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        Log.d(LOG_TAG, "enter onCreateView");
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
-        dbUsers.child(visualTilesTogetherApp.getUid()).setValue(visualTilesTogetherApp.getUser());
+//        DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
+//        dbUsers.child(visualTilesTogetherApp.getUid()).setValue(visualTilesTogetherApp.getUser());
 
         final View view = inflater.inflate(R.layout.fragment_tile_list, container, false);
 

@@ -118,6 +118,7 @@ public class TileCreationActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(Bitmap bitmap) {
-        createTile(bitmap, ((VisualTilesTogetherApp) getApplication()).getChannelId());
+        createTile(bitmap, ((VisualTilesTogetherApp) getApplication()).getChannelId(),
+                ((VisualTilesTogetherApp) getApplication()).getUid());
     }
 }
