@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_present"
+        android:icon="@drawable/ic_present"
+        android:title="Present" />
+
+    <group android:id="@+id/nav_item_moderator_console">
+
+        <item
+            android:id="@+id/nav_console"
+            android:icon="@drawable/ic_moderator_console"
+            android:title="Moderator console" />
+
+        <item
+            android:id="@+id/nav_normalize_db"
+            android:icon="@drawable/ic_normalize_db"
+            android:title="@string/menu_normalize_database"
+            />
+
+    </group>
+
+    <item android:title="Session">
+        <menu>
+
+            <item
+                android:id="@+id/nav_show_code"
+                android:icon="@drawable/ic_show_code"
+                android:title="Show code" />
+
+            <item
+                android:id="@+id/nav_leave_channel"
+                android:icon="@drawable/ic_leave_channel"
+                android:title="Leave channel" />
+
+            <item
+                android:id="@+id/nav_sign_out"
+                android:icon="@drawable/ic_sign_out"
+                android:title="Sign out" />
+        </menu>
+    </item>
+</menu>

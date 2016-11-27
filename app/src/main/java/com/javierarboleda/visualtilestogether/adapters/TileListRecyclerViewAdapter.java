@@ -90,7 +90,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                     return;
                 }
                 if (viewHolder.tile.getShapeUrl() != null && mContext != null) {
-                    Glide.with(mContext)
+                    Glide.with(mContext.getApplicationContext())
                             .load(viewHolder.tile.getShapeUrl())
                             .into(viewHolder.ivShape);
                 }

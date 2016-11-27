@@ -21,4 +21,6 @@
     <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
     <string name="pref_useflash">Flash</string>
     <string name="pref_autofocus">Autofocus</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 </resources>

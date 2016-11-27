@@ -1,13 +1,18 @@
 package com.javierarboleda.visualtilestogether.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -40,18 +45,18 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private VisualTilesTogetherApp app;
 
     private Menu menu;
+    private Toolbar mToolbar;
+    private DrawerLayout mDrawer;
+    private NavigationView nvDrawer;
+    private ActionBarDrawerToggle mDrawerToggle;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile_list);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        final ActionBar actionBar = getSupportActionBar();
-        app = (VisualTilesTogetherApp) getApplication();
-        app.addListener(this);
+        setUpToolbar();
 
-        actionBar.setTitle(app.getChannel().getName());
+        setUpNavDrawer();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -75,23 +80,114 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         }
     }
 
+    private void setUpNavDrawer() {
+
+        // Find our drawer view
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = setupDrawerToggle();
+
+        // Tie DrawerLayout events to the ActionBarToggle
+        mDrawer.addDrawerListener(mDrawerToggle);
+
+        // Find our drawer view
+        nvDrawer = (NavigationView) findViewById(R.id.nvView);
+        // Setup drawer view
+        setupDrawerContent(nvDrawer);
+    }
+
+    private ActionBarDrawerToggle setupDrawerToggle() {
+        return new ActionBarDrawerToggle(this, mDrawer, mToolbar, R.string.drawer_open,
+                R.string.drawer_close);
+    }
+
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.getMenu()
+                .setGroupVisible(R.id.nav_item_moderator_console, app.isChannelModerator());
+
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        selectDrawerItem(menuItem);
+                        return true;
+                    }
+                });
+    }
+
+    private void selectDrawerItem(MenuItem menuItem) {
+
+        switch (menuItem.getItemId()) {
+            case R.id.nav_present:
+                startActivity(new Intent(this, PresentationActivity.class));
+                break;
+            case R.id.nav_console:
+                startActivity(new Intent(this, ModeratorConsoleActivity.class));
+                break;
+            case R.id.nav_normalize_db:
+                normalizeDb();
+                break;
+            case R.id.nav_show_code:
+                final Snackbar snackBar = Snackbar.make(findViewById(R.id.clMainLayout),
+                        app.getChannelId(), Snackbar.LENGTH_INDEFINITE);
+                snackBar.setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        snackBar.dismiss();
+                    }
+                });
+                snackBar.show();
+                break;
+            case R.id.nav_leave_channel:
+                app.leaveChannel();
+                startActivity(new Intent(this, CreateJoinActivity.class));
+                finish();
+                break;
+            case R.id.nav_sign_out:
+                app.getFirebaseAuth().signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                startActivity(new Intent(this, SignInActivity.class));
+                finish();
+                break;
+        }
+
+        mDrawer.closeDrawers();
+    }
+
+    private void setUpToolbar() {
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        final ActionBar actionBar = getSupportActionBar();
+        app = (VisualTilesTogetherApp) getApplication();
+        app.addListener(this);
+
+        actionBar.setTitle(app.getChannel().getName());
+    }
+
     @Override
     protected void onDestroy() {
         app.removeListener(this);
         super.onDestroy();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        this.menu = menu;
-        menu.setGroupVisible(R.id.menu_moderator_controls, app.isChannelModerator());
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.main_menu, menu);
+//        this.menu = menu;
+//        menu.setGroupVisible(R.id.menu_moderator_controls, app.isChannelModerator());
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        // Pass the event to ActionBarDrawerToggle
+        // If it returns true, then it has handled
+        // the nav drawer indicator touch event
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         if (item.getGroupId() == R.id.menu_item_normalize_db && !app.isChannelModerator()) {
             return false;
         }
@@ -150,8 +246,23 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
             startActivity(new Intent(this, CreateJoinActivity.class));
             finish();
         }
-        menu.setGroupVisible(R.id.menu_moderator_controls, app.isChannelModerator());
+//        menu.setGroupVisible(R.id.menu_moderator_controls, app.isChannelModerator());
     }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggles
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
 
     @Override
     public void onError(DatabaseError error) {
