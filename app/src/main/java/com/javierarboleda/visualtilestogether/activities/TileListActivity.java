@@ -28,7 +28,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.database.DatabaseError;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
-import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapter;
+import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapterModerator;
+import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapterUser;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
 import com.javierarboleda.visualtilestogether.models.Tile;
 
@@ -41,7 +42,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private static final String CHANNEL_NAME = "channel name";
 
     private GoogleApiClient mGoogleApiClient;
-    private String mChannelName;
     private VisualTilesTogetherApp app;
 
     private Menu menu;
@@ -72,9 +72,10 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         });
 
         if (savedInstanceState == null) {
-            TileListPagerAdapter tileListPagerAdapter = new TileListPagerAdapter(getSupportFragmentManager());
             ViewPager mViewPager = (ViewPager) findViewById(R.id.vpContainer);
-            mViewPager.setAdapter(tileListPagerAdapter);
+            mViewPager.setAdapter(app.isChannelModerator()?
+                    new TileListPagerAdapterModerator(getSupportFragmentManager())
+                    : new TileListPagerAdapterUser(getSupportFragmentManager()));
             TabLayout tabLayout = (TabLayout) findViewById(R.id.tlTabs);
             tabLayout.setupWithViewPager(mViewPager);
         }

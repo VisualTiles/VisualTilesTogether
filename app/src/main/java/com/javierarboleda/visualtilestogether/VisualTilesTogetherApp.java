@@ -21,7 +21,6 @@ import com.javierarboleda.visualtilestogether.models.User;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -200,9 +199,14 @@ public class VisualTilesTogetherApp extends Application {
             user.setChannelId(channelId);
 
             // Update channel field in DB.
-            HashMap<String, Object> userUpdates = new HashMap<>();
-            userUpdates.put(User.CHANNEL_ID, channelId);
-            dbRef.child(User.TABLE_NAME).child(uId).updateChildren(userUpdates);
+            // Switched from undateChildren() to setValue()
+            // so that only the ChannelId field would be rewritten instead of the entire entry.
+            // Not sure why this was called after adding a new tile,
+            // but it was making the tileIds entry disappear. (geo.)
+//            HashMap<String, Object> userUpdates = new HashMap<>();
+//            userUpdates.put(User.CHANNEL_ID, channelId);
+//            dbRef.child(User.TABLE_NAME).child(uId).updateChildren(userUpdates);
+            dbRef.child(User.TABLE_NAME).child(uId).child(User.CHANNEL_ID).setValue(channelId);
         }
         initTilesForChannel();
     }

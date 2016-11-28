@@ -4,13 +4,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.javierarboleda.visualtilestogether.fragments.TileListFragmentApproved;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragmentInChannel;
+import com.javierarboleda.visualtilestogether.fragments.TileListFragmentMine;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragmentNowPlaying;
 
-public class TileListPagerAdapter extends FragmentPagerAdapter {
+public class TileListPagerAdapterUser extends FragmentPagerAdapter {
 
-    public TileListPagerAdapter(FragmentManager fm) {
+    public TileListPagerAdapterUser(FragmentManager fm) {
         super(fm);
     }
 
@@ -21,7 +21,7 @@ public class TileListPagerAdapter extends FragmentPagerAdapter {
                 return new TileListFragmentInChannel();
             }
             case 1: {
-                return new TileListFragmentApproved();
+                return new TileListFragmentMine();
             }
             case 2: {
                 return new TileListFragmentNowPlaying();
@@ -41,7 +41,7 @@ public class TileListPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return "All";
             case 1:
-                return "Selected";
+                return "Mine";
             case 2:
                 return "Now Playing";
         }
