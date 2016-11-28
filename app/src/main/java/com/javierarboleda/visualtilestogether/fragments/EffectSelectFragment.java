@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.databinding.FragmentEffectSelectBinding;
@@ -19,8 +20,9 @@ import com.javierarboleda.visualtilestogether.databinding.FragmentEffectSelectBi
 
 public class EffectSelectFragment extends Fragment {
 
-    FragmentEffectSelectBinding binding;
-    EffectSelectFragmentListener mListener;
+    private FragmentEffectSelectBinding binding;
+    private EffectSelectFragmentListener mListener;
+    private Button mSelectedButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -31,51 +33,100 @@ public class EffectSelectFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
+        binding.ibSingleTileSelect.setSelected(true);
+
         setOnClickListeners();
 
         super.onViewCreated(view, savedInstanceState);
     }
 
+    private void effectButtonClicked(Button button, String effect) {
+        if (button.isSelected()) {
+            button.setSelected(false);
+            mListener.updateSelectedEffect(null);
+        }
+        else {
+            if (mSelectedButton != null) {
+                mSelectedButton.setSelected(false);
+            }
+            mSelectedButton = button;
+            button.setSelected(true);
+            mListener.updateSelectedEffect(effect);
+        }
+    }
+
     private void setOnClickListeners() {
+        binding.ibSingleTileSelect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!binding.ibSingleTileSelect.isSelected()) {
+                    binding.ibSingleTileSelect.setSelected(true);
+                    binding.ibAllTileSelect.setSelected(false);
+                    mListener.updateMultiTile(false);
+                }
+            }
+        });
+        binding.ibAllTileSelect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                // ** below described approach not implemented (commented out) **
+                // ** maybe implement initial approach after testing for a while **
+                // when multi-select icon selected, then deselect any effects as the subsequent
+                // effect select will initiate the update for that effect on all tiles
+
+                if (!binding.ibAllTileSelect.isSelected()) {
+//
+//                    if (mSelectedButton != null) {
+//                        mSelectedButton.setSelected(false);
+//                        mListener.updateSelectedEffect(null);
+//                    }
+
+                    binding.ibSingleTileSelect.setSelected(false);
+                    binding.ibAllTileSelect.setSelected(true);
+                    mListener.updateMultiTile(true);
+                }
+            }
+        });
         binding.butFadeHalf.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.updateSelectedEffect("FADE_HALF");
+                effectButtonClicked(binding.butFadeHalf, "FADE_HALF");
             }
         });
 
         binding.butFlip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.updateSelectedEffect("FLIP_HORIZONTAL");
+                effectButtonClicked(binding.butFlip, "FLIP_HORIZONTAL");
             }
         });
 
         binding.butFlyAway.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.updateSelectedEffect("FLY_AWAY");
+                effectButtonClicked(binding.butFlyAway, "FLY_AWAY");
             }
         });
 
         binding.butNone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.updateSelectedEffect("NONE");
+                effectButtonClicked(binding.butNone, "NONE");
             }
         });
 
         binding.butRotateLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.updateSelectedEffect("ROTATE_LEFT");
+                effectButtonClicked(binding.butRotateLeft, "ROTATE_LEFT");
             }
         });
 
         binding.butRotateRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.updateSelectedEffect("ROTATE_RIGHT");
+                effectButtonClicked(binding.butRotateRight, "ROTATE_RIGHT");
             }
         });
 
@@ -94,5 +145,6 @@ public class EffectSelectFragment extends Fragment {
 
     public interface EffectSelectFragmentListener {
         void updateSelectedEffect(String effect);
+        void updateMultiTile(boolean multiTile);
     }
 }

@@ -40,6 +40,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     private int mPagePosition = 0;
     private Tile mSelectedTile;
     private String mSelectedEffect;
+    private boolean mMultiTile;
 
 
     @Override
@@ -138,8 +139,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     }
 
     // run a transaction to to update the tileId of the position in channel
-    private void updateDbTileEffect(DatabaseReference channelRef, final Tile tile,
-                               final int position) {
+    private void updateDbTileEffect(DatabaseReference channelRef) {
 
         channelRef.runTransaction(new Transaction.Handler() {
             @Override
@@ -182,16 +182,26 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     .child(app.getChannelId());
 
             updateDbPositionToTileId(channelRef, tile, position);
+        } else if (mMultiTile) {
+
+            for (int i = 0; i < app.getChannel().getPositionToTileIds().size(); i++) {
+                initiateAndUpdateTileEffect(i);
+            }
+
         } else if (mSelectedEffect != null && !mSelectedEffect.isEmpty() && mPagePosition == 1) {
 
-            String tileKey = app.getChannel().getPositionToTileIds().get(position);
-
-            final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-            final DatabaseReference channelRef = dbRef.child(Tile.TABLE_NAME)
-                    .child(tileKey);
-
-            updateDbTileEffect(channelRef, tile, position);
+            initiateAndUpdateTileEffect(position);
         }
+    }
+
+    private void initiateAndUpdateTileEffect(int position) {
+        String tileKey = app.getChannel().getPositionToTileIds().get(position);
+
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        final DatabaseReference channelRef = dbRef.child(Tile.TABLE_NAME)
+                .child(tileKey);
+
+        updateDbTileEffect(channelRef);
     }
 
     @Override
@@ -202,5 +212,10 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     @Override
     public void updateSelectedEffect(String effect) {
         mSelectedEffect = effect;
+    }
+
+    @Override
+    public void updateMultiTile(boolean multiTile) {
+        mMultiTile = multiTile;
     }
 }

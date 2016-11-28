@@ -19,22 +19,24 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:layout_margin="8dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/ic_single_tile_select_24dp"
-            style="?android:attr/borderlessButtonStyle"
-            android:visibility="gone"/>
+            android:background="@drawable/state_list_single_all_effects_selector_card"
+            style="?android:attr/borderlessButtonStyle"/>
 
         <ImageButton
             android:id="@+id/ibAllTileSelect"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:layout_margin="8dp"
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/ic_all_tile_select_24dp"
-            style="?android:attr/borderlessButtonStyle"
-            android:visibility="gone"/>
+            android:background="@drawable/state_list_single_all_effects_selector_card"
+            style="?android:attr/borderlessButtonStyle"/>
 
     </LinearLayout>
 
@@ -53,35 +55,23 @@
 
             <Button
                 android:id="@+id/butFadeHalf"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
                 android:text="Fade Half"
-                android:textColor="@color/white"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/state_list_effects_selector_card"
+                style="@style/ModeratorEffectsButtons"
                 />
 
             <Button
                 android:id="@+id/butFlip"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
                 android:text="Flip"
-                android:textColor="@color/white"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/state_list_effects_selector_card"
+                style="@style/ModeratorEffectsButtons"
                 />
 
             <Button
                 android:id="@+id/butFlyAway"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
                 android:text="Fly Away"
-                android:textColor="@color/white"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/state_list_effects_selector_card"
+                style="@style/ModeratorEffectsButtons"
                 />
 
         </LinearLayout>
@@ -96,35 +86,23 @@
 
             <Button
                 android:id="@+id/butRotateLeft"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
                 android:text="Rotate Left"
-                android:textColor="@color/white"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/state_list_effects_selector_card"
+                style="@style/ModeratorEffectsButtons"
                 />
 
             <Button
                 android:id="@+id/butRotateRight"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
                 android:text="Rotate Right"
-                android:textColor="@color/white"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/state_list_effects_selector_card"
+                style="@style/ModeratorEffectsButtons"
                 />
 
             <Button
                 android:id="@+id/butNone"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center"
                 android:text="None"
-                android:textColor="@color/white"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="@drawable/state_list_effects_selector_card"
+                style="@style/ModeratorEffectsButtons"
                 />
 
 

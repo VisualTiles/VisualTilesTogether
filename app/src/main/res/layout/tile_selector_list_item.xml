@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:background="@drawable/selector_tile_selector_card">
+        android:background="@drawable/state_list_tile_selector_card">
 
         <ImageButton
             android:layout_width="match_parent"
