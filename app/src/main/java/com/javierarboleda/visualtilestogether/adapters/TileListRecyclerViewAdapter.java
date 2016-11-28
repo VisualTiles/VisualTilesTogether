@@ -154,8 +154,15 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                 viewHolder.tvVotesTotal.setText(String.valueOf(viewHolder.tile.getPosVotes()
                         - viewHolder.tile.getNegVotes()));
 
-                viewHolder.miPublish.setIcon(viewHolder.tile.isApproved() ?
-                        R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                if (mVisualTilesTogetherApp.isChannelModerator()) {
+                    viewHolder.miPublish.setVisible(true);
+                    viewHolder.miPublish.setIcon(viewHolder.tile.isApproved() ?
+                            R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                    viewHolder.miDelete.setVisible(true);
+                } else {
+                    viewHolder.miPublish.setVisible(false);
+                    viewHolder.miDelete.setVisible(userId.equals(viewHolder.tile.getCreatorId()));
+                }
                 viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
@@ -217,6 +224,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         TextView tvVotesTotal;
         Toolbar tbTileListItem;
         MenuItem miPublish;
+        MenuItem miDelete;
         ValueEventListener tileEventListener;
         RelativeLayout rlMain;
         Tile tile;
@@ -231,6 +239,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
             tbTileListItem = (Toolbar) itemView.findViewById((R.id.tbTileListItem));
             tbTileListItem.inflateMenu(R.menu.tile_list_menu);
             miPublish = tbTileListItem.getMenu().findItem(R.id.action_publish);
+            miDelete = tbTileListItem.getMenu().findItem(R.id.action_delete);
             rlMain = (RelativeLayout) itemView.findViewById(R.id.rlMain);
             tileEventListener = null;
         }
