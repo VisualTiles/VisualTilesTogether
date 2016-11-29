@@ -14,9 +14,12 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityCreateJoinBinding;
@@ -104,11 +107,42 @@ public class CreateJoinActivity extends AppCompatActivity implements
 
 
     public void joinEventOnClick(View view) {
-        String channel = binding.etEventCode.getText().toString();
+        final String channel = binding.etEventCode.getText().toString();
         if (channel == null || channel.isEmpty()) {
             visualTilesTogetherApp.initChannel();
         } else {
-            visualTilesTogetherApp.initChannel(channel);
+            if (channel.charAt(0) == '-') {
+                // probably a channelId
+                visualTilesTogetherApp.initChannel(channel);
+            } else {
+                // assume an event code
+                // look up its channelId and use that
+                DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+                DatabaseReference dbChannels = dbRef.child(Channel.TABLE_NAME);
+                Query eventCodeRef = dbChannels
+                        .orderByChild(Channel.CHANNEL_UNIQUE_NAME)
+                        .equalTo(channel);
+                eventCodeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            for (DataSnapshot channelSnapshot : dataSnapshot.getChildren()) {
+                                visualTilesTogetherApp.initChannel(channelSnapshot.getKey());
+                                break;
+                            }
+                        } else {
+                            // TODO: handle incorrect event code properly
+                            visualTilesTogetherApp.initChannel();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+            }
         }
     }
 
@@ -118,14 +152,11 @@ public class CreateJoinActivity extends AppCompatActivity implements
 
     @Override
     public void onFragmentInteraction(Channel channel) {
-        Log.d(LOG_TAG, "new channel (" + channel.getName() + ", "
-                + channel.getStartTime().toString() + ", "
-                + channel.getEndTime().toString() + ")");
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        setChannelQrCode(key);
+        setChannelQrCode(key, channel.getUniqueName());
         visualTilesTogetherApp.addListener(this);
         visualTilesTogetherApp.getUser().setChannelId(key);
         visualTilesTogetherApp.initChannel(key);

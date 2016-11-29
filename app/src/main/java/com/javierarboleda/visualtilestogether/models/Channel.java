@@ -4,18 +4,18 @@ import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 
 public class Channel {
     public static final String TABLE_NAME = "channels";
     public static final String TILE_IDS = "tileIds";
     public static final String POS_TO_TILE_IDS = "positionToTileIds";
-    public static final String CHANNEL_NAME = "name";
+    public static final String CHANNEL_DISPLAY_NAME = "displayName";
+    public static final String CHANNEL_UNIQUE_NAME = "uniqueName";
     public static final String QRCODE_URL = "qrCodeUrl";
     private String name;
-    private Date startTime;
-    private Date endTime;
+    private String uniqueName;
+
     private ArrayList<String> positionToTileIds;
     private String layoutId;
     private HashMap<String, Boolean> tileIds;
@@ -40,19 +40,10 @@ public class Channel {
     public Channel() {
     }
 
-    public Channel(String name, Date startTime, Date endTime, String userId) {
+    public Channel(String name, String uniqueName, String userId) {
         this.name = name;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.uniqueName = uniqueName;
         this.moderators = new ArrayList<>(Collections.singletonList(userId));
-    }
-
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
     }
 
     public String getName() {
@@ -63,12 +54,12 @@ public class Channel {
         this.name = name;
     }
 
-    public Date getStartTime() {
-        return startTime;
+    public String getUniqueName() {
+        return uniqueName;
     }
 
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
+    public void setUniqueName(String uniqueName) {
+        this.uniqueName = uniqueName;
     }
 
     public ArrayList<String> getPositionToTileIds() {

@@ -1,9 +1,14 @@
 package com.javierarboleda.visualtilestogether.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -27,9 +32,10 @@ import com.javierarboleda.visualtilestogether.models.User;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Random;
 
 import static android.graphics.Color.BLACK;
-import static android.graphics.Color.WHITE;
+import static android.graphics.Color.TRANSPARENT;
 
 public class FirebaseUtil {
     private static final String LOG_TAG = FirebaseUtil.class.getSimpleName();
@@ -62,13 +68,25 @@ public class FirebaseUtil {
             }
         });
 
-        DatabaseReference dbChannels = dbRef.child(Channel.TABLE_NAME);
+        final DatabaseReference dbChannels = dbRef.child(Channel.TABLE_NAME);
         dbChannels.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                    String channelId = postSnapshot.getKey();
-                    setChannelQrCode(channelId);
+                for (DataSnapshot channelSnapshot: dataSnapshot.getChildren()) {
+                    String uniqueName;
+                    String channelId = channelSnapshot.getKey();
+                    if (channelSnapshot.child(Channel.CHANNEL_UNIQUE_NAME).exists()) {
+                        uniqueName = (String) channelSnapshot
+                                .child(Channel.CHANNEL_UNIQUE_NAME)
+                                .getValue();
+                    } else {
+                        uniqueName = generateChannelUniqueName(dataSnapshot);
+                        dbChannels
+                                .child(channelId)
+                                .child(Channel.CHANNEL_UNIQUE_NAME)
+                                .setValue(uniqueName);
+                    }
+                    setChannelQrCode(channelId, uniqueName);
                 }
             }
 
@@ -77,8 +95,34 @@ public class FirebaseUtil {
 
             }
         });
+    }
 
+    private static String generateChannelUniqueName(DataSnapshot dataSnapshot) {
+        String uniqueName;
+        do {
+            uniqueName = randomString(8);
+        } while (!nameIsUnique(uniqueName, dataSnapshot));
+        return uniqueName;
+    }
 
+    private static String randomString(int maxLength) {
+        StringBuilder s = new StringBuilder();
+        Random r = new Random();
+        int len = r.nextInt(maxLength - 1) + 1;
+        for (int i = 0; i < len; i++) {
+            s.append((char)(r.nextInt(26) + 'A'));
+        }
+        return s.toString();
+    }
+
+    private static boolean nameIsUnique(String name, DataSnapshot dataSnapshot) {
+        for (DataSnapshot channelSnapshot : dataSnapshot.getChildren()) {
+            Channel channel = channelSnapshot.getValue(Channel.class);
+            if (name.equals(channel.getUniqueName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -116,15 +160,17 @@ public class FirebaseUtil {
     }
 
     /**
-     * Delete a Tile, after deleting any reference to it in its Channel's tileId list.
+     * Delete a Tile, after deleting any reference to it
+     * in its Channel's and creator's tileId lists.
      * Then delete its corresponding graphic in Storage
      */
     public static void deleteTile(DatabaseReference tileRef,
                                   @NonNull String tileId,
                                   String channelId,
                                   String uId) {
-        if (channelId != null) {
-            DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+
+        if (!TextUtils.isEmpty(channelId)) {
             DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME).child(channelId);
             if (channelRef != null) {
                 DatabaseReference tileIdRef = channelRef.child(Channel.TILE_IDS).child(tileId);
@@ -132,6 +178,10 @@ public class FirebaseUtil {
                     tileIdRef.removeValue();
                 }
             }
+
+        }
+
+        if (!TextUtils.isEmpty(uId)) {
             DatabaseReference userRef = dbRef.child(User.TABLE_NAME).child(uId);
             if (userRef != null) {
                 DatabaseReference tileIdRef = userRef.child(User.TILE_IDS).child(tileId);
@@ -140,6 +190,7 @@ public class FirebaseUtil {
                 }
             }
         }
+
         tileRef.removeValue();
 
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
@@ -209,19 +260,20 @@ public class FirebaseUtil {
      * Generate a QR code for the channel,
      * for now just use the key as the encoded string
      */
-    public static void setChannelQrCode(String key) {
-        new QrTask().execute(key);
+    public static void setChannelQrCode(String channelId, String uniqueName) {
+        new QrTask().execute(channelId, uniqueName);
     }
 
     private static class QrTask extends AsyncTask<String, Integer, Boolean> {
         @Override
         protected Boolean doInBackground(String... strings) {
             final String key = strings[0];
+            final String uniqueName = strings[1];
             try {
                 // generate the QR code
                 BitMatrix bitMatrix = new MultiFormatWriter()
                         .encode(key, BarcodeFormat.QR_CODE, 400, 400);
-                Bitmap bitmap = createBitmap(bitMatrix);
+                Bitmap bitmap = textOnBitmap(createBitmap(bitMatrix), uniqueName);
 
                 // convert it to an input stream so it can be uploaded
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -257,6 +309,26 @@ public class FirebaseUtil {
             return false;
         }
 
+        private static Bitmap textOnBitmap(Bitmap bitmap, String s) {
+            Canvas canvas = new Canvas(bitmap);
+            // new antialised Paint
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(Color.rgb(0, 0, 0));
+            // text size in pixels
+            paint.setTextSize(48);
+            // text shadow
+//            paint.setShadowLayer(8f, 0f, 0f, Color.BLACK);
+
+            // draw text to the Canvas center
+            Rect bounds = new Rect();
+            paint.getTextBounds(s, 0, s.length(), bounds);
+            int x = (bitmap.getWidth() - bounds.width())/2;
+            int y = bitmap.getHeight();
+
+            canvas.drawText(s, x, y, paint);
+            return bitmap;
+        }
+
         private static Bitmap createBitmap(BitMatrix bitMatrix) {
             int w = bitMatrix.getWidth();
             int h = bitMatrix.getHeight();
@@ -264,7 +336,7 @@ public class FirebaseUtil {
             for (int y = 0; y < h; y++) {
                 int offset = y * w;
                 for (int x = 0; x < w; x++) {
-                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : WHITE;
+                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : TRANSPARENT;
                 }
             }
             Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
