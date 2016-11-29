@@ -8,30 +8,22 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
+        android:inputType="text"
         android:ems="10"
-        android:layout_marginTop="29dp"
+        android:layout_marginTop="32dp"
         android:id="@+id/etChannelName"
-        android:hint="Enter a channel name"
+        android:hint="Display name"
       />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="time"
+        android:inputType="text"
+        android:maxLength="8"
         android:ems="10"
-        android:id="@+id/etEndTime"
-        android:hint="Ending at"
+        android:id="@+id/etChannelUniqueName"
+        android:hint="Unique name (8 characters max)"
         android:layout_marginTop="16dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="time"
-        android:ems="10"
-        android:id="@+id/etStartTime"
-        android:hint="Starting at"
-        android:layout_marginTop="11dp" />
 
     <LinearLayout
         android:layout_width="wrap_content"

@@ -118,14 +118,11 @@ public class CreateJoinActivity extends AppCompatActivity implements
 
     @Override
     public void onFragmentInteraction(Channel channel) {
-        Log.d(LOG_TAG, "new channel (" + channel.getName() + ", "
-                + channel.getStartTime().toString() + ", "
-                + channel.getEndTime().toString() + ")");
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        setChannelQrCode(key);
+        setChannelQrCode(key, channel.getUniqueName());
         visualTilesTogetherApp.addListener(this);
         visualTilesTogetherApp.getUser().setChannelId(key);
         visualTilesTogetherApp.initChannel(key);
