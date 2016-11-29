@@ -12,7 +12,7 @@
         android:ems="10"
         android:layout_marginTop="32dp"
         android:id="@+id/etChannelName"
-        android:hint="Display name"
+        android:hint="Event name"
       />
 
     <EditText
@@ -22,7 +22,7 @@
         android:maxLength="8"
         android:ems="10"
         android:id="@+id/etChannelUniqueName"
-        android:hint="Unique name (8 characters max)"
+        android:hint="Event code (8 or less)"
         android:layout_marginTop="16dp" />
 
     <LinearLayout
