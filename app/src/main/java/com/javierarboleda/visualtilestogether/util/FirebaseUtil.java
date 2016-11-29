@@ -242,7 +242,7 @@ public class FirebaseUtil {
     }
 
     /**
-     * Make sure that any Channel this Tile points to
+     * Make sure that any User this Tile points to
      * has a corresponding entry in its tileId list,
      * set to true for approved and false if not
      */
@@ -251,7 +251,7 @@ public class FirebaseUtil {
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference userRef = dbRef.child(User.TABLE_NAME).child(tile.getCreatorId());
             if (userRef != null) {
-                userRef.child(User.TILE_IDS).child(tileId).setValue(true);
+                userRef.child(User.TILE_IDS).child(tileId).setValue(tile.getChannelId());
             }
         }
     }
