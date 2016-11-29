@@ -5,6 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -36,6 +38,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     private final Context mContext;
     TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
+    private int mLastPosition;
 
 
     public TileListRecyclerViewAdapter(Context context,
@@ -54,6 +57,11 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     @Override
     protected void populateViewHolder(
             final TileViewholder viewHolder, final Object object, int position) {
+        Animation animation = AnimationUtils.loadAnimation(mContext,
+                (position > mLastPosition) ? R.anim.up_from_bottom
+                        : R.anim.down_from_top);
+        viewHolder.itemView.startAnimation(animation);
+        mLastPosition = position;
         // if the key starts with a '-' then it must be a tileId...
         if (getRef(position).getKey().charAt(0) == '-') {
             doTheWork(viewHolder, getRef(position).getKey());
@@ -190,6 +198,14 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         };
 
         viewHolder.tileRef.addValueEventListener(viewHolder.tileEventListener);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(TileViewholder holder) {
+        // Prevent problems when fast scrolling due to
+        // the view being reused while the animation is happening
+        holder.itemView.clearAnimation();
+        super.onViewDetachedFromWindow(holder);
     }
 
     // run a transaction to uptick positive votes or negative votes
