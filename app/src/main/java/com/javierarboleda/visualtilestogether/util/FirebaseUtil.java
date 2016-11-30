@@ -295,11 +295,15 @@ public class FirebaseUtil {
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         // set the channel's QR code url to point to the QR code image
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        DatabaseReference channelRef = FirebaseDatabase
-                                .getInstance()
-                                .getReference()
-                                .child(Channel.TABLE_NAME);
-                        channelRef.child(key).child(Channel.QRCODE_URL).setValue(downloadUrl.toString());
+                        if (downloadUrl != null) {
+                            DatabaseReference channelRef = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference()
+                                    .child(Channel.TABLE_NAME);
+                            channelRef.child(key)
+                                    .child(Channel.QRCODE_URL)
+                                    .setValue(downloadUrl.toString());
+                        }
                     }
                 });
                 return true;
@@ -317,9 +321,7 @@ public class FirebaseUtil {
             // text size in pixels
             paint.setTextSize(48);
             // text shadow
-//            paint.setShadowLayer(8f, 0f, 0f, Color.BLACK);
-
-            // draw text to the Canvas center
+            // draw text to the Canvas bottom
             Rect bounds = new Rect();
             paint.getTextBounds(s, 0, s.length(), bounds);
             int x = (bitmap.getWidth() - bounds.width())/2;

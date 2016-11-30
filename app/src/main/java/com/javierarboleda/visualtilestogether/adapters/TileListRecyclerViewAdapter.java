@@ -1,6 +1,7 @@
 package com.javierarboleda.visualtilestogether.adapters;
 
 import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -39,6 +40,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
     private int mLastPosition;
+    private RecyclerView mRecyclerView;
 
 
     public TileListRecyclerViewAdapter(Context context,
@@ -57,10 +59,8 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     @Override
     protected void populateViewHolder(
             final TileViewholder viewHolder, final Object object, int position) {
-        Animation animation = AnimationUtils.loadAnimation(mContext,
-                (position > mLastPosition) ? R.anim.up_from_bottom
-                        : R.anim.down_from_top);
-        viewHolder.itemView.startAnimation(animation);
+
+        viewHolder.itemView.startAnimation(getAnimation(position));
         mLastPosition = position;
         // if the key starts with a '-' then it must be a tileId...
         if (getRef(position).getKey().charAt(0) == '-') {
@@ -77,6 +77,19 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
                 }
             });
+        }
+    }
+
+    private Animation getAnimation(int position) {
+        int orientation = ((LinearLayoutManager)mRecyclerView.getLayoutManager()).getOrientation();
+        if (orientation == LinearLayoutManager.VERTICAL) {
+            return AnimationUtils.loadAnimation(mContext,
+                    (position > mLastPosition) ? R.anim.in_from_bottom
+                            : R.anim.in_from_top);
+        } else {
+            return AnimationUtils.loadAnimation(mContext,
+                    (position > mLastPosition) ? R.anim.in_from_right
+                            : R.anim.in_from_left);
         }
     }
 
@@ -198,6 +211,12 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         };
 
         viewHolder.tileRef.addValueEventListener(viewHolder.tileEventListener);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mRecyclerView = recyclerView;
     }
 
     @Override
