@@ -160,6 +160,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         app.addListener(this);
 
         actionBar.setTitle(app.getChannel().getName());
+        actionBar.setSubtitle(app.getChannel().getUniqueName());
     }
 
     @Override
