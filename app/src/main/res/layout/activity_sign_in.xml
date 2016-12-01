@@ -15,6 +15,7 @@
         android:orientation="vertical"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
+        android:background="@color/darkGray"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true">
         <LinearLayout
@@ -26,8 +27,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
                 android:text="Sign in to begin Visual Tiles"
+                android:textColor="@color/white"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"/>
@@ -38,34 +39,6 @@
                 android:layout_margin="20dp"
                 android:layout_centerHorizontal="true"
                 android:layout_alignParentBottom="true"
-                />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/post_sign_in_buttons"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:text="Create or Join a channel"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"/>
-            <Button
-                android:id="@+id/btnCreateChannel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Create Channel"
-                />
-            <Button
-                android:id="@+id/btnJoinChannel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Join Channel"
                 />
         </LinearLayout>
     </LinearLayout>

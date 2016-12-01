@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+
 
 public class VisualTilesTogetherApp extends Application {
     private static final String LOG_TAG = VisualTilesTogetherApp.class.getSimpleName();
@@ -66,6 +68,12 @@ public class VisualTilesTogetherApp extends Application {
             uId = firebaseUser.getUid();
             initUser(firebaseUser);
         }
+
+        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+                .setDefaultFontPath("fonts/RobotoCondensed-Regular.ttf")
+                .setFontAttrId(R.attr.fontPath)
+                .build()
+        );
     }
 
     public FirebaseAuth getFirebaseAuth() {

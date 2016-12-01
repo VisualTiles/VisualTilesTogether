@@ -1,6 +1,7 @@
 package com.javierarboleda.visualtilestogether.util;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -29,7 +30,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import static android.graphics.Color.BLACK;
-import static android.graphics.Color.WHITE;
 
 public class FirebaseUtil {
     private static final String LOG_TAG = FirebaseUtil.class.getSimpleName();
@@ -264,7 +264,7 @@ public class FirebaseUtil {
             for (int y = 0; y < h; y++) {
                 int offset = y * w;
                 for (int x = 0; x < w; x++) {
-                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : WHITE;
+                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : Color.TRANSPARENT;
                 }
             }
             Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
