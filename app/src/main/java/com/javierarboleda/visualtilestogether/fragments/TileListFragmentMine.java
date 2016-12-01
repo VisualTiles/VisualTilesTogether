@@ -15,7 +15,7 @@ public class TileListFragmentMine extends TileListFragment {
         return dbRef
                 .child(visualTilesTogetherApp.getUid())
                 .child(User.TILE_IDS)
-                .orderByKey();
+                .orderByValue().equalTo(visualTilesTogetherApp.getChannelId());
     }
 
     @Override
