@@ -218,7 +218,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
 
     private void exitCircularReveal(final View view, final boolean finish) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-// get the center for the clipping circle
+            // get the center for the clipping circle
             int cx = view.getMeasuredWidth() / 2;
             int cy = view.getMeasuredHeight() / 2;
 
