@@ -1,8 +1,275 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="#ABC123">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ABC123"
+        android:orientation="horizontal">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:background="@color/mediumGray"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/ibSingleTileSelect"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/state_list_single_all_effects_selector_card"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_single_tile_select_24dp"/>
+
+            <ImageButton
+                android:id="@+id/ibAllTileSelect"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/state_list_single_all_effects_selector_card"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_all_tile_select_24dp"/>
+
+            <ImageButton
+                android:id="@+id/ibBackgroundSelect"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/state_list_single_all_effects_selector_card"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_fill_background"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/darkGray"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btnColor1"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:drawableTop="#F44336"
+                    android:background="#F44336"
+                    android:srcCompat="@drawable/ic_color_fill"
+                    android:tag="#F44336"
+                    android:text="Red 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor2"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:drawableTop="#E91E63"
+                    android:src="#E91E63"
+                    android:tag="#E91E63"
+                    android:text="Pink 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor3"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:drawableTop="#9C27B0"
+                    android:src="#9C27B0"
+                    android:tag="#9C27B0"
+                    android:text="Purple 500"
+                    />
+
+
+                <ImageButton
+                    android:id="@+id/btnColor13"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:tag="#3F51B5"
+                    android:src="#3F51B5"
+                    android:text="Indigo 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor4"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:drawableTop="#2196F3"
+                    android:src="#2196F3"
+                    android:tag="#2196F3"
+                    android:text="Blue 500"
+                    />
+           </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/darkGray"
+                android:orientation="horizontal">
+
+
+                <ImageButton
+                    android:id="@+id/btnColor5"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:drawableTop="#00BCD4"
+                    android:src="#00BCD4"
+                    android:tag="#00BCD4"
+                    android:text="Cyan 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor6"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:src="#009688"
+                    android:tag="#009688"
+                    android:text="Teal 500"
+                    />
+                <ImageButton
+                    android:id="@+id/btnColor7"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:src="#4CAF50"
+                    android:tag="#4CAF50"
+                    android:text="Green 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor8"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:onClick="handleButton"
+                    android:src="#8BC34A"
+                    android:tag="#8BC34A"
+                    android:text="Light Green 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor9"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:src="#CDDC39"
+                    android:tag="#CDDC39"
+                    android:text="Lime 500"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/darkGray"
+                android:orientation="horizontal">
+
+
+                <ImageButton
+                    android:id="@+id/btnColor10"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:tag="#FFC107"
+                    android:src="#FFC107"
+                    android:text="Amber 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor11"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:tag="#FF5722"
+                    android:src="#FF5722"
+                    android:text="Deep Orange 500"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor14"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:tag="#000000"
+                    android:src="#000000"
+                    android:text="Black"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor15"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:tag="#FFFFFF"
+                    android:src="#FFFFFF"
+                    android:text="White"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnColor12"
+                    style="@style/ModeratorEffectsButtons"
+                    android:layout_width="@dimen/color_button_dimen"
+                    android:layout_height="@dimen/color_button_dimen"
+                    android:padding="@dimen/color_button_padding"
+                    android:background="@drawable/state_list_effects_selector_card"
+                    android:tag=""
+                    android:srcCompat="@drawable/ic_cancel_white_24px"
+                    android:text="Transparent"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</layout>

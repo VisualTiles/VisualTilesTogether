@@ -10,8 +10,10 @@ public class Channel {
     public static final String TABLE_NAME = "channels";
     public static final String TILE_IDS = "tileIds";
     public static final String POS_TO_TILE_IDS = "positionToTileIds";
+    public static final String CHANNEL_BACKGROUND_COLOR = "channelBackgroundColor";
     public static final String CHANNEL_DISPLAY_NAME = "displayName";
     public static final String CHANNEL_UNIQUE_NAME = "uniqueName";
+    public static final String DEFAULT_TILE_COLOR = "defaultTileColor";
     public static final String QRCODE_URL = "qrCodeUrl";
     private String name;
     private String uniqueName;
@@ -36,6 +38,10 @@ public class Channel {
      * Optional: If set, overrides Layout.defaultTileColor for this channel.
      */
     private Integer defaultTileColor;
+    /**
+     * Optional: If set, overrides Layout.backgroundUrl for channel with single color.
+     */
+    private Integer channelBackgroundColor;
 
     public Channel() {
     }
@@ -169,5 +175,13 @@ public class Channel {
 
     public void setDefaultTileColor(Integer defaultTileColor) {
         this.defaultTileColor = defaultTileColor;
+    }
+
+    public Integer getChannelBackgroundColor() {
+        return channelBackgroundColor;
+    }
+
+    public void setChannelBackgroundColor(Integer channelBackgroundColor) {
+        this.channelBackgroundColor = channelBackgroundColor;
     }
 }

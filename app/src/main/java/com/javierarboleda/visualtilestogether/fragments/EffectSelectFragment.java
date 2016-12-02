@@ -2,7 +2,6 @@ package com.javierarboleda.visualtilestogether.fragments;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
-import android.media.effect.EffectUpdateListener;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -32,7 +31,6 @@ public class EffectSelectFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-
         binding.ibSingleTileSelect.setSelected(true);
 
         setOnClickListeners();
@@ -41,9 +39,10 @@ public class EffectSelectFragment extends Fragment {
     }
 
     private void effectButtonClicked(Button button, String effect) {
+        boolean broadcastToTilesNow = binding.ibAllTileSelect.isSelected();
         if (button.isSelected()) {
             button.setSelected(false);
-            mListener.updateSelectedEffect(null);
+            mListener.updateSelectedEffect(false, null);
         }
         else {
             if (mSelectedButton != null) {
@@ -51,7 +50,7 @@ public class EffectSelectFragment extends Fragment {
             }
             mSelectedButton = button;
             button.setSelected(true);
-            mListener.updateSelectedEffect(effect);
+            mListener.updateSelectedEffect(broadcastToTilesNow, effect);
         }
     }
 
@@ -144,7 +143,7 @@ public class EffectSelectFragment extends Fragment {
     }
 
     public interface EffectSelectFragmentListener {
-        void updateSelectedEffect(String effect);
+        void updateSelectedEffect(boolean broadcastToTilesNow, String effect);
         void updateMultiTile(boolean multiTile);
     }
 }

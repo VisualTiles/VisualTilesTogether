@@ -11,6 +11,8 @@ public class Tile {
     public static final String TABLE_NAME = "tiles";
     public static final String CHANNEL_ID = "channelId";
     public static final String USER_VOTES = "userVotes";
+    public static final String TILE_COLOR = "tileColor";
+    public static final String TILE_EFFECT = "tileEffect";
     private String shapeUrl;
     private String shapeFbStorage;
     private String creatorId;
@@ -29,12 +31,31 @@ public class Tile {
 
     public Tile() {}
 
+    public static boolean almostEqual(double a, double b) {
+        return Math.abs(a-b)<1E-7;
+    }
+
     public boolean equalsValue(Tile t) {
-        return (t == null ||
-                (shapeUrl != null && shapeUrl.equals(t.getShapeUrl())) &&
-                (shapeFbStorage != null && shapeFbStorage.equals(t.getShapeFbStorage())) &&
-                (creatorId != null && creatorId.equals(t.getCreatorId())) &&
-                (channelId != null && channelId.equals(t.getChannelId())) &&
+        if (t == null) return false;
+        boolean isEqual = true;
+        if (tileEffect == null && t.getTileEffect() != null) isEqual = false;
+        else if (tileEffect != null && t.getTileEffect() == null) isEqual = false;
+        else if (tileEffect != null && t.getTileEffect() != null) {
+            if (!tileEffect.getEffectType().equals(t.getTileEffect().getEffectType()))
+                isEqual = false;
+            if (!almostEqual(tileEffect.getEffectDurationPct(),
+                    t.getTileEffect().getEffectDurationPct()))
+                isEqual = false;
+            if (!almostEqual(tileEffect.getEffectOffsetPct(),
+                    t.getTileEffect().getEffectOffsetPct()))
+                isEqual = false;
+        }
+        return (isEqual &&
+                (shapeUrl == null || (shapeUrl != null && shapeUrl.equals(t.getShapeUrl()))) &&
+                (shapeFbStorage == null || (shapeFbStorage != null && shapeFbStorage.equals(t
+                .getShapeFbStorage()))) &&
+                (creatorId == null || (creatorId != null && creatorId.equals(t.getCreatorId()))) &&
+                (channelId == null || (channelId != null && channelId.equals(t.getChannelId()))) &&
                 posVotes == t.getPosVotes() &&
                 negVotes == t.getNegVotes() &&
                 approved == t.approved &&
