@@ -72,7 +72,7 @@
                     android:padding="@dimen/color_button_padding"
                     android:drawableTop="#F44336"
                     android:background="#F44336"
-                    android:srcCompat="@drawable/ic_color_fill"
+                    app:srcCompat="@drawable/ic_color_fill"
                     android:tag="#F44336"
                     android:text="Red 500"
                     />
@@ -265,7 +265,7 @@
                     android:padding="@dimen/color_button_padding"
                     android:background="@drawable/state_list_effects_selector_card"
                     android:tag=""
-                    android:srcCompat="@drawable/ic_cancel_white_24px"
+                    app:srcCompat="@drawable/ic_cancel_white_24px"
                     android:text="Transparent"
                     />
             </LinearLayout>
