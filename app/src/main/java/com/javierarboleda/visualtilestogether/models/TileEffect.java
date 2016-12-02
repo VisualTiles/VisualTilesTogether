@@ -15,7 +15,9 @@ public class TileEffect {
     public enum EffectType {
         NONE,
         FADE_HALF,
-        FLIP_HORIZONTAL,
+        FLIP_HORIZONTAL,  // DEPRECATED.
+        FLIP_HORIZONTAL_LEFT,
+        FLIP_HORIZONTAL_RIGHT,
         FLY_AWAY,
         FREEZE,
         ROTATE_LEFT,

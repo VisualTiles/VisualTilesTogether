@@ -72,8 +72,7 @@ public class VisualTilesTogetherApp extends Application {
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/RobotoCondensed-Regular.ttf")
                 .setFontAttrId(R.attr.fontPath)
-                .build()
-        );
+                .build());
     }
 
     public FirebaseAuth getFirebaseAuth() {
@@ -100,20 +99,29 @@ public class VisualTilesTogetherApp extends Application {
         return tileObservableArrayMap;
     }
 
+    public void signOut() {
+        cleanUpSession();
+        getFirebaseAuth().signOut();
+    }
+    private void cleanUpSession() {
+        user = null;
+        uId = null;
+        channelId = null;
+        channel = null;
+        if (dbChannelRef != null)
+            dbChannelRef.removeEventListener(channelValueEventListener);
+        dbChannelRef = null;
+        tileObservableArrayMap.clear();
+        if (dbTileRef != null)
+            dbTileRef.removeEventListener(tileEventListener);
+    }
+
     private ValueEventListener userValueEventListener =
             new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.getKey() != uId) {
-                        // TODO(team): Refactor this out of here to a 'signout' state.
-                        channelId = null;
-                        channel = null;
-                        if (dbChannelRef != null)
-                            dbChannelRef.removeEventListener(channelValueEventListener);
-                        dbChannelRef = null;
-                        tileObservableArrayMap.clear();
-                        if (dbTileRef != null)
-                            dbTileRef.removeEventListener(tileEventListener);
+                        cleanUpSession();
                     }
                     if (dataSnapshot.exists()) {
                         uId = dataSnapshot.getKey();
@@ -132,9 +140,17 @@ public class VisualTilesTogetherApp extends Application {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                        if (listener.get() != null)
-                            listener.get().onError(databaseError);
+                    // This was no error if the user is being logged out. Notify in onUserUpdated.
+                    if (uId == null || user == null) {
+                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                            if (listener.get() != null)
+                                listener.get().onUserUpdated();
+                        }
+                    } else {
+                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                            if (listener.get() != null)
+                                listener.get().onError(databaseError);
+                        }
                     }
                 }
             };
@@ -167,9 +183,17 @@ public class VisualTilesTogetherApp extends Application {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                        if (listener.get() != null)
-                            listener.get().onError(databaseError);
+                    // This was no error if the channel is left. Notify in onChannelUpdated.
+                    if (channelId == null || channel == null) {
+                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                            if (listener.get() != null)
+                                listener.get().onChannelUpdated();
+                        }
+                    } else {
+                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                            if (listener.get() != null)
+                                listener.get().onError(databaseError);
+                        }
                     }
                 }
             };

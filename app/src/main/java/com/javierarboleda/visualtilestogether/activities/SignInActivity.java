@@ -195,7 +195,6 @@ public class SignInActivity extends AppCompatActivity implements
 
     @Override
     public void onError(DatabaseError error) {
-        Toast.makeText(this, "Oh no! User db failed (or cancelled)!", Toast.LENGTH_LONG).show();
         showPreSignInButtons();
     }
 

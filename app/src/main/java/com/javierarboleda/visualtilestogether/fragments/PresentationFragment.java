@@ -1,5 +1,6 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.databinding.ObservableMap;
 import android.graphics.PorterDuff;
@@ -13,8 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
@@ -36,7 +35,7 @@ import com.javierarboleda.visualtilestogether.models.Layout;
 import com.javierarboleda.visualtilestogether.models.Rect;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.TileEffect;
-import com.javierarboleda.visualtilestogether.util.TileEffectTransformer;
+import com.javierarboleda.visualtilestogether.util.TileEffectTransformer2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,13 +61,12 @@ public class PresentationFragment extends Fragment
     private PercentFrameLayout viewContainer;
     private HashMap<Integer, ImageView> imageResourceImageViews;
     private HashMap<Integer, ImageView> tileFrontImageViews;
-    private HashMap<Integer, Animation> tileAnimations;
+    private HashMap<Integer, AnimatorSet> tileAnimations;
     private HashMap<Integer, Tile> tileCache;
-    private Animation defaultAnimation;
     private Handler animationHandler = new Handler();
     private int masterEffectDuration = 5000;
     private TileEffect defaultEffect;
-    private TileEffectTransformer tileEffectTransformer;
+    private TileEffectTransformer2 tileEffectTransformer;
     private LayoutInflater inflater;
     private boolean isPaused = true;
 
@@ -155,7 +153,7 @@ public class PresentationFragment extends Fragment
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            updateTile(position, newTile, true);
+                            updateTile(position, newTile);
                         }
                     });
                     break;
@@ -261,16 +259,19 @@ public class PresentationFragment extends Fragment
         return layout.getDefaultTileColor();
     }
 
-    public void updateTile(int position, Tile tile, boolean runNow) {
+    public void updateTile(final int position, Tile tile) {
         tileCache.put(position, tile);
 
         if (layout == null) return;
         if (position >= layout.getTileCount()) return;
 
         loadTileImage(position, tileFrontImageViews.get(position));
-        // Fire animation onw because the effect is the only mutable field.
-        // TODO(team): Adjust tile start to reflect its delta from master channel start time.
-        scheduleTileAnimation(position, true, runNow, getStartTime());
+        animationHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                scheduleTileAnimation(position);
+            }
+        }, getStartDelay());
     }
 
     private void drawLayout() {
@@ -281,6 +282,12 @@ public class PresentationFragment extends Fragment
                 view = buildTileView(i);
                 viewContainer.addView(view);
                 tileFrontImageViews.put(i, view);
+            }
+            if (tileAnimations.containsKey(i)) {
+                tileAnimations.get(i).removeAllListeners();
+                tileAnimations.get(i).end();
+                tileAnimations.get(i).cancel();
+                tileAnimations.remove(i);
             }
             moveRelativeView(view, layout.getTilePositions().get(i));
             loadTileImage(i, view);
@@ -308,45 +315,13 @@ public class PresentationFragment extends Fragment
             if (key >= 0 && key < layout.getTileCount())
                 break;
             if (tileAnimations.containsKey(key)) {
-                // tileAnimations.remove(key);
+                tileAnimations.get(key).removeAllListeners();
+                tileAnimations.get(key).end();
+                tileAnimations.get(key).cancel();
+                tileAnimations.remove(key);
             }
             final View discardedView = entry.getValue();
-            if (discardedView.getAnimation() != null) {
-                discardedView.getAnimation().cancel();
-                final Animation.AnimationListener listener = new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        viewContainer.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        viewContainer.removeView(discardedView);
-                                    }
-                                });
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                };
-                Animation deathAnimation = new AlphaAnimation(0f, 0f);
-                deathAnimation.setDuration(1);
-                deathAnimation.setInterpolator(new LinearInterpolator());
-                deathAnimation.setAnimationListener(listener);
-                discardedView.startAnimation(deathAnimation);
-            } else {
-                viewContainer.removeView(discardedView);
-            }
+            viewContainer.removeView(discardedView);
             iterator.remove();
         }
         iterator = imageResourceImageViews.entrySet().iterator();
@@ -354,7 +329,8 @@ public class PresentationFragment extends Fragment
             Map.Entry<Integer, ImageView> entry = iterator.next();
             if (entry.getKey() >= 0 && entry.getKey() < layout.getImageCount())
                 break;
-            viewContainer.removeView(entry.getValue());
+            final View discardedView = entry.getValue();
+            viewContainer.removeView(discardedView);
             iterator.remove();
         }
         String backgroundUrl = layout.getBackgroundUrl();
@@ -375,7 +351,7 @@ public class PresentationFragment extends Fragment
     private void loadChannelData() {
         Channel channel = app.getChannel();
         masterEffectDuration = (int) channel.getMasterEffectDuration();
-        tileEffectTransformer = new TileEffectTransformer(getContext(), masterEffectDuration);
+        tileEffectTransformer = new TileEffectTransformer2(getContext(), masterEffectDuration);
 
         String newLayoutId = app.getChannel().getLayoutId();
         if (newLayoutId != null && !newLayoutId.isEmpty()) {
@@ -406,14 +382,13 @@ public class PresentationFragment extends Fragment
             // Unset fields are markers.
             // TODO(team): Load a placeholder image in this case?
             if (tileId.isEmpty()) {
-                updateTile(i, null, false);
+                updateTile(i, null);
             }
             Tile tile = app.getTileObservableArrayMap().get(tileId);
-            updateTile(i, tile, false);
+            updateTile(i, tile);
         }
 
         defaultEffect = channel.getDefaultEffect();
-        invalidateAllTileAnimations(false);
         resyncAndStartAnimation();
     }
 
@@ -429,73 +404,59 @@ public class PresentationFragment extends Fragment
         return iv;
     }
 
-    private long getStartTime() {
+    private long getStartDelay() {
         long syncTime = app.getChannel().getChannelSyncTime();
         long time = AnimationUtils.currentAnimationTimeMillis();
         long delay = (time - syncTime) % masterEffectDuration;
-        long startTime = time - delay;
-        return startTime;
+        return delay;
     }
+
     private Runnable animationRunner = new Runnable() {
         @Override
         public void run() {
-            // Keep heartbeat going reagrdless of if the layout is ready.
-            animationHandler.postDelayed(animationRunner, masterEffectDuration);
-            long startTime = getStartTime();
+            // Transformer Animators are infinitely repeating now.
+            // Keep heartbeat going regardless of if the layout is ready.
+            // animationHandler.postDelayed(animationRunner, masterEffectDuration);
+
             if (layout == null) return;
             for (int i = 0; i < layout.getTileCount(); i++) {
-                scheduleTileAnimation(i, false, true, startTime);
+                scheduleTileAnimation(i);
             }
         }
     };
 
-    private void invalidateAllTileAnimations(boolean runNow) {
-        // This function can be skipped when layout is not ready, because drawLayout handles this.
-        if (layout == null)
-            return;
-        long startTime = getStartTime();
-        for (int i = 0; i < layout.getTileCount(); i++) {
-            scheduleTileAnimation(i, true, runNow, startTime);
-        }
-    }
-
-    private void scheduleTileAnimation(int i, boolean invalidate, boolean runNow, long startTime) {
+    private void scheduleTileAnimation(int i) {
         ImageView tileIv = tileFrontImageViews.get(i);
         if (tileIv == null)
             return;
-        // tileIv.clearAnimation();
         Tile loadedTile = tileCache.get(i);
         if (loadedTile == null)
             return;
+        // When this function is called, rebuild animation set.
+        AnimatorSet animatorSet = tileAnimations.get(i);
+        if (animatorSet != null) {
+            animatorSet.removeAllListeners();
+            animatorSet.end();
+            animatorSet.cancel();
+        }
+
+        animatorSet = new AnimatorSet();
+        // The caller of this function now handles it.
+        animatorSet.setInterpolator(new LinearInterpolator());
         boolean hasEffect = loadedTile.getTileEffect() != null;
-        Animation effect = null;
         if (hasEffect) {
-            if (invalidate || tileAnimations.get(i) == null) {
-                if (tileAnimations.get(i) != null) {
-                    tileAnimations.get(i).cancel();
-                }
-                effect = tileEffectTransformer.processTileEffect(loadedTile.getTileEffect());
-                tileAnimations.put(i, effect);
-            } else {
-                effect = tileAnimations.get(i);
-            }
+            tileEffectTransformer.processTileEffect(animatorSet, tileIv,
+                    loadedTile.getTileEffect());
         } else {
-            if (invalidate || defaultEffect == null) {
-                defaultAnimation = tileEffectTransformer.processTileEffect(defaultEffect);
-            }
-            effect = defaultAnimation;
+            tileEffectTransformer.processTileEffect(animatorSet, tileIv,
+                    defaultEffect);
         }
-        if (effect != null) {
-            effect.setStartTime(startTime);
-            if (runNow) {
-                tileIv.startAnimation(effect);
-            }
-        }
+        animatorSet.start();
+        tileAnimations.put(i, animatorSet);
     }
 
     private void resyncAndStartAnimation() {
-        animationHandler.removeCallbacks(animationRunner);
-        animationHandler.post(animationRunner);
+        animationHandler.postDelayed(animationRunner, getStartDelay());
         // Note: This function always waits an entire revolution... maybe have it run in the past?
         // tile animations will need to be seeded with delay - duration as their start time.
     }

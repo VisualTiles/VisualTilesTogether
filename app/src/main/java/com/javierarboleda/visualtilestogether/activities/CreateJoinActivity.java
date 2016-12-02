@@ -46,6 +46,10 @@ public class CreateJoinActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
         visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
+        if (visualTilesTogetherApp.getUser() == null) {
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+        }
         visualTilesTogetherApp.addListener(this);
     }
 
@@ -105,13 +109,12 @@ public class CreateJoinActivity extends AppCompatActivity implements
         return channelId.matches("[-A-Za-z0-9_]*");
     }
 
-
     public void joinEventOnClick(View view) {
         final String channel = binding.etEventCode.getText().toString();
         if (channel == null || channel.isEmpty()) {
             visualTilesTogetherApp.initChannel();
         } else {
-            if (channel.charAt(0) == '-') {
+            if (channel.length() >= 16  ) {
                 // probably a channelId
                 visualTilesTogetherApp.initChannel(channel);
             } else {
@@ -172,14 +175,20 @@ public class CreateJoinActivity extends AppCompatActivity implements
     @Override
     public void onUserUpdated() {
         // User updates may naturally happen (if channel ID changes for example).
-        // Do nothing.
+        // Only handle log-out race conditions.
+        if (visualTilesTogetherApp.getUser() == null) {
+            startActivity(new Intent(this, SignInActivity.class));
+            finish();
+        }
     }
 
     @Override
     public void onChannelUpdated() {
         if (visualTilesTogetherApp.getChannel() == null) {
-            Toast.makeText(this, "Channel is null but IDK LOL!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Joining channel failed.", Toast.LENGTH_LONG).show();
+            return;
         }
+        // Channel is ready.
         startActivity(new Intent(this, TileListActivity.class));
         finish();
     }

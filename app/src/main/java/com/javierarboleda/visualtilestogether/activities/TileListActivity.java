@@ -15,7 +15,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -42,7 +41,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private GoogleApiClient mGoogleApiClient;
     private VisualTilesTogetherApp app;
 
-    private Menu menu;
     private Toolbar mToolbar;
     private DrawerLayout mDrawer;
     private NavigationView nvDrawer;
@@ -114,6 +112,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     private void selectDrawerItem(MenuItem menuItem) {
+        if (menuItem.getGroupId() == R.id.nav_item_moderator_console && !app.isChannelModerator()) {
+            return;
+        }
 
         switch (menuItem.getItemId()) {
             case R.id.nav_present:
@@ -142,7 +143,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 finish();
                 break;
             case R.id.nav_sign_out:
-                app.getFirebaseAuth().signOut();
+                app.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 startActivity(new Intent(this, SignInActivity.class));
                 finish();
@@ -169,62 +170,15 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         super.onDestroy();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.main_menu, menu);
-//        this.menu = menu;
-//        menu.setGroupVisible(R.id.menu_moderator_controls, app.isChannelModerator());
-//        return true;
-//    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         // Pass the event to ActionBarDrawerToggle
         // If it returns true, then it has handled
         // the nav drawer indicator touch event
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
-        if (item.getGroupId() == R.id.menu_item_normalize_db && !app.isChannelModerator()) {
-            return false;
-        }
-        switch (item.getItemId()) {
-            case R.id.menu_item_present:
-                startActivity(new Intent(this, PresentationActivity.class));
-                return true;
-            case R.id.menu_item_moderator_console:
-                startActivity(new Intent(this, ModeratorConsoleActivity.class));
-                return true;
-            case R.id.menu_item_leave_channel:
-                app.leaveChannel();
-                startActivity(new Intent(this, CreateJoinActivity.class));
-                finish();
-                return true;
-            case R.id.menu_item_sign_out:
-                app.getFirebaseAuth().signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                startActivity(new Intent(this, SignInActivity.class));
-                return true;
-            case R.id.menu_item_show_code:
-                final Snackbar snackBar = Snackbar.make(findViewById(R.id.clMainLayout), app.getChannelId(), Snackbar.LENGTH_INDEFINITE);
-
-                snackBar.setAction("Dismiss", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        snackBar.dismiss();
-                    }
-                });
-                snackBar.show();
-                return true;
-            case R.id.menu_item_normalize_db:
-                normalizeDb();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
