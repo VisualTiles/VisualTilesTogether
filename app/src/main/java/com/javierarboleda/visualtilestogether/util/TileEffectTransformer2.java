@@ -7,6 +7,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 
 import com.javierarboleda.visualtilestogether.models.TileEffect;
 
@@ -81,21 +82,24 @@ public class TileEffectTransformer2 {
                 as.play(rotateRight);
                 break;
             case FLY_AWAY:
-                ObjectAnimator rotateAway = ObjectAnimator.ofFloat(view, "rotation", 0f, 360f);
-                applyDuration(rotateAway, delay, duration);
-                float r = view.getRootView().getRight();
-                ObjectAnimator translateAwayX = ObjectAnimator.ofFloat(view, "translationX", 0f,
-                        new Random().nextFloat()*r*2-r - view.getLeft());
-                applyDuration(translateAwayX, delay, duration);
-                ObjectAnimator translateAwayY = ObjectAnimator.ofFloat(view, "translationY", 0f,
+                ObjectAnimator rotateAway = ObjectAnimator.ofFloat(view, "rotation", 0f, 90f);
+                float r = view.getRootView().getRight() - view.getLeft();
+                ObjectAnimator translateAwayX = ObjectAnimator.ofFloat(view, "translationX",
+                        0,
+                        (new Random().nextFloat()*r*2)-r);
+                ObjectAnimator translateAwayY = ObjectAnimator.ofFloat(view, "translationY",
+                        0,
                         view.getRootView().getBottom() - view.getTop());
+                applyDuration(rotateAway, delay, duration);
+                applyDuration(translateAwayX, delay, duration);
                 applyDuration(translateAwayY, delay, duration);
-                rotateAway.setRepeatMode(ValueAnimator.RESTART);
+                rotateAway.setRepeatMode(ValueAnimator.REVERSE);
+                translateAwayX.setRepeatMode(ValueAnimator.REVERSE);
+                translateAwayY.setRepeatMode(ValueAnimator.REVERSE);
                 rotateAway.setRepeatCount(ValueAnimator.INFINITE);
-                translateAwayX.setRepeatMode(ValueAnimator.RESTART);
                 translateAwayX.setRepeatCount(ValueAnimator.INFINITE);
-                translateAwayY.setRepeatMode(ValueAnimator.RESTART);
                 translateAwayY.setRepeatCount(ValueAnimator.INFINITE);
+                as.setInterpolator(new AccelerateDecelerateInterpolator());
                 as.playTogether(rotateAway, translateAwayX, translateAwayY);
                 break;
             /*

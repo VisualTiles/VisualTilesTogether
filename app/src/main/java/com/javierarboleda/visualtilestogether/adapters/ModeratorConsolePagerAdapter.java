@@ -4,6 +4,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.javierarboleda.visualtilestogether.fragments.ColorSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileSelectFragment;
 
@@ -24,15 +25,15 @@ public class ModeratorConsolePagerAdapter extends FragmentPagerAdapter {
                 return new TileSelectFragment();
             case 1:
                 return new EffectSelectFragment();
-//            case 2:
-//                return new ColorSelectFragment();
+            case 2:
+                return new ColorSelectFragment();
         }
         return null;
     }
 
     @Override
     public int getCount() {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -43,8 +44,8 @@ public class ModeratorConsolePagerAdapter extends FragmentPagerAdapter {
                 return "Tiles";
             case 1:
                 return "Effects";
-//            case 2:
-//                return "Color";
+            case 2:
+                return "Color";
         }
 
         return super.getPageTitle(position);

@@ -69,6 +69,7 @@ public class PresentationFragment extends Fragment
     private TileEffectTransformer2 tileEffectTransformer;
     private LayoutInflater inflater;
     private boolean isPaused = true;
+    private Integer backgroundColor = null;
 
     private String layoutId = null;
     private Layout layout;
@@ -146,6 +147,7 @@ public class PresentationFragment extends Fragment
             for (int i = 0; i < layout.getTileCount(); i++) {
                 final int position = i;
                 Tile tile = tileCache.get(i);
+                // NOTE: There can be multiple tiles for each image. Don't break early.
                 if (tile != null && tile.getTileId().equals(key)) {
                     // Found the tile that updated. Update it in layout.
                     // I'm pretty sure this event handler doesn't run on the UI thread,
@@ -156,7 +158,6 @@ public class PresentationFragment extends Fragment
                             updateTile(position, newTile);
                         }
                     });
-                    break;
                 }
             }
         }
@@ -283,14 +284,9 @@ public class PresentationFragment extends Fragment
                 viewContainer.addView(view);
                 tileFrontImageViews.put(i, view);
             }
-            if (tileAnimations.containsKey(i)) {
-                tileAnimations.get(i).removeAllListeners();
-                tileAnimations.get(i).end();
-                tileAnimations.get(i).cancel();
-                tileAnimations.remove(i);
-            }
             moveRelativeView(view, layout.getTilePositions().get(i));
             loadTileImage(i, view);
+            scheduleTileAnimation(i);
         }
         for (int i = 0; i < layout.getImageCount(); i++) {
             ImageView view = imageResourceImageViews.get(i);
@@ -333,17 +329,21 @@ public class PresentationFragment extends Fragment
             viewContainer.removeView(discardedView);
             iterator.remove();
         }
-        String backgroundUrl = layout.getBackgroundUrl();
-        if (backgroundUrl != null) {
-            Glide.with(this).load(backgroundUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .placeholder(new ColorDrawable(layout.getBackgroundColor()))
-                    .into(new ViewTarget<View, GlideDrawable>(mainLayout) {
-                        @Override
-                        public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                            this.view.setBackground(resource);
-                        }
-                    });
+        if (backgroundColor == null) {
+            String backgroundUrl = layout.getBackgroundUrl();
+            if (backgroundUrl != null) {
+                Glide.with(this).load(backgroundUrl)
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .placeholder(new ColorDrawable(layout.getBackgroundColor()))
+                        .into(new ViewTarget<View, GlideDrawable>(mainLayout) {
+                            @Override
+                            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                this.view.setBackground(resource);
+                            }
+                        });
+            }
+        } else {
+            mainLayout.setBackgroundColor(backgroundColor);
         }
         viewContainer.invalidate();
     }
@@ -352,6 +352,10 @@ public class PresentationFragment extends Fragment
         Channel channel = app.getChannel();
         masterEffectDuration = (int) channel.getMasterEffectDuration();
         tileEffectTransformer = new TileEffectTransformer2(getContext(), masterEffectDuration);
+        boolean needsDraw = false;
+        if (channel.getChannelBackgroundColor() != backgroundColor)
+            needsDraw = true;
+        backgroundColor = channel.getChannelBackgroundColor();
 
         String newLayoutId = app.getChannel().getLayoutId();
         if (newLayoutId != null && !newLayoutId.isEmpty()) {
@@ -370,7 +374,7 @@ public class PresentationFragment extends Fragment
         } else {
             // Channel doesn't have a layout ID. Use demo.
             layout = Layout.createDemoLayout();
-            drawLayout();
+            needsDraw = true;
         }
 
         // Lightweight image updater. Not necessary because drawLayout does this too.
@@ -388,6 +392,7 @@ public class PresentationFragment extends Fragment
             updateTile(i, tile);
         }
 
+        if (needsDraw) drawLayout();
         defaultEffect = channel.getDefaultEffect();
         resyncAndStartAnimation();
     }
@@ -439,6 +444,8 @@ public class PresentationFragment extends Fragment
             animatorSet.end();
             animatorSet.cancel();
         }
+        tileIv.requestLayout();
+        tileIv.invalidate();
 
         animatorSet = new AnimatorSet();
         // The caller of this function now handles it.

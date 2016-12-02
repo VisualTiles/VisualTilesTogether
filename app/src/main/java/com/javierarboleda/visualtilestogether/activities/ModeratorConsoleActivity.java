@@ -16,6 +16,7 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.ModeratorConsolePagerAdapter;
 import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsole1Binding;
+import com.javierarboleda.visualtilestogether.fragments.ColorSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.PresentationFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
@@ -24,6 +25,7 @@ import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.TileEffect;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created on 11/15/16.
@@ -32,8 +34,8 @@ import java.util.ArrayList;
 public class ModeratorConsoleActivity extends AppCompatActivity
                 implements PresentationFragment.PresentationFragmentListener,
                     TileListFragment.TileListFragmentListener,
-                    EffectSelectFragment.EffectSelectFragmentListener{
-
+                    EffectSelectFragment.EffectSelectFragmentListener,
+                    ColorSelectFragment.ColorSelectFragmentListener {
     private ActivityModeratorConsole1Binding binding;
     private VisualTilesTogetherApp app;
 
@@ -42,6 +44,9 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     private String mSelectedEffect;
     private boolean mMultiTile;
 
+    private ColorSelectFragment.ColorFillMode colorFillMode =
+            ColorSelectFragment.ColorFillMode.SINGLE_TILE;
+    private Integer selectedColor = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,7 +69,6 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     }
 
     private void setUpTabLayout() {
-
         ViewPager viewPager = binding.viewPager;
         ModeratorConsolePagerAdapter pagerAdapter =
                 new ModeratorConsolePagerAdapter(getSupportFragmentManager());
@@ -95,7 +99,6 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     // run a transaction to to update the tileId of the position in channel
     private void updateDbPositionToTileId(DatabaseReference channelRef, final Tile tile,
                                           final int position) {
-
         channelRef.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
@@ -138,71 +141,77 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         });
     }
 
-    // run a transaction to to update the tileId of the position in channel
-    private void updateDbTileEffect(DatabaseReference channelRef) {
-
-        channelRef.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
-                Tile tile = mutableData.getValue(Tile.class);
-                if (tile == null) {
-                    return Transaction.success(mutableData);
-                }
-
-                if (tile.getTileEffect() == null) {
-                    TileEffect tileEffect = new TileEffect();
-                    tileEffect.setEffectDurationPct(1.0);
-                    tileEffect.setEffectOffsetPct(0.0);
-                    tileEffect.setStartTimeMillis(1L);
-                    tileEffect.setEffectType(mSelectedEffect);
-                    tile.setTileEffect(tileEffect);
-                } else {
-                    tile.getTileEffect().setEffectType(mSelectedEffect);
-                }
-
-                mutableData.setValue(tile);
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b,
-                                   DataSnapshot dataSnapshot) {
-//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
-            }
-        });
-    }
-
     @Override
     public void onTileTapped(int position, Tile tile) {
-
-        if (mSelectedTile != null && mPagePosition == 0) {
-
-            final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-            final DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME)
-                    .child(app.getChannelId());
-
-            updateDbPositionToTileId(channelRef, tile, position);
-        } else if (mMultiTile) {
-
-            for (int i = 0; i < app.getChannel().getPositionToTileIds().size(); i++) {
-                initiateAndUpdateTileEffect(i);
-            }
-
-        } else if (mSelectedEffect != null && !mSelectedEffect.isEmpty() && mPagePosition == 1) {
-
-            initiateAndUpdateTileEffect(position);
+        switch(mPagePosition) {
+            case 0:
+                if (mSelectedTile != null) {
+                    final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+                    final DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME)
+                            .child(app.getChannelId());
+                    updateDbPositionToTileId(channelRef, tile, position);
+                }
+                break;
+            case 1:
+                if (mMultiTile) {
+                    initiateAndUpdateTileEffect(0, app.getChannel().getPositionToTileIds().size());
+                } else if (mSelectedEffect != null && !mSelectedEffect.isEmpty()) {
+                    initiateAndUpdateTileEffect(position, position + 1);
+                }
+                break;
+            case 2:
+                switch (colorFillMode) {
+                    case MULTI_TILE:
+                        initiateAndUpdateTileColor(
+                                0, app.getChannel().getPositionToTileIds().size());
+                        break;
+                    case SINGLE_TILE:
+                        initiateAndUpdateTileColor(position, position + 1);
+                        break;
+                    case BACKGROUND:
+                        // Background switches don't change on tile tap.
+                        break;
+                }
+                break;
         }
     }
 
-    private void initiateAndUpdateTileEffect(int position) {
-        String tileKey = app.getChannel().getPositionToTileIds().get(position);
-
-        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        final DatabaseReference channelRef = dbRef.child(Tile.TABLE_NAME)
-                .child(tileKey);
-
-        updateDbTileEffect(channelRef);
+    private void initiateAndUpdateTileEffect(final int start, final int end) {
+        if (app.getChannel().getPositionToTileIds() == null)
+            return;
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference()
+                .child(Tile.TABLE_NAME);
+        HashMap<String, Object> effectMap = new HashMap<>();
+        TileEffect tileEffect = new TileEffect();
+        tileEffect.setEffectDurationPct(1.0);
+        tileEffect.setEffectOffsetPct(0.0);
+        tileEffect.setStartTimeMillis(0L);
+        tileEffect.setEffectType(mSelectedEffect);
+        for (int i = start; i < end; i++) {
+            String tileKey = app.getChannel().getPositionToTileIds().get(i);
+            if (tileKey == null) continue;
+            effectMap.put(tileKey + "/" + Tile.TILE_EFFECT, tileEffect);
+        }
+        if (effectMap.size() > 0)
+            dbRef.updateChildren(effectMap);
     }
+
+
+    private void initiateAndUpdateTileColor(final int start, final int end) {
+        if (app.getChannel().getPositionToTileIds() == null)
+            return;
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference()
+                .child(Tile.TABLE_NAME);
+        HashMap<String, Object> effectMap = new HashMap<>();
+        for (int i = start; i < end; i++) {
+            String tileKey = app.getChannel().getPositionToTileIds().get(i);
+            if (tileKey == null) continue;
+            effectMap.put(tileKey + "/" + Tile.TILE_COLOR, selectedColor);
+        }
+        if (effectMap.size() > 0)
+            dbRef.updateChildren(effectMap);
+    }
+
 
     @Override
     public void updateSelectedTile(Tile tile) {
@@ -210,12 +219,49 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     }
 
     @Override
-    public void updateSelectedEffect(String effect) {
+    public void updateSelectedEffect(boolean broadcastToTilesNow, String effect) {
         mSelectedEffect = effect;
+        if (broadcastToTilesNow) {
+            if (app.getChannel().getPositionToTileIds() == null)
+                return;
+            initiateAndUpdateTileEffect(0, app.getChannel().getPositionToTileIds().size());
+        }
     }
 
     @Override
     public void updateMultiTile(boolean multiTile) {
         mMultiTile = multiTile;
+    }
+
+    @Override
+    public void updateFillMode(ColorSelectFragment.ColorFillMode mode) {
+        colorFillMode = mode;
+    }
+
+    @Override
+    public void updateSelectedColor(ColorSelectFragment.ColorFillMode mode, Integer color) {
+        colorFillMode = mode;
+        selectedColor = color;
+        // Broadcast now for selected modes.
+        switch (mode) {
+            case MULTI_TILE:
+                if (app.getChannel().getPositionToTileIds() != null) {
+                    // Remove tile color.
+                    selectedColor = null;
+                    initiateAndUpdateTileColor(0, app.getChannel().getPositionToTileIds().size());
+                    selectedColor = color;
+                }
+                app.getChannel().setDefaultTileColor(selectedColor);
+                FirebaseDatabase.getInstance().getReference()
+                        .child(Channel.TABLE_NAME).child(app.getChannelId())
+                        .setValue(app.getChannel());
+                break;
+            case BACKGROUND:
+                app.getChannel().setChannelBackgroundColor(selectedColor);
+                FirebaseDatabase.getInstance().getReference()
+                        .child(Channel.TABLE_NAME).child(app.getChannelId())
+                        .setValue(app.getChannel());
+                break;
+        }
     }
 }

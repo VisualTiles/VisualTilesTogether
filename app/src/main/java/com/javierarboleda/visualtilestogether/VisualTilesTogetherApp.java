@@ -5,7 +5,6 @@ import android.databinding.ObservableArrayMap;
 import android.util.Log;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -103,17 +102,24 @@ public class VisualTilesTogetherApp extends Application {
         cleanUpSession();
         getFirebaseAuth().signOut();
     }
-    private void cleanUpSession() {
-        user = null;
-        uId = null;
-        channelId = null;
-        channel = null;
+    private void cleanUpChannel() {
+        this.channel = null;
+        this.channelId = null;
         if (dbChannelRef != null)
             dbChannelRef.removeEventListener(channelValueEventListener);
         dbChannelRef = null;
-        tileObservableArrayMap.clear();
         if (dbTileRef != null)
             dbTileRef.removeEventListener(tileEventListener);
+        dbTileRef = null;
+        tileObservableArrayMap.clear();
+    }
+    private void cleanUpSession() {
+        // Clean up channel derived fields.
+        cleanUpChannel();
+        dbUserRef.removeEventListener(userValueEventListener);
+        user = null;
+        uId = null;
+        dbUserRef = null;
     }
 
     private ValueEventListener userValueEventListener =
@@ -255,7 +261,7 @@ public class VisualTilesTogetherApp extends Application {
                 tileObservableArrayMap.put(key, tile);
                 Glide.with(VisualTilesTogetherApp.this)
                         .load(tile.getShapeUrl())
-                        .diskCacheStrategy(DiskCacheStrategy.SOURCE);
+                        .downloadOnly(400, 400);
             }
             for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                 if (listener.get() != null)
@@ -314,13 +320,13 @@ public class VisualTilesTogetherApp extends Application {
                 .orderByChild(Tile.CHANNEL_ID).equalTo(channelId);
         // Adds unnecessary complexity (onChildMoved):
         // .orderByChild(Tile.POS_VOTES_ID);
+        dbTileRef.removeEventListener(tileEventListener);
         dbTileRef.addChildEventListener(tileEventListener);
         // dbTileRef.addValueEventListener(tileEventListener);
     }
 
     public void leaveChannel() {
-        this.channel = null;
-        this.channelId = null;
+        cleanUpChannel();
         if (this.user != null && dbUserRef != null) {
             user.setChannelId(null);
             dbUserRef.child(User.CHANNEL_ID).setValue(null);
