@@ -2,7 +2,6 @@ package com.javierarboleda.visualtilestogether.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -12,6 +11,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -75,16 +75,9 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(TileListActivity.this, TileCreationActivity.class);
-                exitCircularReveal(fab, false);
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    Bundle bundle = ActivityOptions
-                            .makeSceneTransitionAnimation(TileListActivity.this)
-                            .toBundle();
-                    startActivity(intent,bundle);
-                }
-                else {
-                    startActivity(intent);
-                }
+                ActivityOptionsCompat options = ActivityOptionsCompat
+                        .makeSceneTransitionAnimation(TileListActivity.this, fab, "fabanimation");
+                startActivity(intent, options.toBundle());
             }
         });
 
