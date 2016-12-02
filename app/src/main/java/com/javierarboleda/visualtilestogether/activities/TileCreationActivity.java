@@ -1,14 +1,24 @@
 package com.javierarboleda.visualtilestogether.activities;
 
+import android.animation.AnimatorSet;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Fade;
+import android.transition.Slide;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
@@ -30,6 +40,8 @@ public class TileCreationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_tile_creation);
 
+        setUpToolbar();
+
         mCanvas = binding.cvVisualTile;
 
         Display d = getWindowManager().getDefaultDisplay();
@@ -42,6 +54,23 @@ public class TileCreationActivity extends AppCompatActivity
         mCanvas.setDrawer(CanvasView.Drawer.PEN);
         mCanvas.setPaintStrokeWidth(20F);
         mCanvas.setPaintStrokeColor(Color.WHITE);
+
+        setupWindowAnimations();
+    }
+
+    private void setUpToolbar() {
+        setSupportActionBar(binding.toolbar);
+    }
+
+    private void setupWindowAnimations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Fade fade = new Fade();
+            fade.setDuration(400);
+            getWindow().setEnterTransition(fade);
+            Slide slide = new Slide();
+            slide.setDuration(400);
+            getWindow().setExitTransition(slide);
+        }
     }
 
     @Override
@@ -71,17 +100,35 @@ public class TileCreationActivity extends AppCompatActivity
             });
         }
 
+        Menu bottomMenu2 = binding.amvBottom2.getMenu();
+        getMenuInflater().inflate(R.menu.action_menu_tile_editor_bottom_more_options, bottomMenu2);
+
+        binding.amvBottom2.setRotationX(90);
+
+        for (int i = 0; i < bottomMenu2.size(); i++) {
+            bottomMenu2.getItem(i).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    return onOptionsItemSelected(item);
+                }
+            });
+        }
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+
+        View bottomMenu = binding.amvBottom;
+        View bottomMenu2 = binding.amvBottom2;
+
         switch (item.getItemId()) {
             case R.id.action_add_tile_to_upcoming:
                 Bitmap bitmap = mCanvas.getScaleBitmap(300, 300);
                 onFragmentInteraction(bitmap);
-                finish();
+                ActivityCompat.finishAfterTransition(this);
                 return true;
             case R.id.action_undo:
                 mCanvas.undo();
@@ -108,12 +155,49 @@ public class TileCreationActivity extends AppCompatActivity
                 mCanvas.setMode(CanvasView.Mode.DRAW);
                 mCanvas.setDrawer(CanvasView.Drawer.CIRCLE);
                 return true;
-            case R.id.action_text_mode:
-                mCanvas.setMode(CanvasView.Mode.TEXT);
+            case R.id.action_eraser_mode:
+                mCanvas.setMode(CanvasView.Mode.ERASER);
+                mCanvas.setDrawer(CanvasView.Drawer.PEN);
+                return true;
+            case R.id.action_stroke_width_small:
+                mCanvas.setPaintStrokeWidth(8F);
+                return true;
+            case R.id.action_stroke_width_medium:
+                mCanvas.setPaintStrokeWidth(16F);
+                return true;
+            case R.id.action_stroke_width_large:
+                mCanvas.setPaintStrokeWidth(24F);
+                return true;
+            case R.id.action_stroke_width_xlarge:
+                mCanvas.setPaintStrokeWidth(32F);
+                return true;
+            case R.id.action_stroke_width_xxlarge:
+                mCanvas.setPaintStrokeWidth(40F);
+                return true;
+            case R.id.action_choose_stroke_width:
+                startMenuRotateAnimation(bottomMenu, bottomMenu2);
+                return true;
+            case R.id.action_back_to_drawing_tools:
+                startMenuRotateAnimation(bottomMenu2, bottomMenu);
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void startMenuRotateAnimation(View bottomMenu, View bottomMenu2) {
+        ObjectAnimator rotateOutAnimation;
+        ObjectAnimator rotateInAnimation;
+        rotateOutAnimation =
+                ObjectAnimator.ofFloat(bottomMenu, "rotationX", 0, 90)
+                .setDuration(200);
+        rotateInAnimation =
+                ObjectAnimator.ofFloat(bottomMenu2, "rotationX", -90, 0)
+                        .setDuration(200);
+
+        rotateOutAnimation.start();
+        rotateInAnimation.setStartDelay(180);
+        rotateInAnimation.start();
     }
 
     @Override

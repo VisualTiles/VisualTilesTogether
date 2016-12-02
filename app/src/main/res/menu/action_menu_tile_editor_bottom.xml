@@ -27,9 +27,15 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_text_mode"
-        android:icon="@drawable/ic_text_black_24dp"
-        android:title="Text Mode"
+        android:id="@+id/action_eraser_mode"
+        android:icon="@drawable/ic_eraser"
+        android:title="Eraser mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_choose_stroke_width"
+        android:icon="@drawable/ic_stroke_width"
+        android:title="Choose stroke width"
         app:showAsAction="always" />
 
 </menu>

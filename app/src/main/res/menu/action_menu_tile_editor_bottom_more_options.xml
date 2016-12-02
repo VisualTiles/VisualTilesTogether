@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_stroke_width_small"
+        android:icon="@drawable/ic_line_weight_small"
+        android:title="Draw Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_stroke_width_medium"
+        android:icon="@drawable/ic_line_weight_medium"
+        android:title="Line Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_stroke_width_large"
+        android:icon="@drawable/ic_line_weight_large"
+        android:title="Box Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_stroke_width_xlarge"
+        android:icon="@drawable/ic_line_weight_xlarge"
+        android:title="Circle Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_stroke_width_xxlarge"
+        android:icon="@drawable/ic_line_weight_xxlarge"
+        android:title="Text Mode"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_back_to_drawing_tools"
+        android:icon="@drawable/ic_back_to_drawing_tools"
+        android:title="Text Mode"
+        app:showAsAction="always" />
+
+</menu>
