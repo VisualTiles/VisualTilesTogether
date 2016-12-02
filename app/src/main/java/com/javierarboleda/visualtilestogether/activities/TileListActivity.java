@@ -2,6 +2,7 @@ package com.javierarboleda.visualtilestogether.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -17,6 +18,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -59,6 +61,8 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
 
         setUpNavDrawer();
 
+        setupWindowAnimations();
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
@@ -70,8 +74,17 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(TileListActivity.this, TileCreationActivity.class));
+                Intent intent = new Intent(TileListActivity.this, TileCreationActivity.class);
                 exitCircularReveal(fab, false);
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    Bundle bundle = ActivityOptions
+                            .makeSceneTransitionAnimation(TileListActivity.this)
+                            .toBundle();
+                    startActivity(intent,bundle);
+                }
+                else {
+                    startActivity(intent);
+                }
             }
         });
 
@@ -82,6 +95,14 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                     : new TileListPagerAdapterUser(getSupportFragmentManager()));
             TabLayout tabLayout = (TabLayout) findViewById(R.id.tlTabs);
             tabLayout.setupWithViewPager(mViewPager);
+        }
+    }
+
+    private void setupWindowAnimations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Slide slide = new Slide();
+            slide.setDuration(400);
+            getWindow().setExitTransition(slide);
         }
     }
 
