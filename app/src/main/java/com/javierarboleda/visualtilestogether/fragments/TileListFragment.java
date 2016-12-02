@@ -79,7 +79,6 @@ public abstract class TileListFragment extends Fragment {
         mLinearLayoutManager = getLayoutManager();
         mRvTileList.setLayoutManager(mLinearLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
-//        Log.d(LOG_TAG, "exit onCreateView");
         return view;
     }
 
@@ -110,5 +109,4 @@ public abstract class TileListFragment extends Fragment {
     public interface TileListFragmentListener {
         void updateSelectedTile(Tile tile);
     }
-
 }
