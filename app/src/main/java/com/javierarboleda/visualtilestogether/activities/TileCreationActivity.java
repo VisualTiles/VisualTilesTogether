@@ -1,20 +1,13 @@
 package com.javierarboleda.visualtilestogether.activities;
 
-import android.animation.AnimatorSet;
-import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.Fade;
-import android.transition.Slide;
-import android.transition.Transition;
-import android.transition.TransitionInflater;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,24 +46,10 @@ public class TileCreationActivity extends AppCompatActivity
         mCanvas.setMode(CanvasView.Mode.DRAW);
         mCanvas.setDrawer(CanvasView.Drawer.PEN);
         mCanvas.setPaintStrokeWidth(20F);
-        mCanvas.setPaintStrokeColor(Color.WHITE);
-
-        setupWindowAnimations();
-    }
+        mCanvas.setPaintStrokeColor(Color.WHITE);}
 
     private void setUpToolbar() {
         setSupportActionBar(binding.toolbar);
-    }
-
-    private void setupWindowAnimations() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Fade fade = new Fade();
-            fade.setDuration(400);
-            getWindow().setEnterTransition(fade);
-            Slide slide = new Slide();
-            slide.setDuration(400);
-            getWindow().setExitTransition(slide);
-        }
     }
 
     @Override
