@@ -39,7 +39,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     private final Context mContext;
     TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
-    private int mLastPosition;
+    private int mLastPosition = -1;
     private RecyclerView mRecyclerView;
 
 

@@ -1,7 +1,10 @@
 package com.javierarboleda.visualtilestogether.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -45,6 +49,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private DrawerLayout mDrawer;
     private NavigationView nvDrawer;
     private ActionBarDrawerToggle mDrawerToggle;
+    private FloatingActionButton fab;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,11 +64,14 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setVisibility(View.INVISIBLE);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(TileListActivity.this, TileCreationActivity.class));
+                exitCircularReveal(fab, false);
             }
         });
 
@@ -140,13 +148,16 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
             case R.id.nav_leave_channel:
                 app.leaveChannel();
                 startActivity(new Intent(this, CreateJoinActivity.class));
-                finish();
+                exitCircularReveal(fab, true);
                 break;
             case R.id.nav_sign_out:
                 app.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 startActivity(new Intent(this, SignInActivity.class));
-                finish();
+                exitCircularReveal(fab, true);
+                break;
+            case android.R.id.home:
+                exitCircularReveal(fab, true);
                 break;
         }
 
@@ -164,10 +175,70 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         actionBar.setSubtitle(app.getChannel().getUniqueName());
     }
 
+    private void enterCircularReveal(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            // get the center for the clipping circle
+            int cx = view.getMeasuredWidth() / 2;
+            int cy = view.getMeasuredHeight() / 2;
+
+            // get the final radius for the clipping circle
+            int finalRadius = Math.max(view.getWidth(), view.getHeight()) / 2;
+
+            // create the animator for this view (the start radius is zero)
+            Animator anim =
+                    ViewAnimationUtils.createCircularReveal(view, cx, cy, 0, finalRadius);
+
+            // make the view visible and start the animation
+            view.setVisibility(View.VISIBLE);
+            anim.start();
+        }
+    }
+
+    private void exitCircularReveal(final View view, final boolean finish) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+// get the center for the clipping circle
+            int cx = view.getMeasuredWidth() / 2;
+            int cy = view.getMeasuredHeight() / 2;
+
+            // get the initial radius for the clipping circle
+            int initialRadius = view.getWidth() / 2;
+
+            // create the animation (the final radius is zero)
+            Animator anim = ViewAnimationUtils.createCircularReveal(view, cx, cy, initialRadius, 0);
+
+            // make the view invisible when the animation is done
+            anim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    view.setVisibility(View.INVISIBLE);
+                    if (finish) {
+                        supportFinishAfterTransition();
+                    }
+                }
+            });
+
+            // start the animation
+            anim.start();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        exitCircularReveal(fab, true);
+    }
+
     @Override
     protected void onDestroy() {
         app.removeListener(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onEnterAnimationComplete() {
+        super.onEnterAnimationComplete();
+        enterCircularReveal(fab);
     }
 
     @Override
