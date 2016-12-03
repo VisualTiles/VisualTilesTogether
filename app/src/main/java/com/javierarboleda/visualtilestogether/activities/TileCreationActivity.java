@@ -45,8 +45,9 @@ public class TileCreationActivity extends AppCompatActivity
 
         mCanvas.setMode(CanvasView.Mode.DRAW);
         mCanvas.setDrawer(CanvasView.Drawer.PEN);
-        mCanvas.setPaintStrokeWidth(20F);
-        mCanvas.setPaintStrokeColor(Color.WHITE);}
+        mCanvas.setPaintStrokeWidth(16F);
+        mCanvas.setPaintStrokeColor(Color.WHITE);
+    }
 
     private void setUpToolbar() {
         setSupportActionBar(binding.toolbar);
@@ -99,11 +100,13 @@ public class TileCreationActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-
         View bottomMenu = binding.amvBottom;
         View bottomMenu2 = binding.amvBottom2;
 
         switch (item.getItemId()) {
+            case R.id.action_back_button:
+                ActivityCompat.finishAfterTransition(this);
+                return true;
             case R.id.action_add_tile_to_upcoming:
                 Bitmap bitmap = mCanvas.getScaleBitmap(300, 300);
                 onFragmentInteraction(bitmap);
@@ -114,9 +117,6 @@ public class TileCreationActivity extends AppCompatActivity
                 return true;
             case R.id.action_redo:
                 mCanvas.redo();
-                return true;
-            case R.id.action_clear:
-                mCanvas.clear();
                 return true;
             case R.id.action_draw_mode:
                 mCanvas.setMode(CanvasView.Mode.DRAW);
