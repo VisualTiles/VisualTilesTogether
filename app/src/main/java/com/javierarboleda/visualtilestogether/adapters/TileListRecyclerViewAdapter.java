@@ -3,8 +3,7 @@ package com.javierarboleda.visualtilestogether.adapters;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -12,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -27,6 +27,9 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.models.User;
+
+import jp.wasabeef.glide.transformations.CropCircleTransformation;
 
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.deleteTile;
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTileApproval;
@@ -34,8 +37,8 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTil
 /**
  * Created by geo on 11/22/16.
  */
-public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewholder> {
-
+public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> {
+    private static final String TAG = TileListRecyclerViewAdapter.class.getSimpleName();
     private final Context mContext;
     TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
@@ -49,7 +52,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                        VisualTilesTogetherApp visualTilesTogetherApp) {
         super(Object.class,
                 itemLayout,
-                TileViewholder.class,
+                TileViewHolder.class,
                 query);
         mContext = context;
         mListener = (TileListFragment.TileListFragmentListener) context;
@@ -58,7 +61,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
     @Override
     protected void populateViewHolder(
-            final TileViewholder viewHolder, final Object object, int position) {
+            final TileViewHolder viewHolder, final Object object, int position) {
 
         viewHolder.itemView.startAnimation(getAnimation(position));
         mLastPosition = position;
@@ -81,7 +84,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     }
 
     private Animation getAnimation(int position) {
-        int orientation = ((LinearLayoutManager)mRecyclerView.getLayoutManager()).getOrientation();
+        int orientation = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).getOrientation();
         if (orientation == LinearLayoutManager.VERTICAL) {
             return AnimationUtils.loadAnimation(mContext,
                     (position > mLastPosition) ? R.anim.in_from_bottom
@@ -93,115 +96,166 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         }
     }
 
-    protected void doTheWork(final TileViewholder viewHolder, final String tileId) {
+    protected void doTheWork(final TileViewHolder viewHolder, final String tileId) {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         viewHolder.tileRef = dbRef.child(Tile.TABLE_NAME)
                 .child(tileId);
-//                Log.d(LOG_TAG, "populateViewHolder key, tileref: " + getRef(position).getKey() + ", " + viewHolder.tileRef);
-
         if (viewHolder.tileEventListener != null) {
             viewHolder.tileRef.removeEventListener(viewHolder.tileEventListener);
         }
+        viewHolder.itemView.setOnClickListener(buildTileClickListener(viewHolder));
         viewHolder.tileEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                viewHolder.tile = dataSnapshot.getValue(Tile.class);
-//                        Log.d(LOG_TAG, "onDataChange tile: " + tile);
-                if (viewHolder.tile == null) {
-                    return;
-                }
-                if (viewHolder.tile.getShapeUrl() != null && mContext != null) {
-                    Glide.with(mContext.getApplicationContext())
-                            .load(viewHolder.tile.getShapeUrl())
-                            .into(viewHolder.ivShape);
-                }
+                try {
+                    viewHolder.tile = dataSnapshot.getValue(Tile.class);
+                    if (viewHolder.tile == null) {
+                        return;
+                    }
+                    if (viewHolder.tile.getShapeUrl() != null && mContext != null) {
+                        Glide.with(mContext.getApplicationContext())
+                                .load(viewHolder.tile.getShapeUrl())
+                                .into(viewHolder.ivShape);
+                    }
 
-                viewHolder.ibUpVote.setEnabled(true);
-                viewHolder.ibDownVote.setEnabled(true);
+                    viewHolder.ibUpVote.setEnabled(true);
+                    viewHolder.ibDownVote.setEnabled(true);
 
-                final String userId = mVisualTilesTogetherApp.getUid();
+                    final String userId = mVisualTilesTogetherApp.getUid();
 
-                if (dataSnapshot.child(Tile.USER_VOTES).child(userId).exists()) {
-                    boolean userVote = dataSnapshot.child(Tile.USER_VOTES)
-                            .child(userId)
-                            .getValue(boolean.class);
-                    if (userVote) {
-                        // the user has already voted "yes"
-                        viewHolder.ibUpVote.setEnabled(false);
+                    if (dataSnapshot.child(Tile.USER_VOTES).child(userId).exists()) {
+                        boolean userVote = dataSnapshot.child(Tile.USER_VOTES)
+                                .child(userId)
+                                .getValue(boolean.class);
+                        if (userVote) {
+                            // the user has already voted "yes"
+                            viewHolder.ibUpVote.setEnabled(false);
+                        } else {
+                            // the user has already voted "no"
+                            viewHolder.ibDownVote.setEnabled(false);
+                        }
+                    }
+
+                    viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (viewHolder.ibDownVote.isEnabled()) {
+                                // the user has voted "yes"
+                                onVoteClicked(viewHolder.tileRef, 1, 0);
+                                viewHolder.tileRef.child(Tile.USER_VOTES)
+                                        .child(userId)
+                                        .setValue(true);
+                            } else {
+                                // the user has retracted a "no" vote
+                                onVoteClicked(viewHolder.tileRef, 0, -1);
+                                viewHolder.tileRef.child(Tile.USER_VOTES)
+                                        .child(userId)
+                                        .removeValue();
+                            }
+                        }
+                    });
+
+                    viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (viewHolder.ibUpVote.isEnabled()) {
+                                // the user has voted "no"
+                                onVoteClicked(viewHolder.tileRef, 0, 1);
+                                viewHolder.tileRef.child(Tile.USER_VOTES)
+                                        .child(userId)
+                                        .setValue(false);
+                            } else {
+                                // the user has retracted a "yes" vote
+                                onVoteClicked(viewHolder.tileRef, -1, 0);
+                                viewHolder.tileRef.child(Tile.USER_VOTES)
+                                        .child(userId)
+                                        .removeValue();
+                            }
+                        }
+                    });
+
+                    viewHolder.tvVotesTotal.setText(String.valueOf(viewHolder.tile.getPosVotes()
+                            - viewHolder.tile.getNegVotes()));
+
+                    if (mVisualTilesTogetherApp.isChannelModerator()) {
+                        if (viewHolder.btnPublish != null) {
+                            viewHolder.btnPublish.setVisibility(View.VISIBLE);
+                            viewHolder.btnPublish.setImageResource(viewHolder.tile.isApproved() ?
+                                    R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                        }
+                        if (viewHolder.btnDelete != null)
+                            viewHolder.btnDelete.setVisibility(View.VISIBLE);
                     } else {
-                        // the user has already voted "no"
-                        viewHolder.ibDownVote.setEnabled(false);
+                        if (viewHolder.btnPublish != null)
+                            viewHolder.btnPublish.setVisibility(View.GONE);
+                        if (viewHolder.btnDelete != null)
+                            viewHolder.btnDelete.setVisibility(
+                                    userId.equals(viewHolder.tile.getCreatorId()) ? View.VISIBLE : View.GONE);
                     }
-                }
-
-                viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (viewHolder.ibDownVote.isEnabled()) {
-                            // the user has voted "yes"
-                            onVoteClicked(viewHolder.tileRef, 1, 0);
-                            viewHolder.tileRef.child(Tile.USER_VOTES)
-                                    .child(userId)
-                                    .setValue(true);
-                        } else {
-                            // the user has retracted a "no" vote
-                            onVoteClicked(viewHolder.tileRef, 0, -1);
-                            viewHolder.tileRef.child(Tile.USER_VOTES)
-                                    .child(userId)
-                                    .removeValue();
-                        }
-                    }
-                });
-
-                viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (viewHolder.ibUpVote.isEnabled()) {
-                            // the user has voted "no"
-                            onVoteClicked(viewHolder.tileRef, 0, 1);
-                            viewHolder.tileRef.child(Tile.USER_VOTES)
-                                    .child(userId)
-                                    .setValue(false);
-                        } else {
-                            // the user has retracted a "yes" vote
-                            onVoteClicked(viewHolder.tileRef, -1, 0);
-                            viewHolder.tileRef.child(Tile.USER_VOTES)
-                                    .child(userId)
-                                    .removeValue();
-                        }
-                    }
-                });
-
-                viewHolder.tvVotesTotal.setText(String.valueOf(viewHolder.tile.getPosVotes()
-                        - viewHolder.tile.getNegVotes()));
-
-                if (mVisualTilesTogetherApp.isChannelModerator()) {
-                    viewHolder.miPublish.setVisible(true);
-                    viewHolder.miPublish.setIcon(viewHolder.tile.isApproved() ?
-                            R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
-                    viewHolder.miDelete.setVisible(true);
-                } else {
-                    viewHolder.miPublish.setVisible(false);
-                    viewHolder.miDelete.setVisible(userId.equals(viewHolder.tile.getCreatorId()));
-                }
-                viewHolder.tbTileListItem.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-//                                Log.d(LOG_TAG, "Clicked a toolbar item");
-                        switch (item.getItemId()) {
-                            case R.id.action_publish:
-                                toggleTileApproval(viewHolder.tileRef);
-                                return true;
-                            case R.id.action_delete:
+                    if (viewHolder.btnDelete != null) {
+                        viewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (viewHolder.tile == null) {
+                                    Toast.makeText(mContext, "Delete failed. Try again.", Toast
+                                            .LENGTH_SHORT).show();
+                                    return;
+                                }
                                 deleteTile(viewHolder.tileRef,
                                         tileId,
-                                        viewHolder.tile.getChannelId(),
+                                        mVisualTilesTogetherApp.getChannelId(),
                                         viewHolder.tile.getCreatorId());
-                                return true;
-                        }
-                        return false;
+                            }
+                        });
                     }
-                });
+                    if (viewHolder.btnPublish != null) {
+                        viewHolder.btnPublish.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                toggleTileApproval(viewHolder.tileRef);
+                            }
+                        });
+                    }
+
+                    // Clean out old photo load.
+                    if (viewHolder.photoListener != null)
+                        dbRef.removeEventListener(viewHolder.photoListener);
+                    if (viewHolder.ivCreatorImage != null)
+                        viewHolder.ivCreatorImage.setVisibility(View.INVISIBLE);
+
+                    String creator = viewHolder.tile.getCreatorId();
+                    if (viewHolder.ivCreatorImage != null && creator != null
+                            && !creator.isEmpty()) {
+                        viewHolder.photoListener = new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                // Release reference.
+                                viewHolder.photoListener = null;
+                                if (dataSnapshot.exists()) {
+                                    User tileCreator = dataSnapshot.getValue(User.class);
+                                    if (tileCreator.getPhotoUrl() != null &&
+                                            !tileCreator.getPhotoUrl().isEmpty()) {
+                                        viewHolder.ivCreatorImage.setVisibility(View.VISIBLE);
+                                        Glide.with(mContext).load(tileCreator.getPhotoUrl())
+                                                .bitmapTransform(new CropCircleTransformation(mContext))
+                                                .animate(R.anim.zoom_in)
+                                                .into(viewHolder.ivCreatorImage);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        };
+                        dbRef.child(User.TABLE_NAME).child(creator).addListenerForSingleValueEvent(
+                                viewHolder.photoListener);
+                    }
+                } catch (RuntimeException ex) {
+                    Log.w(TAG, "Runtime exception occurred: "
+                            + ex.getMessage());
+                }
             }
 
             @Override
@@ -220,10 +274,19 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     }
 
     @Override
-    public void onViewDetachedFromWindow(TileViewholder holder) {
+    public void onViewDetachedFromWindow(TileViewHolder holder) {
         // Prevent problems when fast scrolling due to
         // the view being reused while the animation is happening
-        holder.itemView.clearAnimation();
+        if (holder.itemView != null)
+            holder.itemView.clearAnimation();
+        if (holder.ivCreatorImage != null)
+            holder.ivCreatorImage.clearAnimation();
+        // Clean up event handlers.
+        if (holder.photoListener != null)
+            FirebaseDatabase.getInstance().getReference().removeEventListener(holder.photoListener);
+        if (holder.tileEventListener != null)
+            FirebaseDatabase.getInstance().getReference().removeEventListener(
+                    holder.tileEventListener);
         super.onViewDetachedFromWindow(holder);
     }
 
@@ -252,31 +315,57 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         });
     }
 
-    public static class TileViewholder extends RecyclerView.ViewHolder {
+    public static class TileViewHolder extends RecyclerView.ViewHolder {
         ImageView ivShape;
         ImageButton ibUpVote;
         ImageButton ibDownVote;
         TextView tvVotesTotal;
-        Toolbar tbTileListItem;
-        MenuItem miPublish;
-        MenuItem miDelete;
         ValueEventListener tileEventListener;
         RelativeLayout rlMain;
         Tile tile;
         DatabaseReference tileRef;
+        ImageView ivCreatorImage;
+        ValueEventListener photoListener;
+        ImageButton btnDelete;
+        ImageButton btnPublish;
+        View bubbleMenu;
 
-        public TileViewholder(View itemView) {
+        public TileViewHolder(View itemView) {
             super(itemView);
-            ivShape = (ImageView) itemView.findViewById(R.id.ivShape);
-            ibUpVote = (ImageButton) itemView.findViewById(R.id.ibUpVote);
-            ibDownVote = (ImageButton) itemView.findViewById(R.id.ibDownVote);
-            tvVotesTotal = (TextView) itemView.findViewById(R.id.tvVotesTotal);
-            tbTileListItem = (Toolbar) itemView.findViewById((R.id.tbTileListItem));
-            tbTileListItem.inflateMenu(R.menu.tile_list_menu);
-            miPublish = tbTileListItem.getMenu().findItem(R.id.action_publish);
-            miDelete = tbTileListItem.getMenu().findItem(R.id.action_delete);
-            rlMain = (RelativeLayout) itemView.findViewById(R.id.rlMain);
-            tileEventListener = null;
+            try {
+                ivShape = (ImageView) itemView.findViewById(R.id.ivShape);
+                ibUpVote = (ImageButton) itemView.findViewById(R.id.ibUpVote);
+                ibDownVote = (ImageButton) itemView.findViewById(R.id.ibDownVote);
+                tvVotesTotal = (TextView) itemView.findViewById(R.id.tvVotesTotal);
+                rlMain = (RelativeLayout) itemView.findViewById(R.id.rlMain);
+                tileEventListener = null;
+                ivCreatorImage = (ImageView) itemView.findViewById(R.id.ivCreatorImage);
+                btnDelete = (ImageButton) itemView.findViewById(R.id.btnDelete);
+                btnPublish = (ImageButton) itemView.findViewById(R.id.btnPublish);
+                bubbleMenu = itemView.findViewById(R.id.bubbleMenu);
+            } catch (RuntimeException ex) {
+                // This catch happens when you click on a nav menu item while scrolling.
+                Log.e(TAG, "The user probably tried to switch acitivites while scrolling.");
+                // Don't handle.
+            }
         }
+    }
+
+    public View.OnClickListener buildTileClickListener(
+            final TileViewHolder viewHolder) {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (viewHolder.bubbleMenu == null)
+                    return;
+                if (viewHolder.bubbleMenu.getVisibility() == View.VISIBLE) {
+                    viewHolder.bubbleMenu.setVisibility(View.INVISIBLE);
+                    viewHolder.bubbleMenu.animate().alpha(0f).setDuration(800).start();
+                } else {
+                    viewHolder.bubbleMenu.setVisibility(View.VISIBLE);
+                    viewHolder.bubbleMenu.animate().alpha(1f).setDuration(800).start();
+                }
+            }
+        };
     }
 }

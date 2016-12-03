@@ -4,6 +4,8 @@ package com.javierarboleda.visualtilestogether.models;
 import com.android.annotations.Nullable;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.HashMap;
+
 public class User {
     public static final String TABLE_NAME = "users";
     public static final String CHANNEL_ID = "channelId";
@@ -14,6 +16,7 @@ public class User {
     private String email;
     private String photoUrl;
     private boolean isAnonymous;
+    private HashMap<String, Object> tileIds;
 
     public User() {
     }
@@ -74,5 +77,13 @@ public class User {
                 fbu.getDisplayName(),
                 fbu.getPhotoUrl().toString());
         return user;
+    }
+
+    public HashMap<String, Object> getTileIds() {
+        return tileIds;
+    }
+
+    public void setTileIds(HashMap<String, Object> tileIds) {
+        this.tileIds = tileIds;
     }
 }
