@@ -1,67 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/cvCard"
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cvCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp" >
+    android:layout_margin="15dp"
+    android:layout_marginTop="0dp"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardBackgroundColor="#1d526b"
+    app:cardCornerRadius="4dp"
+    app:cardElevation="8dp">
 
     <RelativeLayout
+        android:id="@+id/rlMain"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:id="@+id/rlMain" >
+        android:layout_height="match_parent"
+        android:background="@drawable/dark_reflection">
+
         <ImageView
+            android:id="@+id/ivShape"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:id="@+id/ivShape"
-            android:layout_marginTop="8dp"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:background="@android:color/black"
-            tools:srcCompat="@mipmap/ic_launcher" />
+            android:layout_margin="10dp"
+            tools:srcCompat="@mipmap/ic_launcher"/>
 
         <LinearLayout
-            android:orientation="vertical"
+            android:id="@+id/leftMenu"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginTop="48dp">
+            android:layout_alignParentBottom="true"
+            android:layout_margin="0dp"
+            android:padding="20dp"
+            android:background="#33000000"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/ivCreatorImage"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:visibility="invisible"
+                />
+
+            <android.support.v4.widget.Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
 
             <ImageButton
+                android:id="@+id/ibUpVote"
+                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_arrow_up"
-                android:id="@+id/ibUpVote"
-                style="?android:attr/borderlessButtonStyle" />
+                android:tint="@color/white"/>
 
             <TextView
+                android:id="@+id/tvVotesTotal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:id="@+id/tvVotesTotal"
-                tools:text="222"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                android:textColor="@color/white"
+                tools:text="222"/>
 
             <ImageButton
+                android:id="@+id/ibDownVote"
+                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_arrow_down"
-                android:id="@+id/ibDownVote"
-                style="?android:attr/borderlessButtonStyle" />
+                android:tint="@color/white"/>
         </LinearLayout>
 
-        <android.support.v7.widget.Toolbar
-            android:layout_width="match_parent"
+
+        <LinearLayout
+            android:id="@+id/moderatorMenu"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:theme="?attr/actionBarTheme"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="60dp"
-            android:minHeight="?attr/actionBarSize"
-            android:id="@+id/tbTileListItem"
-            android:layout_below="@+id/ivShape"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@id/leftMenu"
+            android:layout_alignParentTop="true"
+            android:orientation="horizontal"
+            android:gravity="right|end">
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_delete_black_24px"
+                android:tint="@color/white"
+                android:padding="10dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="5dp"
+                android:clickable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_margin="5dp"/>
+            <ImageButton
+                android:id="@+id/btnPublish"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_publish_black_24px"
+                android:tint="@color/white"
+                android:padding="10dp"
+                android:paddingStart="5dp"
+                android:paddingEnd="10dp"
+                android:clickable="true"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_margin="5dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tapMenu"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal"
+            android:background="#33009900"
+            android:visibility="gone">
+        </LinearLayout>
     </RelativeLayout>
 </android.support.v7.widget.CardView>
