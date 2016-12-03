@@ -18,7 +18,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Slide;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,8 +60,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
 
         setUpNavDrawer();
 
-        setupWindowAnimations();
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
@@ -88,14 +85,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                     : new TileListPagerAdapterUser(getSupportFragmentManager()));
             TabLayout tabLayout = (TabLayout) findViewById(R.id.tlTabs);
             tabLayout.setupWithViewPager(mViewPager);
-        }
-    }
-
-    private void setupWindowAnimations() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Slide slide = new Slide();
-            slide.setDuration(400);
-            getWindow().setExitTransition(slide);
         }
     }
 
