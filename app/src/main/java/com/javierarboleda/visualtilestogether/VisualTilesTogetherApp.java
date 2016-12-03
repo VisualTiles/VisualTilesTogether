@@ -221,7 +221,6 @@ public class VisualTilesTogetherApp extends Application {
                 if (listener.get() != null)
                     listener.get().onChannelUpdated();
             }
-            return;
         }
 
         if (dbChannelRef != null)

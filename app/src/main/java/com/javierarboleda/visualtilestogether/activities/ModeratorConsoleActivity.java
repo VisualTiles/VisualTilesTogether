@@ -209,7 +209,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
             effectMap.put(tileKey + "/" + Tile.TILE_COLOR, selectedColor);
         }
         if (effectMap.size() > 0)
-            dbRef.updateChildren(effectMap);
+                dbRef.updateChildren(effectMap);
     }
 
 
