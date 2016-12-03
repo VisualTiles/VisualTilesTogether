@@ -37,7 +37,7 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTil
 /**
  * Created by geo on 11/22/16.
  */
-public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewholder> {
+public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> {
     private static final String TAG = TileListRecyclerViewAdapter.class.getSimpleName();
     private final Context mContext;
     TileListFragment.TileListFragmentListener mListener;
@@ -52,7 +52,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                        VisualTilesTogetherApp visualTilesTogetherApp) {
         super(Object.class,
                 itemLayout,
-                TileViewholder.class,
+                TileViewHolder.class,
                 query);
         mContext = context;
         mListener = (TileListFragment.TileListFragmentListener) context;
@@ -61,7 +61,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
     @Override
     protected void populateViewHolder(
-            final TileViewholder viewHolder, final Object object, int position) {
+            final TileViewHolder viewHolder, final Object object, int position) {
 
         viewHolder.itemView.startAnimation(getAnimation(position));
         mLastPosition = position;
@@ -96,13 +96,14 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         }
     }
 
-    protected void doTheWork(final TileViewholder viewHolder, final String tileId) {
+    protected void doTheWork(final TileViewHolder viewHolder, final String tileId) {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         viewHolder.tileRef = dbRef.child(Tile.TABLE_NAME)
                 .child(tileId);
         if (viewHolder.tileEventListener != null) {
             viewHolder.tileRef.removeEventListener(viewHolder.tileEventListener);
         }
+        viewHolder.itemView.setOnClickListener(buildTileClickListener(viewHolder));
         viewHolder.tileEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -177,35 +178,44 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                             - viewHolder.tile.getNegVotes()));
 
                     if (mVisualTilesTogetherApp.isChannelModerator()) {
-                        viewHolder.btnPublish.setVisibility(View.VISIBLE);
-                        viewHolder.btnDelete.setVisibility(View.VISIBLE);
-                        viewHolder.btnPublish.setImageResource(viewHolder.tile.isApproved() ?
-                                R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                        if (viewHolder.btnPublish != null) {
+                            viewHolder.btnPublish.setVisibility(View.VISIBLE);
+                            viewHolder.btnPublish.setImageResource(viewHolder.tile.isApproved() ?
+                                    R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                        }
+                        if (viewHolder.btnDelete != null)
+                            viewHolder.btnDelete.setVisibility(View.VISIBLE);
                     } else {
-                        viewHolder.btnPublish.setVisibility(View.GONE);
-                        viewHolder.btnDelete.setVisibility(
-                                userId.equals(viewHolder.tile.getCreatorId()) ? View.VISIBLE : View.GONE);
+                        if (viewHolder.btnPublish != null)
+                            viewHolder.btnPublish.setVisibility(View.GONE);
+                        if (viewHolder.btnDelete != null)
+                            viewHolder.btnDelete.setVisibility(
+                                    userId.equals(viewHolder.tile.getCreatorId()) ? View.VISIBLE : View.GONE);
                     }
-                    viewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (viewHolder.tile == null) {
-                                Toast.makeText(mContext, "Delete failed. Try again.", Toast
-                                        .LENGTH_SHORT).show();
-                                return;
+                    if (viewHolder.btnDelete != null) {
+                        viewHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (viewHolder.tile == null) {
+                                    Toast.makeText(mContext, "Delete failed. Try again.", Toast
+                                            .LENGTH_SHORT).show();
+                                    return;
+                                }
+                                deleteTile(viewHolder.tileRef,
+                                        tileId,
+                                        mVisualTilesTogetherApp.getChannelId(),
+                                        viewHolder.tile.getCreatorId());
                             }
-                            deleteTile(viewHolder.tileRef,
-                                    tileId,
-                                    mVisualTilesTogetherApp.getChannelId(),
-                                    viewHolder.tile.getCreatorId());
-                        }
-                    });
-                    viewHolder.btnPublish.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            toggleTileApproval(viewHolder.tileRef);
-                        }
-                    });
+                        });
+                    }
+                    if (viewHolder.btnPublish != null) {
+                        viewHolder.btnPublish.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                toggleTileApproval(viewHolder.tileRef);
+                            }
+                        });
+                    }
 
                     // Clean out old photo load.
                     if (viewHolder.photoListener != null)
@@ -214,7 +224,8 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                         viewHolder.ivCreatorImage.setVisibility(View.INVISIBLE);
 
                     String creator = viewHolder.tile.getCreatorId();
-                    if (creator != null && !creator.isEmpty()) {
+                    if (viewHolder.ivCreatorImage != null && creator != null
+                            && !creator.isEmpty()) {
                         viewHolder.photoListener = new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -242,7 +253,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                 viewHolder.photoListener);
                     }
                 } catch (RuntimeException ex) {
-                    Log.w(TAG, "Runtime exception occurred, likely due to activity exiting: "
+                    Log.w(TAG, "Runtime exception occurred: "
                             + ex.getMessage());
                 }
             }
@@ -263,7 +274,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     }
 
     @Override
-    public void onViewDetachedFromWindow(TileViewholder holder) {
+    public void onViewDetachedFromWindow(TileViewHolder holder) {
         // Prevent problems when fast scrolling due to
         // the view being reused while the animation is happening
         if (holder.itemView != null)
@@ -304,7 +315,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         });
     }
 
-    public static class TileViewholder extends RecyclerView.ViewHolder {
+    public static class TileViewHolder extends RecyclerView.ViewHolder {
         ImageView ivShape;
         ImageButton ibUpVote;
         ImageButton ibDownVote;
@@ -317,8 +328,9 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         ValueEventListener photoListener;
         ImageButton btnDelete;
         ImageButton btnPublish;
+        View bubbleMenu;
 
-        public TileViewholder(View itemView) {
+        public TileViewHolder(View itemView) {
             super(itemView);
             try {
                 ivShape = (ImageView) itemView.findViewById(R.id.ivShape);
@@ -330,11 +342,30 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                 ivCreatorImage = (ImageView) itemView.findViewById(R.id.ivCreatorImage);
                 btnDelete = (ImageButton) itemView.findViewById(R.id.btnDelete);
                 btnPublish = (ImageButton) itemView.findViewById(R.id.btnPublish);
+                bubbleMenu = itemView.findViewById(R.id.bubbleMenu);
             } catch (RuntimeException ex) {
                 // This catch happens when you click on a nav menu item while scrolling.
                 Log.e(TAG, "The user probably tried to switch acitivites while scrolling.");
                 // Don't handle.
             }
         }
+    }
+
+    public View.OnClickListener buildTileClickListener(
+            final TileViewHolder viewHolder) {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (viewHolder.bubbleMenu == null)
+                    return;
+                if (viewHolder.bubbleMenu.getVisibility() == View.VISIBLE) {
+                    viewHolder.bubbleMenu.setVisibility(View.INVISIBLE);
+                    viewHolder.bubbleMenu.animate().alpha(0f).setDuration(800).start();
+                } else {
+                    viewHolder.bubbleMenu.setVisibility(View.VISIBLE);
+                    viewHolder.bubbleMenu.animate().alpha(1f).setDuration(800).start();
+                }
+            }
+        };
     }
 }

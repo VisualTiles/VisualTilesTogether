@@ -31,9 +31,10 @@
 
         <LinearLayout
             android:id="@+id/leftMenu"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@id/ivShape"
             android:layout_alignParentTop="true"
             android:layout_alignParentBottom="true"
             android:layout_margin="0dp"
@@ -94,7 +95,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_delete_black_24px"
-                android:tint="@color/white"
+                android:tint="#DDF9FF"
                 android:padding="10dp"
                 android:paddingStart="10dp"
                 android:paddingEnd="5dp"
@@ -106,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_publish_black_24px"
-                android:tint="@color/white"
+                android:tint="#DDF9FF"
                 android:padding="10dp"
                 android:paddingStart="5dp"
                 android:paddingEnd="10dp"
@@ -116,7 +117,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/tapMenu"
+            android:id="@+id/bubbleMenu"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_alignParentStart="true"

@@ -24,7 +24,7 @@ public abstract class TileListFragment extends Fragment {
 
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
-    private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewholder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> mFirebaseAdapter;
     private Context mContext;
     private LinearLayoutManager mLinearLayoutManager;
     VisualTilesTogetherApp visualTilesTogetherApp;
@@ -103,7 +103,6 @@ public abstract class TileListFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
-
     }
 
     public interface TileListFragmentListener {
