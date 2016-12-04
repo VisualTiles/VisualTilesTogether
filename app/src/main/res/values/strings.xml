@@ -30,6 +30,7 @@
     <string name="tutorial_vj_console_header">Control the Visual Experience</string>
     <string name="tutorial_vj_console_body">Choose which visual tiles are displayed. Trigger effects, change tile and background colors, and more!</string>
     <string name="add_tile">Add Tile</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
 
     <string-array name="tile_creation_titles">
         <item>Make Something Awesome!</item>
