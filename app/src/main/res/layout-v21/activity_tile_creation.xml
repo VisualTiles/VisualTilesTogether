@@ -43,6 +43,7 @@
             android:layout_centerInParent="true"
             android:layout_marginBottom="12dp"
             android:layout_marginTop="12dp"
+            android:transitionName="fabanimation"
             app:cardBackgroundColor="@android:color/black">
 
             <com.javierarboleda.visualtilestogether.views.CanvasView
