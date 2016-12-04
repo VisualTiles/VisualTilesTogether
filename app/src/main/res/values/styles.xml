@@ -61,10 +61,10 @@
     </style>
 
     <style name="TutorialTextHeader" parent="TutorialText">
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="TutorialTextBody" parent="TutorialText">
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">16sp</item>
     </style>
 </resources>

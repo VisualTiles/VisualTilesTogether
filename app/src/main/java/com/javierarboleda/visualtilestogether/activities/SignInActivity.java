@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -61,7 +62,7 @@ public class SignInActivity extends AppCompatActivity implements
     private static final String LOG_TAG = SignInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
 
-    private SignInButton mSignInButton;
+    private Button mSignInButton;
 
     private View preSignInButtons;
 
@@ -85,7 +86,7 @@ public class SignInActivity extends AppCompatActivity implements
         visualTilesTogetherApp.addListener(this);
 
         // Assign fields
-        mSignInButton = (SignInButton) findViewById(R.id.sign_in_button);
+        mSignInButton = (Button) findViewById(R.id.sign_in_button);
         preSignInButtons = findViewById(R.id.pre_sign_in_buttons);
 
         // Set click listeners
