@@ -33,9 +33,8 @@
     <string name="sign_in_with_google">Sign in with Google</string>
 
     <string-array name="tile_creation_titles">
-        <item>Make Something Awesome!</item>
         <item>Create a New Visual Tile!</item>
-        <item>It\'s blank… Draw something!</item>
+        <item>Draw something!</item>
         <item>Tile Create ACTIVATED!</item>
         <item>Keep It Appropriate, You!</item>
         <item>Let\'s Draw!</item>
