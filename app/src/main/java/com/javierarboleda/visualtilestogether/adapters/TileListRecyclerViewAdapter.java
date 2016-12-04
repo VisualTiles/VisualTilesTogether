@@ -1,6 +1,10 @@
 package com.javierarboleda.visualtilestogether.adapters;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -44,6 +48,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
     private int mLastPosition = -1;
     private RecyclerView mRecyclerView;
+    private static final int CARD_ANIMATION_DURATION_MS = 400;
 
     public TileListRecyclerViewAdapter(Context context,
                                        int itemLayout,
@@ -360,15 +365,31 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
             public void onClick(View view) {
                 if (viewHolder.bubbleMenu == null || viewHolder.itemView == null)
                     return;
+                CardView card = (CardView) viewHolder.itemView;
                 if (viewHolder.itemView.isSelected()) {
+                    /* Menu closed. */
+                    ObjectAnimator.ofObject(viewHolder.itemView,
+                            "cardBackgroundColor", new ArgbEvaluator(),
+                            card.getCardBackgroundColor().getDefaultColor(),
+                            ContextCompat.getColor(mContext, R.color.cardViewBackgroundColor))
+                            .setDuration(CARD_ANIMATION_DURATION_MS).start();
                     viewHolder.bubbleMenu.setVisibility(View.INVISIBLE);
                     viewHolder.bubbleMenu.setAlpha(1f);
-                    viewHolder.bubbleMenu.animate().alpha(0.1f).setDuration(2000).start();
+                    viewHolder.bubbleMenu.animate().alpha(0.1f)
+                            .setDuration(CARD_ANIMATION_DURATION_MS).start();
                     viewHolder.itemView.setSelected(false);
                 } else {
+                    /* Menu open. */
+                    ObjectAnimator.ofObject(viewHolder.itemView,
+                            "cardBackgroundColor", new ArgbEvaluator(),
+                            card.getCardBackgroundColor().getDefaultColor(),
+                            ContextCompat.getColor(mContext,
+                                    R.color.cardViewSelectedBackgroundColor))
+                                    .setDuration(CARD_ANIMATION_DURATION_MS).start();
                     viewHolder.bubbleMenu.setVisibility(View.VISIBLE);
                     viewHolder.bubbleMenu.setAlpha(0.1f);
-                    viewHolder.bubbleMenu.animate().alpha(1f).setDuration(800).start();
+                    viewHolder.bubbleMenu.animate().alpha(1f)
+                            .setDuration(CARD_ANIMATION_DURATION_MS).start();
                     viewHolder.itemView.setSelected(true);
                 }
             }
