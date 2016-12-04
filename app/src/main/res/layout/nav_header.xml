@@ -10,10 +10,16 @@
         android:src="@drawable/party_silhouette"
         android:scaleType="centerCrop" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:background="@drawable/scrim_drawer"
+        android:layout_alignParentTop="true"/>
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="150dp"
-        android:src="@drawable/vtlogo1"
+        android:src="@drawable/vt_logo_trans"
         android:scaleType="centerCrop"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"/>

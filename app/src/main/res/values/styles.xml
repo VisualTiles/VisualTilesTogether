@@ -26,6 +26,10 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="TransparentSystemBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
@@ -47,4 +51,20 @@
         <item name="android:layout_margin">4dp</item>
     </style>
 
+    <style name="TutorialText">
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:textStyle">bold|italic</item>
+    </style>
+
+    <style name="TutorialTextHeader" parent="TutorialText">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TutorialTextBody" parent="TutorialText">
+        <item name="android:textSize">14sp</item>
+    </style>
 </resources>
