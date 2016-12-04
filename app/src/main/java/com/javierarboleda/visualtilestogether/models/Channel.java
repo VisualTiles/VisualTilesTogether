@@ -15,6 +15,7 @@ public class Channel {
     public static final String CHANNEL_UNIQUE_NAME = "uniqueName";
     public static final String DEFAULT_TILE_COLOR = "defaultTileColor";
     public static final String QRCODE_URL = "qrCodeUrl";
+    public static final String RONINS = "ronins";
     private String name;
     private String uniqueName;
 
