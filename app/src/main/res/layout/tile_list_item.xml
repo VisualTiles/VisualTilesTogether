@@ -6,13 +6,16 @@
     android:id="@+id/cvCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="15dp"
+    android:layout_margin="8dp"
     android:layout_marginTop="0dp"
     android:clickable="true"
+    android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardBackgroundColor="#1d526b"
     app:cardCornerRadius="4dp"
-    app:cardElevation="8dp">
+    app:cardElevation="2dp"
+    app:cardMaxElevation="8dp"
+    android:stateListAnimator="@animator/card_lift_animator">
 
     <RelativeLayout
         android:id="@+id/rlMain"
@@ -116,15 +119,22 @@
                 android:layout_margin="5dp"/>
         </LinearLayout>
 
+        <!-- THIS VIEW MUST ALWAYS BE LAST WITHIN THE TOP RELATIVE LAYOUT. -->
         <LinearLayout
             android:id="@+id/bubbleMenu"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_alignParentStart="true"
+            android:layout_height="match_parent"
             android:layout_centerVertical="true"
+            android:gravity="center"
             android:orientation="horizontal"
             android:background="#33009900"
             android:visibility="gone">
+            <android.support.design.widget.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_share_24dp"
+                android:tint="@color/white"
+                />
         </LinearLayout>
     </RelativeLayout>
 </android.support.v7.widget.CardView>

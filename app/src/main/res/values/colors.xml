@@ -12,5 +12,5 @@
     <color name="lightGray">#EEEEEE</color>
     <color name="colorIconEnabled">#ff000000</color>
     <color name="colorIconDisabled">#40000000</color>
-    <color name="darkBackgroundColor">#222222</color>
+    <color name="darkBackgroundColor">#3c535e</color>
 </resources>
