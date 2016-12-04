@@ -33,6 +33,7 @@ import com.javierarboleda.visualtilestogether.models.User;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 import static android.graphics.Color.BLACK;
@@ -57,6 +58,7 @@ public class FirebaseUtil {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 final ArrayList<String> userIds = new ArrayList<>();
+                final HashSet<String> legitChannels = new HashSet<>();
                 for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
                     userIds.add(userSnapshot.getKey());
                 }
@@ -73,16 +75,14 @@ public class FirebaseUtil {
                         for (DataSnapshot channelSnapshot: dataSnapshot.getChildren()) {
                             String uniqueName;
                             String channelId = channelSnapshot.getKey();
-                            // TODO: delete only bogus channels instead of all of them
-//                            if (!channelSnapshot.child(Channel.CHANNEL_DISPLAY_NAME).exists()) {
-//                                // any channel without a name is spurious
-//                                // get rid of it
-////                                channelsRef.child(channelId).removeValue();
-//                            } else {
-                                if (channelSnapshot.child(Channel.CHANNEL_UNIQUE_NAME).exists()) {
-                                    uniqueName = (String) channelSnapshot
-                                            .child(Channel.CHANNEL_UNIQUE_NAME)
-                                            .getValue();
+                            Channel channel = channelSnapshot.getValue(Channel.class);
+                            if (channel.getName() == null) {
+                                channelsRef.child(channelId).removeValue();
+                            } else {
+                                legitChannels.add(channelId);
+
+                                if (channel.getUniqueName() != null) {
+                                    uniqueName = channel.getUniqueName();
                                 } else {
                                     uniqueName = generateChannelUniqueName(dataSnapshot);
                                     channelsRef
@@ -91,7 +91,7 @@ public class FirebaseUtil {
                                             .setValue(uniqueName);
                                 }
                                 setChannelQrCode(channelId, uniqueName);
-//                            }
+                            }
                         }
                     }
 
@@ -114,7 +114,8 @@ public class FirebaseUtil {
                         for (DataSnapshot tileSnapshot: dataSnapshot.getChildren()) {
                             Tile tile = tileSnapshot.getValue(Tile.class);
                             String tileId = tileSnapshot.getKey();
-                            if (tile.getChannelId() == null) {
+                            if (tile.getChannelId() == null ||
+                                    !legitChannels.contains(tile.getChannelId())) {
                                 tile.setChannelId(Channel.RONINS);
                                 tilesRef.child(tileId).child(Tile.CHANNEL_ID).setValue(Channel.RONINS);
                             }
