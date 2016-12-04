@@ -1,10 +1,22 @@
 package com.javierarboleda.visualtilestogether.activities;
 
+import android.animation.Animator;
+import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AccelerateInterpolator;
+import android.widget.LinearLayout;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -14,18 +26,25 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
-import com.javierarboleda.visualtilestogether.adapters.ModeratorConsolePagerAdapter;
-import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsole1Binding;
+import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsoleBinding;
 import com.javierarboleda.visualtilestogether.fragments.ColorSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.PresentationFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
+import com.javierarboleda.visualtilestogether.fragments.TileSelectFragment;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.TileEffect;
+import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.Resourceble;
+import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
+import com.javierarboleda.visualtilestogether.util.sidemenu.model.SlideMenuItem;
+import com.javierarboleda.visualtilestogether.util.sidemenu.util.ViewAnimator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import io.codetail.animation.ViewAnimationUtils;
 
 /**
  * Created on 11/15/16.
@@ -35,8 +54,10 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 implements PresentationFragment.PresentationFragmentListener,
                     TileListFragment.TileListFragmentListener,
                     EffectSelectFragment.EffectSelectFragmentListener,
-                    ColorSelectFragment.ColorSelectFragmentListener {
-    private ActivityModeratorConsole1Binding binding;
+                    ColorSelectFragment.ColorSelectFragmentListener,
+                    ViewAnimator.ViewAnimatorListener {
+    private static final String TAG = ModeratorConsoleActivity.class.getSimpleName();
+    private ActivityModeratorConsoleBinding binding;
     private VisualTilesTogetherApp app;
 
     private int mPagePosition = 0;
@@ -48,6 +69,16 @@ public class ModeratorConsoleActivity extends AppCompatActivity
             ColorSelectFragment.ColorFillMode.SINGLE_TILE;
     private Integer selectedColor = null;
 
+    private ScreenShotable contentFragment;
+
+    /* Experiment slide menu drawer layout UI Elements */
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle drawerToggle;
+    private List<SlideMenuItem> list = new ArrayList<>();
+    private ViewAnimator viewAnimator;
+    private int res = R.drawable.ic_box_24dp;
+    private LinearLayout linearLayout;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,44 +87,32 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         app = (VisualTilesTogetherApp) getApplication();
         if (!app.isChannelModerator()) finish();
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console_1);
-
-        setUpToolbar();
-
-        setUpTabLayout();
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console);
 
         PresentationFragment mPresentationFragment = PresentationFragment.newInstance(true);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragmentHolderMc, mPresentationFragment)
+        getSupportFragmentManager().beginTransaction().replace(
+                R.id.fragmentHolderMc, mPresentationFragment)
                 .commit();
 
-    }
-
-    private void setUpTabLayout() {
-        ViewPager viewPager = binding.viewPager;
-        ModeratorConsolePagerAdapter pagerAdapter =
-                new ModeratorConsolePagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(pagerAdapter);
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout.setScrimColor(Color.TRANSPARENT);
+        drawerLayout.setDrawerElevation(25f);
+        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        linearLayout = (LinearLayout) findViewById(R.id.left_drawer);
+        linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                mPagePosition = position;
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
+            public void onClick(View v) {
+                drawerLayout.closeDrawers();
             }
         });
-        binding.tabLayout.setupWithViewPager(viewPager);
-    }
 
-    private void setUpToolbar() {
-        setSupportActionBar(binding.toolbar);
+        contentFragment = new TileSelectFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentHolder, (Fragment) contentFragment)
+                .commit();
+        setActionBar();
+        buildSlideMenu();
+        viewAnimator = new ViewAnimator<>(this, list, contentFragment, drawerLayout, this);
     }
 
     // run a transaction to to update the tileId of the position in channel
@@ -263,5 +282,124 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                         .setValue(app.getChannel());
                 break;
         }
+    }
+
+    private void buildSlideMenu() {
+        list.add(new SlideMenuItem("tiles", R.drawable.ic_grid_white));
+        list.add(new SlideMenuItem("effects", R.drawable.ic_magic_wand));
+        list.add(new SlideMenuItem("colors", R.drawable.ic_color_fill));
+        list.add(new SlideMenuItem("speed", R.drawable.ic_speedometer_white));
+        list.add(new SlideMenuItem("layout", R.drawable.ic_layout_white));
+        list.add(new SlideMenuItem("close", R.drawable.ic_cancel_white_24px));
+    }
+    private void setActionBar() {
+        setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        drawerToggle = new ActionBarDrawerToggle(
+                this,                  /* host Activity */
+                drawerLayout,         /* DrawerLayout object */
+                binding.toolbar,  /* nav drawer icon to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description */
+                R.string.drawer_close  /* "close drawer" description */
+        ) {
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                linearLayout.removeAllViews();
+                linearLayout.invalidate();
+            }
+
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                super.onDrawerSlide(drawerView, slideOffset);
+                if (slideOffset > 0.6 && linearLayout.getChildCount() == 0)
+                    viewAnimator.showMenuContent();
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+        };
+        drawerLayout.setDrawerListener(drawerToggle);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void addViewToContainer(View view) {
+        linearLayout.addView(view);
+    }
+
+    @Override
+    public ScreenShotable onSwitch(Resourceble slideMenuItem, ScreenShotable screenShotable,
+                                   int position) {
+        switch (slideMenuItem.getName()) {
+            case "close":
+                return screenShotable;
+            case "tiles":
+                mPagePosition = 0;
+                return replaceFragment(screenShotable, new TileSelectFragment(), position);
+            case "effects":
+                mPagePosition = 1;
+                return replaceFragment(screenShotable, new EffectSelectFragment(), position);
+            case "colors":
+                mPagePosition = 2;
+                return replaceFragment(screenShotable, new ColorSelectFragment(), position);
+        }
+        return screenShotable;
+    }
+
+    private ScreenShotable replaceFragment(ScreenShotable oldFragment, ScreenShotable newFragment,
+                                           int position) {
+        if (!(contentFragment instanceof Fragment)) {
+            Log.e(TAG, "Screenshotable must be a fragment!");
+            return oldFragment;
+        }
+        View view = binding.fragmentHolder;
+        int finalRadius = Math.max(view.getWidth(), view.getHeight());
+        Animator animator = ViewAnimationUtils.createCircularReveal(view, 0, position, 0,
+                finalRadius);
+        animator.setInterpolator(new AccelerateInterpolator());
+        animator.setDuration(ViewAnimator.CIRCULAR_REVEAL_ANIMATION_DURATION);
+
+        binding.contentOverlay.setBackgroundDrawable(
+                new BitmapDrawable(getResources(), oldFragment.getBitmap()));
+        animator.start();
+        contentFragment = newFragment;
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentHolder, (Fragment) newFragment)
+                .commit();
+        return newFragment;
+    }
+
+    @Override
+    public void disableHomeButton() {
+        getSupportActionBar().setHomeButtonEnabled(false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void enableHomeButton() {
+        getSupportActionBar().setHomeButtonEnabled(true);
+        drawerLayout.closeDrawers();
     }
 }

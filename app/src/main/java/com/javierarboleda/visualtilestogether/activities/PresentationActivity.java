@@ -17,7 +17,7 @@ import com.javierarboleda.visualtilestogether.models.Tile;
  */
 
 public class PresentationActivity extends AppCompatActivity
-implements PresentationFragment.PresentationFragmentListener {
+        implements PresentationFragment.PresentationFragmentListener {
     private static final String TAG = PresentationActivity.class.getSimpleName();
 
     @Override
