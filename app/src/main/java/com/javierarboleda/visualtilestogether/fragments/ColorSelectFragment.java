@@ -3,6 +3,8 @@ package com.javierarboleda.visualtilestogether.fragments;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,15 +19,18 @@ import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.databinding.FragmentColorSelectBinding;
+import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
 
 /**
  * Created on 11/17/16.
  */
 
-public class ColorSelectFragment extends Fragment {
+public class ColorSelectFragment extends Fragment
+        implements ScreenShotable {
     private FragmentColorSelectBinding binding;
     private ColorSelectFragmentListener listener;
     private ColorFillMode mode = ColorFillMode.SINGLE_TILE;
+    private Bitmap bitmap = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -144,6 +149,30 @@ public class ColorSelectFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement ColorSelectFragmentListener");
         }
+    }
+
+    @Override
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    @Override
+    public void takeScreenShot() {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                if (binding.mainLayout == null) {
+                    ColorSelectFragment.this.bitmap = null;
+                    return;
+                }
+                Bitmap bitmap = Bitmap.createBitmap(binding.mainLayout.getWidth(),
+                        binding.mainLayout.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                binding.mainLayout.draw(canvas);
+                ColorSelectFragment.this.bitmap = bitmap;
+            }
+        };
+        thread.start();
     }
 
     public enum ColorFillMode {
