@@ -24,7 +24,8 @@
             android:id="@+id/cvTopEditBar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_above="@+id/cvVisualTileCardView"
+            android:layout_below="@id/toolbar"
+            android:layout_marginTop="12dp"
             android:layout_marginLeft="6dp"
             android:layout_marginRight="6dp">
 
@@ -40,9 +41,8 @@
             android:id="@+id/cvVisualTileCardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginBottom="12dp"
             android:layout_marginTop="12dp"
+            android:layout_below="@id/cvTopEditBar"
             android:transitionName="fabanimation"
             app:cardBackgroundColor="@android:color/black">
 
@@ -57,6 +57,7 @@
             android:id="@+id/cvBottomEditBar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginTop="12dp"
             android:layout_below="@+id/cvVisualTileCardView"
             android:layout_marginLeft="6dp"
             android:layout_marginRight="6dp"
