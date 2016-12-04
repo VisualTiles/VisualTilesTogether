@@ -26,6 +26,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
@@ -219,6 +220,7 @@ public class FirebaseUtil {
      */
     public static void deleteTile(DatabaseReference tileRef,
                                   @NonNull String tileId,
+                                  VisualTilesTogetherApp visualTilesTogetherApp,
                                   String channelId,
                                   String uId) {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
@@ -230,8 +232,17 @@ public class FirebaseUtil {
                 if (tileIdRef != null) {
                     tileIdRef.removeValue();
                 }
+                Channel channel = visualTilesTogetherApp.getChannel();
+                int position = channel.getPositionToTileIds().indexOf(tileId);
+                if (position >= 0) {
+                    DatabaseReference positionRef = channelRef
+                            .child(Channel.POS_TO_TILE_IDS)
+                            .child(String.valueOf(position));
+                    if (positionRef != null) {
+                        positionRef.setValue("");
+                    }
+                }
             }
-
         }
 
         if (!TextUtils.isEmpty(uId)) {
