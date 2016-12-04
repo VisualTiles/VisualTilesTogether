@@ -29,4 +29,15 @@
     <string name="tutorial_vj_platform_body">Give your audience an entertaining and interactive visual experience!</string>
     <string name="tutorial_vj_console_header">Control the Visual Experience</string>
     <string name="tutorial_vj_console_body">Choose which visual tiles are displayed. Trigger effects, change tile and background colors, and more!</string>
+    <string name="add_tile">Add Tile</string>
+
+    <string-array name="tile_creation_titles">
+        <item>Make Something Awesome!</item>
+        <item>Create a New Visual Tile!</item>
+        <item>It\'s blank… Draw something!</item>
+        <item>Tile Create ACTIVATED!</item>
+        <item>Keep It Appropriate, You!</item>
+        <item>Let\'s Draw!</item>
+    </string-array>
+
 </resources>

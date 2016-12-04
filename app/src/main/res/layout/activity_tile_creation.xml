@@ -14,7 +14,11 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="0dp"/>
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            app:titleTextColor="@color/white"
+            android:background="@color/colorPrimary"
+            />
 
         <android.support.v7.widget.CardView
             android:id="@+id/cvTopEditBar"
@@ -24,10 +28,14 @@
             android:layout_marginLeft="6dp"
             android:layout_marginRight="6dp">
 
+
             <android.support.v7.widget.ActionMenuView
                 android:id="@+id/amvTop"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:paddingLeft="60dp"
+                android:paddingStart="60dp"/>
+
 
         </android.support.v7.widget.CardView>
 

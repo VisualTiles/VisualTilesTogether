@@ -19,6 +19,8 @@ import com.javierarboleda.visualtilestogether.databinding.ActivityTileCreationBi
 import com.javierarboleda.visualtilestogether.fragments.ShapeAddDialog;
 import com.javierarboleda.visualtilestogether.views.CanvasView;
 
+import java.util.Random;
+
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.createTile;
 
 public class TileCreationActivity extends AppCompatActivity
@@ -51,10 +53,19 @@ public class TileCreationActivity extends AppCompatActivity
 
     private void setUpToolbar() {
         setSupportActionBar(binding.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
+        String[] tileCraetionTitles = getResources().getStringArray(R.array.tile_creation_titles);
+        String title = tileCraetionTitles[new Random().nextInt(tileCraetionTitles.length)];
+        getSupportActionBar().setTitle(title);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
+        Menu toolbarMenu = binding.toolbar.getMenu();
+        getMenuInflater().inflate(R.menu.action_menu_tile_creation_toolbar, toolbarMenu);
 
         Menu topMenu = binding.amvTop.getMenu();
         getMenuInflater().inflate(R.menu.action_menu_title_editor_top, topMenu);
@@ -104,7 +115,7 @@ public class TileCreationActivity extends AppCompatActivity
         View bottomMenu2 = binding.amvBottom2;
 
         switch (item.getItemId()) {
-            case R.id.action_back_button:
+            case android.R.id.home:
                 ActivityCompat.finishAfterTransition(this);
                 return true;
             case R.id.action_add_tile_to_upcoming:

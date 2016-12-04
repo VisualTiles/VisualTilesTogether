@@ -2,17 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_back_button"
-        android:icon="@drawable/ic_arrow_back_black"
-        android:title="Navigate Back"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/action_back_button"-->
+        <!--android:icon="@drawable/ic_arrow_back_black"-->
+        <!--android:title="Navigate Back"-->
+        <!--app:showAsAction="always" />-->
 
-    <item
-        android:id="@+id/action_add_tile_to_upcoming"
-        android:icon="@drawable/ic_add_tile_to_upcoming_24dp"
-        android:title="Add Tile"
-        app:showAsAction="always" />
+    <!--<item-->
+        <!--android:id="@+id/action_add_tile_to_upcoming"-->
+        <!--android:icon="@drawable/ic_add_tile_to_upcoming_24dp"-->
+        <!--android:title="Add Tile"-->
+        <!--app:showAsAction="always" />-->
 
     <item
         android:id="@+id/action_undo"
