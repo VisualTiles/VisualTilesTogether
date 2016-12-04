@@ -216,20 +216,23 @@ public class VisualTilesTogetherApp extends Application {
             newChannelId = "-KWVuJtz9tfBvdQUn4F_";
         }
 
-        if (dbChannelRef != null)
-            dbChannelRef.removeEventListener(channelValueEventListener);
-
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        dbChannelRef = dbRef.child(Channel.TABLE_NAME).child(newChannelId);
-        dbChannelRef.addValueEventListener(channelValueEventListener);
+        boolean needsNotify = false;
         // Already loaded, notify the activity and then skip.
         if (channelId != null && channelId.equals(newChannelId)) {
+            needsNotify = true;
             channelId = newChannelId;
             for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                 if (listener.get() != null)
                     listener.get().onChannelUpdated();
             }
         }
+
+        if (dbChannelRef != null)
+            dbChannelRef.removeEventListener(channelValueEventListener);
+
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        dbChannelRef = dbRef.child(Channel.TABLE_NAME).child(newChannelId);
+        dbChannelRef.addValueEventListener(channelValueEventListener);
 
         channelId = newChannelId;
         // Enforce that user and channel are in sync.
