@@ -2,6 +2,8 @@ package com.javierarboleda.visualtilestogether.fragments;
 
 import android.content.Context;
 import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,16 +14,19 @@ import android.widget.Button;
 
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.databinding.FragmentEffectSelectBinding;
+import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
 
 /**
  * Created on 11/17/16.
  */
 
-public class EffectSelectFragment extends Fragment {
+public class EffectSelectFragment extends Fragment
+    implements ScreenShotable {
 
     private FragmentEffectSelectBinding binding;
     private EffectSelectFragmentListener mListener;
     private Button mSelectedButton;
+    private Bitmap bitmap = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -129,6 +134,31 @@ public class EffectSelectFragment extends Fragment {
             }
         });
 
+    }
+
+
+    @Override
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    @Override
+    public void takeScreenShot() {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                if (binding.mainLayout == null) {
+                    EffectSelectFragment.this.bitmap = null;
+                    return;
+                }
+                Bitmap bitmap = Bitmap.createBitmap(binding.mainLayout.getWidth(),
+                        binding.mainLayout.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                binding.mainLayout.draw(canvas);
+                EffectSelectFragment.this.bitmap = bitmap;
+            }
+        };
+        thread.start();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,10 +20,14 @@ import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TileListRecyclerViewAdapter;
 import com.javierarboleda.visualtilestogether.models.Tile;
+import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
 
-public abstract class TileListFragment extends Fragment {
+public abstract class TileListFragment extends Fragment
+    implements ScreenShotable {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
 
+    private Bitmap bitmap;
+    private View containerView;
     private ProgressBar mProgressBar;
     private RecyclerView mRvTileList;
     private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> mFirebaseAdapter;
@@ -43,12 +49,9 @@ public abstract class TileListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        Log.d(LOG_TAG, "enter onCreateView");
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-//        DatabaseReference dbUsers = dbRef.child(User.TABLE_NAME);
-//        dbUsers.child(visualTilesTogetherApp.getUid()).setValue(visualTilesTogetherApp.getUser());
-
         final View view = inflater.inflate(R.layout.fragment_tile_list, container, false);
+        containerView = view;
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
@@ -103,6 +106,30 @@ public abstract class TileListFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    @Override
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    @Override
+    public void takeScreenShot() {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                if (containerView == null) {
+                    TileListFragment.this.bitmap = null;
+                    return;
+                }
+                Bitmap bitmap = Bitmap.createBitmap(containerView.getWidth(),
+                        containerView.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                containerView.draw(canvas);
+                TileListFragment.this.bitmap = bitmap;
+            }
+        };
+        thread.start();
     }
 
     public interface TileListFragmentListener {

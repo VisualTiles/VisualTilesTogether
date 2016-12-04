@@ -215,24 +215,26 @@ public class VisualTilesTogetherApp extends Application {
             // TODO(jav): Remove this once create/join login screen is working.
             newChannelId = "-KWVuJtz9tfBvdQUn4F_";
         }
+
+        if (dbChannelRef != null)
+            dbChannelRef.removeEventListener(channelValueEventListener);
+
+        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        dbChannelRef = dbRef.child(Channel.TABLE_NAME).child(newChannelId);
+        dbChannelRef.addValueEventListener(channelValueEventListener);
         // Already loaded, notify the activity and then skip.
         if (channelId != null && channelId.equals(newChannelId)) {
+            channelId = newChannelId;
             for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                 if (listener.get() != null)
                     listener.get().onChannelUpdated();
             }
         }
 
-        if (dbChannelRef != null)
-            dbChannelRef.removeEventListener(channelValueEventListener);
-
         channelId = newChannelId;
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
-        dbChannelRef = dbRef.child(Channel.TABLE_NAME).child(newChannelId);
-        dbChannelRef.addValueEventListener(channelValueEventListener);
         // Enforce that user and channel are in sync.
         if (user.getChannelId() != channelId) {
-            Log.i(LOG_TAG, "User channel is not the same channel as intiChannel!");
+            Log.i(LOG_TAG, "User channel is not the same channel as initChannel!");
             user.setChannelId(channelId);
 
             // Update channel field in DB.
@@ -321,7 +323,6 @@ public class VisualTilesTogetherApp extends Application {
         // .orderByChild(Tile.POS_VOTES_ID);
         dbTileRef.removeEventListener(tileEventListener);
         dbTileRef.addChildEventListener(tileEventListener);
-        // dbTileRef.addValueEventListener(tileEventListener);
     }
 
     public void leaveChannel() {
