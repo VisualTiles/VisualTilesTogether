@@ -184,7 +184,8 @@ public class CreateJoinActivity extends AppCompatActivity implements
 
     @Override
     public void onChannelUpdated() {
-        if (visualTilesTogetherApp.getChannel() == null) {
+        if (visualTilesTogetherApp.getChannelId() != null &&
+            visualTilesTogetherApp.getChannel() == null) {
             Toast.makeText(this, "Joining channel failed.", Toast.LENGTH_LONG).show();
             return;
         }

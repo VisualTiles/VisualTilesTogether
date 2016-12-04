@@ -216,20 +216,15 @@ public class VisualTilesTogetherApp extends Application {
             newChannelId = "-KWVuJtz9tfBvdQUn4F_";
         }
 
+        // Already loaded, notify the activity.
+        boolean needsNotify = channelId != null && channelId.equals(newChannelId);
+
         if (dbChannelRef != null)
             dbChannelRef.removeEventListener(channelValueEventListener);
 
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         dbChannelRef = dbRef.child(Channel.TABLE_NAME).child(newChannelId);
         dbChannelRef.addValueEventListener(channelValueEventListener);
-        // Already loaded, notify the activity and then skip.
-        if (channelId != null && channelId.equals(newChannelId)) {
-            channelId = newChannelId;
-            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
-                if (listener.get() != null)
-                    listener.get().onChannelUpdated();
-            }
-        }
 
         channelId = newChannelId;
         // Enforce that user and channel are in sync.
@@ -248,6 +243,12 @@ public class VisualTilesTogetherApp extends Application {
             dbRef.child(User.TABLE_NAME).child(uId).child(User.CHANNEL_ID).setValue(channelId);
         }
         initTilesForChannel();
+        if (needsNotify) {
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onChannelUpdated();
+            }
+        }
     }
 
     private ChildEventListener tileEventListener = new ChildEventListener() {
@@ -315,6 +316,7 @@ public class VisualTilesTogetherApp extends Application {
             }
         }
     };
+
     private Query dbTileRef;
     private void initTilesForChannel() {
         dbTileRef = FirebaseDatabase.getInstance().getReference().child(Tile.TABLE_NAME)
