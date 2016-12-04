@@ -32,6 +32,7 @@ import com.javierarboleda.visualtilestogether.models.User;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Random;
 
 import static android.graphics.Color.BLACK;
@@ -48,46 +49,96 @@ public class FirebaseUtil {
      * Shouldn't really ever need to use this
      */
     public static void normalizeDb() {
-        DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
+        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
 
-        DatabaseReference dbTiles = dbRef.child(Tile.TABLE_NAME);
-        dbTiles.addListenerForSingleValueEvent(new ValueEventListener() {
+        // get the list of userIds and then proceed
+        DatabaseReference userRef = dbRef.child(User.TABLE_NAME);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                    Tile tile = postSnapshot.getValue(Tile.class);
-                    String tileId = postSnapshot.getKey();
-                    updateChannelTileId(tileId, tile);
-                    updateUsrerTileId(tileId, tile);
+                final ArrayList<String> userIds = new ArrayList<>();
+                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
+                    userIds.add(userSnapshot.getKey());
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        final DatabaseReference dbChannels = dbRef.child(Channel.TABLE_NAME);
-        dbChannels.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot channelSnapshot: dataSnapshot.getChildren()) {
-                    String uniqueName;
-                    String channelId = channelSnapshot.getKey();
-                    if (channelSnapshot.child(Channel.CHANNEL_UNIQUE_NAME).exists()) {
-                        uniqueName = (String) channelSnapshot
-                                .child(Channel.CHANNEL_UNIQUE_NAME)
-                                .getValue();
-                    } else {
-                        uniqueName = generateChannelUniqueName(dataSnapshot);
-                        dbChannels
-                                .child(channelId)
-                                .child(Channel.CHANNEL_UNIQUE_NAME)
-                                .setValue(uniqueName);
+                // go through the channels and clean them up
+                // if they're unnamed they got here because of a glitch in some earlier code
+                // otherwise get the channel's event code (unique name)
+                // (generate a unique name if one doesn't exist due to legacy channels)
+                // finally build or overwrite the QR code image file
+                final DatabaseReference channelsRef = dbRef.child(Channel.TABLE_NAME);
+                channelsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot channelSnapshot: dataSnapshot.getChildren()) {
+                            String uniqueName;
+                            String channelId = channelSnapshot.getKey();
+                            // TODO: delete only bogus channels instead of all of them
+//                            if (!channelSnapshot.child(Channel.CHANNEL_DISPLAY_NAME).exists()) {
+//                                // any channel without a name is spurious
+//                                // get rid of it
+////                                channelsRef.child(channelId).removeValue();
+//                            } else {
+                                if (channelSnapshot.child(Channel.CHANNEL_UNIQUE_NAME).exists()) {
+                                    uniqueName = (String) channelSnapshot
+                                            .child(Channel.CHANNEL_UNIQUE_NAME)
+                                            .getValue();
+                                } else {
+                                    uniqueName = generateChannelUniqueName(dataSnapshot);
+                                    channelsRef
+                                            .child(channelId)
+                                            .child(Channel.CHANNEL_UNIQUE_NAME)
+                                            .setValue(uniqueName);
+                                }
+                                setChannelQrCode(channelId, uniqueName);
+//                            }
+                        }
                     }
-                    setChannelQrCode(channelId, uniqueName);
-                }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                // go through all the tiles and clean them up
+                // make sure each one is represented in the channel designated by its channelId
+                // if there's no channelId or if the channelId doesn't represent an existing channel,
+                // change the tile's channelId to the RONINS channel
+                // if the tile doesn't have a userID (legacy tiles) assign the tile to a random user
+                // then update/create an entry in the tileId table of the tile creator's user table entry
+                final DatabaseReference tilesRef = dbRef.child(Tile.TABLE_NAME);
+                tilesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot tileSnapshot: dataSnapshot.getChildren()) {
+                            Tile tile = tileSnapshot.getValue(Tile.class);
+                            String tileId = tileSnapshot.getKey();
+                            if (tile.getChannelId() == null) {
+                                tile.setChannelId(Channel.RONINS);
+                                tilesRef.child(tileId).child(Tile.CHANNEL_ID).setValue(Channel.RONINS);
+                            }
+                            if (tile.getCreatorId() == null) {
+                                String creatorId = getRandomUser();
+                                tile.setCreatorId(creatorId);
+                                tilesRef.child(tileId).child(Tile.CREATOR_ID).setValue(creatorId);
+                            }
+                            updateChannelTileId(tileId, tile);
+                            updateUserTileId(tileId, tile);
+                        }
+                    }
+
+                    private String getRandomUser() {
+                        Random r = new Random();
+                        return userIds.get(r.nextInt(userIds.size()));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
             }
 
             @Override
@@ -143,18 +194,19 @@ public class FirebaseUtil {
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                dbRef.child(key).setValue(null);
+                dbRef.child(key).removeValue();
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                assert downloadUrl != null;
                 Tile tile = new Tile(false, channelId, uId, 0, 0, null, downloadUrl.toString(),
                         System.currentTimeMillis());
                 tile.setChannelId(channelId);
                 dbRef.child(key).setValue(tile);
                 updateChannelTileId(key, tile);
-                updateUsrerTileId(key, tile);
+                updateUserTileId(key, tile);
             }
         });
     }
@@ -231,7 +283,7 @@ public class FirebaseUtil {
      * has a corresponding entry in its tileId list,
      * set to true for approved and false if not
      */
-    public static void updateChannelTileId(String tileId, Tile tile) {
+    private static void updateChannelTileId(String tileId, Tile tile) {
         if (tile.getChannelId() != null) {
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference channelRef = dbRef.child(Channel.TABLE_NAME).child(tile.getChannelId());
@@ -246,7 +298,7 @@ public class FirebaseUtil {
      * has a corresponding entry in its tileId list,
      * set to true for approved and false if not
      */
-    public static void updateUsrerTileId(String tileId, Tile tile) {
+    private static void updateUserTileId(String tileId, Tile tile) {
         if (tile.getCreatorId() != null) {
             DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
             DatabaseReference userRef = dbRef.child(User.TABLE_NAME).child(tile.getCreatorId());
