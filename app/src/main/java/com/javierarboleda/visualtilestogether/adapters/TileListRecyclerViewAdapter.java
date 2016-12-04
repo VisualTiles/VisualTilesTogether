@@ -210,6 +210,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                 }
                                 deleteTile(viewHolder.tileRef,
                                         tileId,
+                                        mVisualTilesTogetherApp,
                                         mVisualTilesTogetherApp.getChannelId(),
                                         viewHolder.tile.getCreatorId());
                             }
