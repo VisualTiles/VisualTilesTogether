@@ -17,6 +17,8 @@ package com.javierarboleda.visualtilestogether.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
@@ -24,7 +26,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -44,7 +49,9 @@ import com.google.firebase.database.DatabaseError;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TutorialImageAdapter;
-import com.xgc1986.parallaxPagerTransformer.ParallaxPagerTransformer;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -60,6 +67,10 @@ public class SignInActivity extends AppCompatActivity implements
 
     private GoogleApiClient mGoogleApiClient;
     private VisualTilesTogetherApp visualTilesTogetherApp;
+    private ViewPager mPager;
+
+    Timer mTimer;
+    int mPage = 0;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -98,6 +109,10 @@ public class SignInActivity extends AppCompatActivity implements
         initTutorialView();
 
         showPreSignInButtons();
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
     @Override
@@ -107,11 +122,60 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void initTutorialView() {
-        ViewPager pager = (ViewPager) findViewById(R.id.tutorial_view_pager);
-        pager.setAdapter(new TutorialImageAdapter(this));
+        mPager = (ViewPager) findViewById(R.id.tutorial_view_pager);
+        mPager.setAdapter(new TutorialImageAdapter(this));
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tutorial_tab_layout);
-        tabLayout.setupWithViewPager(pager, true);
-        pager.setPageTransformer(false, new ParallaxPagerTransformer(R.id.ivBackground));
+        tabLayout.setupWithViewPager(mPager, true);
+
+        mTimer = new Timer();
+        mTimer.scheduleAtFixedRate(new RemindTask(), 0, 4000);
+
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                mPage = position;
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        Animation animation = new AlphaAnimation(0f, 1f);
+        animation.setDuration(1400);
+        findViewById(R.id.ivTutorial).startAnimation(animation);
+        findViewById(R.id.tutorial_view_pager).startAnimation(animation);
+        findViewById(R.id.tutorial_tab_layout).startAnimation(animation);
+        findViewById(R.id.view_footer).startAnimation(animation);
+
+        final VideoView videoView = (VideoView) findViewById(R.id.vvTutorialVideo);
+
+        videoView.setVideoURI(Uri.parse("android.resource://" + getPackageName()
+                + "/" + R.raw.video_tutorial_1));
+
+        videoView.requestFocus();
+
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                videoView.seekTo(0);
+                videoView.start();
+            }
+        });
+
+        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                videoView.seekTo(0);
+                videoView.start();
+            }
+        });
     }
 
     @Override
@@ -237,5 +301,28 @@ public class SignInActivity extends AppCompatActivity implements
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    // For ViewPager mTimer to change mPage
+    class RemindTask extends TimerTask {
+
+        @Override
+        public void run() {
+
+            // As the TimerTask run on a seprate thread from UI thread we have
+            // to call runOnUiThread to do work on UI thread.
+            runOnUiThread(new Runnable() {
+                public void run() {
+
+                    if (mPage > mPager.getAdapter().getCount() - 1) {
+                        mPage = 0;
+                        mPager.setCurrentItem(mPage++);
+                    } else {
+                        mPager.setCurrentItem(mPage++);
+                    }
+                }
+            });
+
+        }
     }
 }

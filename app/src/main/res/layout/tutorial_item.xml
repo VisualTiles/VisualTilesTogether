@@ -3,11 +3,28 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-<ImageView
-        android:id="@+id/ivBackground"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:scaleType="centerCrop"
-        />
+        android:layout_marginBottom="@dimen/tutorial_item_margin_bottom"
+        android:id="@+id/ivTutorial"
+        android:gravity="bottom|center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tutorial_be_part_of_the_show_header"
+            style="@style/TutorialTextHeader"
+            />
+
+        <TextView
+            android:id="@+id/tvBody"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tutorial_be_part_of_the_show_body"
+            style="@style/TutorialTextBody"
+            />
+    </LinearLayout>
 </FrameLayout>

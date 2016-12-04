@@ -5,11 +5,8 @@ import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.javierarboleda.visualtilestogether.R;
 
@@ -18,13 +15,11 @@ import com.javierarboleda.visualtilestogether.R;
  */
 
 public class TutorialImageAdapter extends PagerAdapter {
-    private int[] backgroundResourceIds = {
-            R.drawable.vtbg,
-            R.drawable.vtbg2
-    };
-    private int[] tutorialResourceIds = {
-            R.layout.tutorial_page_1,
-            R.layout.tutorial_page_2
+
+    private int[][] tutorialResourceIds = {
+            {R.string.tutorial_vj_platform_header, R.string.tutorial_vj_platform_body},
+            {R.string.tutorial_vj_console_header, R.string.tutorial_vj_console_body},
+            {R.string.tutorial_be_part_of_the_show_header, R.string.tutorial_be_part_of_the_show_body}
     };
 
     private Context context;
@@ -48,22 +43,24 @@ public class TutorialImageAdapter extends PagerAdapter {
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
+
         FrameLayout itemView = (FrameLayout)
                 layoutInflater.inflate(R.layout.tutorial_item, container, false);
 
-        ImageView imageView = (ImageView) itemView.findViewById(R.id.ivBackground);
-        imageView.setImageResource(backgroundResourceIds[position]);
+        TextView headerTextView = (TextView) itemView.findViewById(R.id.tvHeader);
+        headerTextView.setText(context.getString(tutorialResourceIds[position][0]));
+        TextView bodyTextView = (TextView) itemView.findViewById(R.id.tvBody);
+        bodyTextView.setText(context.getString(tutorialResourceIds[position][1]));
         container.addView(itemView);
 
-        View page = layoutInflater.inflate(tutorialResourceIds[position], itemView, true);
-        Animation animation = new AlphaAnimation(0f, 1f);
-        animation.setDuration(2000);
-        container.findViewById(R.id.ivTutorial).startAnimation(animation);
+//        Animation animation = new AlphaAnimation(0f, 1f);
+//        animation.setDuration(2000);
+//        container.findViewById(R.id.ivTutorial).startAnimation(animation);
         return itemView;
     }
 
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
-        container.removeView((LinearLayout) object);
+        container.removeView((FrameLayout) object);
     }
 }

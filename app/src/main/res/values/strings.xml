@@ -23,4 +23,10 @@
     <string name="pref_autofocus">Autofocus</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="tutorial_be_part_of_the_show_header">Be part of the show</string>
+    <string name="tutorial_be_part_of_the_show_body">Create a piece of the visual show. Vote for your favorites! Be picked by the VJ!</string>
+    <string name="tutorial_vj_platform_header">The Interactive VJ Platform</string>
+    <string name="tutorial_vj_platform_body">Give your audience an entertaining and interactive visual experience!</string>
+    <string name="tutorial_vj_console_header">Control the Visual Experience</string>
+    <string name="tutorial_vj_console_body">Choose which visual tiles are displayed. Trigger effects, change tile and background colors, and more!</string>
 </resources>
