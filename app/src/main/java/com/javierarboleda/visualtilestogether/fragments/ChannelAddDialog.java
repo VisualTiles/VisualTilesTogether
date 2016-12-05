@@ -3,14 +3,15 @@ package com.javierarboleda.visualtilestogether.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.DialogFragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,6 +27,8 @@ public class ChannelAddDialog extends DialogFragment {
 
     private OnFragmentInteractionListener mListener;
     private VisualTilesTogetherApp app;
+    private TextInputLayout tilChannelName;
+    private TextInputLayout tilChannelUniqueName;
 
     public ChannelAddDialog() {
         // required public empty constructor
@@ -47,16 +50,34 @@ public class ChannelAddDialog extends DialogFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.dialog_channel_add, container, false);
 
-        final EditText etChannelName = (EditText) view.findViewById(R.id.etChannelName);
-        final EditText etChannelUniqueName = (EditText) view.findViewById(R.id.etChannelUniqueName);
+        final TextInputEditText etChannelName =
+                (TextInputEditText) view.findViewById(R.id.etChannelName);
+        final TextInputEditText etChannelUniqueName =
+                (TextInputEditText) view.findViewById(R.id.etChannelUniqueName);
+        tilChannelName = (TextInputLayout) view.findViewById(R.id.tilChannelName);
+        tilChannelUniqueName = (TextInputLayout) view.findViewById(R.id.tilChannelUniqueName);
         Button btOK = (Button) view.findViewById(R.id.btOk);
         Button btCancel = (Button) view.findViewById(R.id.btCancel);
 
         btOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // reset error states
+                tilChannelName.setErrorEnabled(false);
+                tilChannelUniqueName.setErrorEnabled(false);
+                boolean error = false;
+
+                String channelName = etChannelName.getText().toString();
                 String uniqueName = etChannelUniqueName.getText().toString();
-                finishIfUnique(uniqueName, etChannelName.getText().toString(), app.getUid());
+                if (TextUtils.isEmpty(channelName)) {
+                    tilChannelName.setError(getString(R.string.error_event_name_empty));
+                    error = true;
+                }
+                if (TextUtils.isEmpty(uniqueName)) {
+                    tilChannelUniqueName.setError(getString(R.string.error_event_code_empty));
+                } else {
+                    finishIfUnique(uniqueName, etChannelName.getText().toString(), app.getUid(), error);
+                }
             }
         });
 
@@ -69,13 +90,17 @@ public class ChannelAddDialog extends DialogFragment {
         return view;
     }
 
-    private void finishIfUnique(final String uniqueName, final String name, final String uId) {
+    private void finishIfUnique(final String uniqueName,
+                                final String name,
+                                final String uId,
+                                final boolean errorFlagged) {
         DatabaseReference channelRef = FirebaseDatabase.getInstance().getReference()
                 .child(Channel.TABLE_NAME);
         channelRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean unique = true;
+                boolean error = errorFlagged;
                 for (DataSnapshot data : dataSnapshot.getChildren()) {
                     Channel channel = data.getValue(Channel.class);
                     if (uniqueName.equals(channel.getUniqueName())) {
@@ -83,13 +108,13 @@ public class ChannelAddDialog extends DialogFragment {
                         break;
                     }
                 }
-                if (unique) {
+                if (!unique) {
+                    tilChannelUniqueName.setError(uniqueName + getString(R.string.error_event_code_in_use));
+                    error = true;
+                }
+                if (!error) {
                     mListener.onFragmentInteraction(new Channel(name, uniqueName, uId));
                     dismiss();
-                } else {
-                    Toast.makeText(getContext(),
-                            uniqueName + "isn't a unique name, please try again",
-                            Toast.LENGTH_LONG);
                 }
             }
             @Override
