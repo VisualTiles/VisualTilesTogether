@@ -28,16 +28,15 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.Button;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.dd.CircularProgressButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -62,7 +61,7 @@ public class SignInActivity extends AppCompatActivity implements
     private static final String LOG_TAG = SignInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
 
-    private Button mSignInButton;
+    private CircularProgressButton mSignInButton;
 
     private View preSignInButtons;
 
@@ -86,7 +85,7 @@ public class SignInActivity extends AppCompatActivity implements
         visualTilesTogetherApp.addListener(this);
 
         // Assign fields
-        mSignInButton = (Button) findViewById(R.id.sign_in_button);
+        mSignInButton = (CircularProgressButton) findViewById(R.id.sign_in_button);
         preSignInButtons = findViewById(R.id.pre_sign_in_buttons);
 
         // Set click listeners
@@ -183,9 +182,61 @@ public class SignInActivity extends AppCompatActivity implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.sign_in_button:
+
+                animateSignInButton(1, 0, true);
+
                 signIn();
                 break;
         }
+    }
+
+    private void animateSignInButton(float fromAlpha, float toAlpha, final boolean invisible) {
+
+        final View googleIconImageView = findViewById(R.id.ivGoogleIcon);
+        final View signInTextView = findViewById(R.id.tvSignIn);
+        final View buttonOutlineView =  findViewById(R.id.viewButtonOutline);
+
+        Animation animation = new AlphaAnimation(fromAlpha, toAlpha);
+        if (invisible) {
+            animation.setDuration(300);
+            mSignInButton.setIndeterminateProgressMode(true);
+            mSignInButton.setProgress(50);
+            mSignInButton.setClickable(false);
+        } else {
+            animation.setDuration(900);
+            mSignInButton.setProgress(0);
+            mSignInButton.setClickable(true);
+        }
+
+
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (invisible) {
+                    googleIconImageView.setVisibility(View.INVISIBLE);
+                    signInTextView.setVisibility(View.INVISIBLE);
+                    buttonOutlineView.setVisibility(View.INVISIBLE);
+                } else {
+                    googleIconImageView.setVisibility(View.VISIBLE);
+                    signInTextView.setVisibility(View.VISIBLE);
+                    buttonOutlineView.setVisibility(View.VISIBLE);
+                }
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        googleIconImageView.startAnimation(animation);
+        signInTextView.startAnimation(animation);
+        buttonOutlineView .startAnimation(animation);
     }
 
     private void signIn() {
@@ -215,6 +266,8 @@ public class SignInActivity extends AppCompatActivity implements
             } else {
                 // Google Sign In failed
                 Log.e(LOG_TAG, "Google Sign In failed.");
+
+                animateSignInButton(0, 1, false);
             }
         }
     }
@@ -280,6 +333,19 @@ public class SignInActivity extends AppCompatActivity implements
     private void launchGroupCreationActivity() {
         Intent intent = new Intent(this, CreateJoinActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        // pass center coordinates of sign in button for circular transition start point
+        View signInView = findViewById(R.id.rlSignIn);
+
+        int[] xy = new int[2];
+        signInView.getLocationOnScreen(xy);
+
+        int cx = xy[0] + (signInView.getWidth() / 2);
+        int cy = xy[1] + (signInView.getHeight() / 2);
+
+        intent.putExtra(CreateJoinActivity.CX_KEY, cx);
+        intent.putExtra(CreateJoinActivity.CY_KEY, cy);
+
         startActivity(intent);
         finish();
     }

@@ -1,8 +1,10 @@
 package com.javierarboleda.visualtilestogether.activities;
 
+import android.animation.Animator;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
@@ -10,8 +12,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewAnimationUtils;
+import android.view.ViewTreeObserver;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.database.DataSnapshot;
@@ -26,6 +33,8 @@ import com.javierarboleda.visualtilestogether.databinding.ActivityCreateJoinBind
 import com.javierarboleda.visualtilestogether.fragments.ChannelAddDialog;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
+import jp.wasabeef.glide.transformations.BlurTransformation;
+
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChannelQrCode;
 
 /**
@@ -37,13 +46,17 @@ public class CreateJoinActivity extends AppCompatActivity implements
         VisualTilesTogetherApp.VisualTilesListenerInterface {
     private static final String LOG_TAG = CreateJoinActivity.class.getSimpleName();
     private static final int RC_BARCODE_CAPTURE = 9001;
+    public static String CX_KEY = "cx_key";
+    public static String CY_KEY = "cY_key";
 
     private ActivityCreateJoinBinding binding;
     private VisualTilesTogetherApp visualTilesTogetherApp;
+    private RelativeLayout rootLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
         visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
         if (visualTilesTogetherApp.getUser() == null) {
@@ -51,6 +64,44 @@ public class CreateJoinActivity extends AppCompatActivity implements
             finish();
         }
         visualTilesTogetherApp.addListener(this);
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+
+        Glide.with(this).load(R.drawable.vtbg2)
+                .bitmapTransform(new BlurTransformation(this, 5))
+                .into((ImageView) findViewById(R.id.ivBackgroundImage));
+
+        setupCircularTransition(savedInstanceState);
+    }
+
+    private void setupCircularTransition(Bundle savedInstanceState) {
+        rootLayout = binding.rvRootLayout;
+
+        overridePendingTransition(R.anim.do_not_move, R.anim.do_not_move);
+
+        final int cx = getIntent().getIntExtra(CX_KEY, -1);
+        final int cy = getIntent().getIntExtra(CY_KEY, -1);
+
+        if (savedInstanceState == null && cx != 0) {
+            rootLayout.setVisibility(View.INVISIBLE);
+
+            ViewTreeObserver viewTreeObserver = rootLayout.getViewTreeObserver();
+            if (viewTreeObserver.isAlive()) {
+                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        circularRevealActivity(cx, cy);
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                            rootLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        } else {
+                            rootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        }
+                    }
+                });
+            }
+        }
     }
 
     @Override
@@ -198,4 +249,22 @@ public class CreateJoinActivity extends AppCompatActivity implements
     public void onTilesUpdated() {
         // Not interested at this point. Do nothing.
     }
+
+    private void circularRevealActivity(int cx, int cy) {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+
+            float finalRadius = Math.max(rootLayout.getWidth(), rootLayout.getHeight());
+
+            // create the animator for this view (the start radius is zero)
+            Animator circularReveal = null;
+            circularReveal = ViewAnimationUtils.createCircularReveal(rootLayout, cx, cy, 0, finalRadius);
+            circularReveal.setDuration(1000);
+
+            // make the view visible and start the animation
+            rootLayout.setVisibility(View.VISIBLE);
+            circularReveal.start();
+        }
+    }
+
 }

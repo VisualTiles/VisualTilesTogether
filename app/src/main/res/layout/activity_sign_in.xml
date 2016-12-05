@@ -46,18 +46,27 @@
                 android:visibility="gone">
 
                 <RelativeLayout
+                    android:id="@+id/rlSignIn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="30dp"
                     android:layout_marginLeft="30dp" >
 
-                    <Button
+
+                    <com.dd.CircularProgressButton
                         android:id="@+id/sign_in_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/shape_sign_in_button"/>
+                        android:background="@android:color/transparent"
+                        app:cpb_cornerRadius="48dp"
+                        app:cpb_colorProgress="@android:color/transparent"
+                        app:cpb_selectorIdle="@drawable/state_list_sign_in_button_selector"
+                        app:cpb_colorIndicator="@color/darkGray"
+
+                        />
 
                     <ImageView
+                        android:id="@+id/ivGoogleIcon"
                         android:layout_width="wrap_content"
                         android:layout_height="30dp"
                         android:layout_marginTop="4dp"
@@ -68,6 +77,7 @@
                         android:layout_centerVertical="true"/>
 
                     <TextView
+                        android:id="@+id/tvSignIn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
@@ -77,6 +87,12 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:text="@string/sign_in_with_google"/>
+
+                    <View
+                        android:id="@+id/viewButtonOutline"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/shape_sign_in_button"/>
 
                 </RelativeLayout>
 

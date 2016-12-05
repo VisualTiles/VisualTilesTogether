@@ -31,7 +31,7 @@ public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
         }
 
         super.onViewAttachedToWindow(holder);
-    }
+}
 
     @Override
     protected void doTheWork(final TileViewHolder viewHolder, String tileId) {
