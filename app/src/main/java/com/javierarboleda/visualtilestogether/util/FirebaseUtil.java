@@ -64,11 +64,13 @@ public class FirebaseUtil {
                     userIds.add(userSnapshot.getKey());
                 }
 
-                // go through the channels and clean them up
-                // if they're unnamed they got here because of a glitch in some earlier code
-                // otherwise get the channel's event code (unique name)
-                // (generate a unique name if one doesn't exist due to legacy channels)
-                // finally build or overwrite the QR code image file
+                /**
+                 * go through the channels and clean them up
+                 * if they're unnamed they got here because of a glitch in some earlier code
+                 * otherwise get the channel's event code (unique name)
+                 * (generate a unique name if one doesn't exist due to legacy channels)
+                 * finally build or overwrite the QR code image file
+                 */
                 final DatabaseReference channelsRef = dbRef.child(Channel.TABLE_NAME);
                 channelsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -102,12 +104,14 @@ public class FirebaseUtil {
                     }
                 });
 
-                // go through all the tiles and clean them up
-                // make sure each one is represented in the channel designated by its channelId
-                // if there's no channelId or if the channelId doesn't represent an existing channel,
-                // change the tile's channelId to the RONINS channel
-                // if the tile doesn't have a userID (legacy tiles) assign the tile to a random user
-                // then update/create an entry in the tileId table of the tile creator's user table entry
+                /**
+                 * go through all the tiles and clean them up
+                 * make sure each one is represented in the channel designated by its channelId
+                 * if there's no channelId or if the channelId doesn't represent an existing channel,
+                 * change the tile's channelId to the RONINS channel
+                 * if the tile doesn't have a userID (legacy tiles) assign the tile to a random user
+                 * then update/create an entry in the tileId table of the tile creator's user table entry
+                 */
                 final DatabaseReference tilesRef = dbRef.child(Tile.TABLE_NAME);
                 tilesRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -215,7 +219,8 @@ public class FirebaseUtil {
 
     /**
      * Delete a Tile, after deleting any reference to it
-     * in its Channel's and creator's tileId lists.
+     * in its Channel's and creator's tileId lists,
+     * and in the Channel's positionToTileIds table.
      * Then delete its corresponding graphic in Storage
      */
     public static void deleteTile(DatabaseReference tileRef,
@@ -233,13 +238,16 @@ public class FirebaseUtil {
                     tileIdRef.removeValue();
                 }
                 Channel channel = visualTilesTogetherApp.getChannel();
-                int position = channel.getPositionToTileIds().indexOf(tileId);
-                if (position >= 0) {
-                    DatabaseReference positionRef = channelRef
-                            .child(Channel.POS_TO_TILE_IDS)
-                            .child(String.valueOf(position));
-                    if (positionRef != null) {
-                        positionRef.setValue("");
+                ArrayList<String> ids = channel.getPositionToTileIds();
+                if (ids != null) {
+                    int position = channel.getPositionToTileIds().indexOf(tileId);
+                    if (position >= 0) {
+                        DatabaseReference positionRef = channelRef
+                                .child(Channel.POS_TO_TILE_IDS)
+                                .child(String.valueOf(position));
+                        if (positionRef != null) {
+                            positionRef.setValue("");
+                        }
                     }
                 }
             }
