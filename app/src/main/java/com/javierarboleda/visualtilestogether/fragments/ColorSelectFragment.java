@@ -7,9 +7,12 @@ import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatImageButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -96,9 +99,16 @@ public class ColorSelectFragment extends Fragment
         binding.btnColor15.setOnClickListener(handleButtonClick);
     }
 
+    private View selectedButton;
     View.OnClickListener handleButtonClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            if (!view.isSelected()) {
+                if (selectedButton != null) selectedButton.setSelected(false);
+                view.setSelected(true);
+                selectedButton = view;
+            }
+
             Integer color = null;
             String colorStr = (String) view.getTag();
             if (!colorStr.isEmpty())
@@ -109,6 +119,11 @@ public class ColorSelectFragment extends Fragment
     View.OnClickListener handleColorPicker = new View.OnClickListener() {
         @Override
         public void onClick(final View pickerView) {
+            if (!pickerView.isSelected()) {
+                if (selectedButton != null) selectedButton.setSelected(false);
+                pickerView.setSelected(true);
+                selectedButton = pickerView;
+            }
             int initialColor = Color.parseColor((String) pickerView.getTag());
             ColorPickerDialogBuilder
                     .with(getContext())
@@ -126,8 +141,16 @@ public class ColorSelectFragment extends Fragment
                     .setPositiveButton("ok", new ColorPickerClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                            pickerView.setTag("#" + Integer.toHexString(selectedColor));
-                            pickerView.setBackgroundColor(selectedColor);
+                            AppCompatImageButton btn = (AppCompatImageButton) pickerView;
+                            btn.setTag("#" + Integer.toHexString(selectedColor));
+                            StateListDrawable colorState = new StateListDrawable();
+                            colorState.addState(
+                                    new int[]{android.R.attr.state_selected},
+                                    new ColorDrawable(selectedColor));
+                            ColorDrawable unselected = new ColorDrawable(selectedColor);
+                            unselected.setAlpha(100);
+                            colorState.addState(new int[]{}, unselected);
+                            btn.setBackground(colorState);
                             listener.updateSelectedColor(mode, selectedColor);
                         }
                     })

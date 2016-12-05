@@ -47,7 +47,7 @@
 
     <style name="ModeratorEffectsButtons"
            parent="@android:style/Widget.DeviceDefault.Light.Button.Borderless.Small">
-        <item name="android:background">@drawable/state_list_effects_selector_card</item>
+        <item name="android:background">@drawable/state_list_moderator_selector_button</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>

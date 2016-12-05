@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class ViewAnimator<T extends Resourceble> {
     private final int ANIMATION_DURATION = 100;
-    public static final int CIRCULAR_REVEAL_ANIMATION_DURATION = 600;
+    public static final int CIRCULAR_REVEAL_ANIMATION_DURATION = 300;
 
     private Activity activity;
     private List<T> list;
@@ -30,9 +30,11 @@ public class ViewAnimator<T extends Resourceble> {
     private ScreenShotable screenShotable;
     private DrawerLayout drawerLayout;
     private ViewAnimatorListener animatorListener;
+    private View selectedView;
+    private T selectedT;
 
-    public ViewAnimator(Activity activity, List<T> items,ScreenShotable screenShotable,
-                        final DrawerLayout drawerLayout, ViewAnimatorListener animatorListener){
+    public ViewAnimator(Activity activity, List<T> items, ScreenShotable screenShotable,
+                        final DrawerLayout drawerLayout, ViewAnimatorListener animatorListener) {
         this.activity = activity;
         this.list = items;
         this.screenShotable = screenShotable;
@@ -40,24 +42,34 @@ public class ViewAnimator<T extends Resourceble> {
         this.animatorListener = animatorListener;
     }
 
-
     public void showMenuContent() {
         setViewsClickable(false);
         viewList.clear();
         double size = list.size();
         for (int i = 0; i < size; i++) {
-            View viewMenu = activity.getLayoutInflater().inflate(R.layout.sidemenu_list_item, null);
+            final View viewMenu = activity.getLayoutInflater().inflate(R.layout.sidemenu_list_item, null);
             final int finalI = i;
             viewMenu.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int[] location = {0, 0};
                     v.getLocationOnScreen(location);
+                    if (selectedView != null) selectedView.setSelected(false);
+                    selectedView = viewMenu;
+                    selectedView.setSelected(true);
+                    if (selectedT != null) selectedT.setSelected(false);
+                    selectedT = list.get(finalI);
+                    selectedT.setSelected(true);
                     switchItem(list.get(finalI), location[1] + v.getHeight() / 2);
                 }
             });
             ((ImageView) viewMenu.findViewById(R.id.menu_item_image))
                     .setImageResource(list.get(i).getImageRes());
+            if (list.get(i).isSelected()) {
+                viewMenu.setSelected(true);
+                selectedT = list.get(i);
+                selectedView = viewMenu;
+            }
             viewMenu.setVisibility(View.GONE);
             viewMenu.setEnabled(false);
             viewList.add(viewMenu);
@@ -97,7 +109,6 @@ public class ViewAnimator<T extends Resourceble> {
     }
 
     private void setViewsClickable(boolean clickable) {
-        animatorListener.disableHomeButton();
         for (View view : viewList) {
             view.setEnabled(clickable);
         }
@@ -149,7 +160,6 @@ public class ViewAnimator<T extends Resourceble> {
                 view.clearAnimation();
                 view.setVisibility(View.INVISIBLE);
                 if (position == viewList.size() - 1) {
-                    animatorListener.enableHomeButton();
                     drawerLayout.closeDrawers();
                 }
             }
@@ -171,10 +181,6 @@ public class ViewAnimator<T extends Resourceble> {
     public interface ViewAnimatorListener {
 
         public ScreenShotable onSwitch(Resourceble slideMenuItem, ScreenShotable screenShotable, int position);
-
-        public void disableHomeButton();
-
-        public void enableHomeButton();
 
         public void addViewToContainer(View view);
 

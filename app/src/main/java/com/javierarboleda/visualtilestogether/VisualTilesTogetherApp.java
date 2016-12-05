@@ -355,4 +355,19 @@ public class VisualTilesTogetherApp extends Application {
             }
         }
     }
+
+    public void notifyChannelUpdated() {
+        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+            if (listener.get() != null)
+                listener.get().onChannelUpdated();
+        }
+    }
+
+    public DatabaseReference getDbChannelRef() {
+        return dbChannelRef;
+    }
+
+    public static DatabaseReference getDbUserRef() {
+        return dbUserRef;
+    }
 }

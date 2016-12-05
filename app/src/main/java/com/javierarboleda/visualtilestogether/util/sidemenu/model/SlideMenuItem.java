@@ -8,6 +8,7 @@ import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.Resourceb
 public class SlideMenuItem implements Resourceble {
     private String name;
     private int imageRes;
+    private boolean selected = false;
 
     public SlideMenuItem(String name, int imageRes) {
         this.name = name;
@@ -28,5 +29,13 @@ public class SlideMenuItem implements Resourceble {
 
     public void setImageRes(int imageRes) {
         this.imageRes = imageRes;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }
