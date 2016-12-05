@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewPager;
@@ -138,15 +137,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 normalizeDb();
                 break;
             case R.id.nav_show_code:
-                final Snackbar snackBar = Snackbar.make(findViewById(R.id.clMainLayout),
-                        app.getChannelId(), Snackbar.LENGTH_INDEFINITE);
-                snackBar.setAction("Dismiss", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        snackBar.dismiss();
-                    }
-                });
-                snackBar.show();
+                startActivity(new Intent(this, ShowQrCodeActivity.class));
                 break;
             case R.id.nav_leave_channel:
                 app.leaveChannel();
