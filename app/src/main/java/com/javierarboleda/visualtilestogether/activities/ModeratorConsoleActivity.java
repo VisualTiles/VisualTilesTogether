@@ -8,15 +8,18 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -77,7 +80,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     private List<SlideMenuItem> list = new ArrayList<>();
     private ViewAnimator viewAnimator;
     private int res = R.drawable.ic_box_24dp;
-    private LinearLayout linearLayout;
+    private LinearLayout leftDrawerLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -96,15 +99,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setScrimColor(Color.TRANSPARENT);
-        drawerLayout.setDrawerElevation(25f);
-        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        linearLayout = (LinearLayout) findViewById(R.id.left_drawer);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawerLayout.closeDrawers();
-            }
-        });
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        leftDrawerLayout = (LinearLayout) findViewById(R.id.left_drawer);
 
         contentFragment = new TileSelectFragment();
         getSupportFragmentManager().beginTransaction()
@@ -290,31 +286,30 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         list.add(new SlideMenuItem("colors", R.drawable.ic_color_fill));
         list.add(new SlideMenuItem("speed", R.drawable.ic_speedometer_white));
         list.add(new SlideMenuItem("layout", R.drawable.ic_layout_white));
-        list.add(new SlideMenuItem("close", R.drawable.ic_cancel_white_24px));
+        // list.add(new SlideMenuItem("close", R.drawable.ic_cancel_white_24px));
     }
     private void setActionBar() {
         setSupportActionBar(binding.toolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        drawerToggle = new ActionBarDrawerToggle(
+                drawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
                 drawerLayout,         /* DrawerLayout object */
                 binding.toolbar,  /* nav drawer icon to replace 'Up' caret */
                 R.string.drawer_open,  /* "open drawer" description */
                 R.string.drawer_close  /* "close drawer" description */
         ) {
-
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                linearLayout.removeAllViews();
-                linearLayout.invalidate();
+                leftDrawerLayout.removeAllViews();
+                leftDrawerLayout.invalidate();
             }
 
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 super.onDrawerSlide(drawerView, slideOffset);
-                if (slideOffset > 0.6 && linearLayout.getChildCount() == 0)
+                if (slideOffset > 0.6 && leftDrawerLayout.getChildCount() == 0)
                     viewAnimator.showMenuContent();
             }
 
@@ -323,6 +318,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 super.onDrawerOpened(drawerView);
             }
         };
+        drawerToggle.setDrawerIndicatorEnabled(true);
         drawerLayout.setDrawerListener(drawerToggle);
     }
 
@@ -340,7 +336,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
     @Override
     public void addViewToContainer(View view) {
-        linearLayout.addView(view);
+        leftDrawerLayout.addView(view);
     }
 
     @Override
@@ -351,12 +347,23 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 return screenShotable;
             case "tiles":
                 mPagePosition = 0;
+                animateTitleChange(R.string.title_tile_select);
                 return replaceFragment(screenShotable, new TileSelectFragment(), position);
             case "effects":
                 mPagePosition = 1;
+                animateTitleChange(R.string.title_effect_editor);
                 return replaceFragment(screenShotable, new EffectSelectFragment(), position);
             case "colors":
                 mPagePosition = 2;
+                animateTitleChange(R.string.title_color_editor);
+                return replaceFragment(screenShotable, new ColorSelectFragment(), position);
+            case "speed":
+                mPagePosition = 3;
+                animateTitleChange(R.string.title_animation_speed);
+                return replaceFragment(screenShotable, new ColorSelectFragment(), position);
+            case "layout":
+                mPagePosition = 4;
+                animateTitleChange(R.string.title_layout_switch);
                 return replaceFragment(screenShotable, new ColorSelectFragment(), position);
         }
         return screenShotable;
@@ -387,7 +394,9 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
     @Override
     public void disableHomeButton() {
-        getSupportActionBar().setHomeButtonEnabled(false);
+        // getSupportActionBar().setHomeButtonEnabled(false);
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        Log.i(TAG, "home button not really disabled?");
     }
 
     @Override
@@ -397,9 +406,58 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public void enableHomeButton() {
-        getSupportActionBar().setHomeButtonEnabled(true);
         drawerLayout.closeDrawers();
+    }
+
+    private View getToolbarTitle() {
+        int childCount = binding.toolbar.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View child = binding.toolbar.getChildAt(i);
+            if (child instanceof TextView) {
+                return child;
+            }
+        }
+
+        return new View(this);
+    }
+
+    private void animateTitleChange(final int newTitleId) {
+        final View view = getToolbarTitle();
+
+        if (view instanceof TextView) {
+            AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
+            fadeOut.setDuration(250);
+            fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    if (getSupportActionBar() == null)
+                        return;
+                    getSupportActionBar().setTitle(newTitleId);
+                    AlphaAnimation fadeIn = new AlphaAnimation(0f, 1f);
+                    fadeIn.setDuration(250);
+                    view.startAnimation(fadeIn);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+
+            view.startAnimation(fadeOut);
+        }
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_moderator, menu);
+        return true;
     }
 }

@@ -1,5 +1,6 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
@@ -31,6 +32,7 @@ public class ColorSelectFragment extends Fragment
     private ColorSelectFragmentListener listener;
     private ColorFillMode mode = ColorFillMode.SINGLE_TILE;
     private Bitmap bitmap = null;
+    private Activity mContext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -143,12 +145,20 @@ public class ColorSelectFragment extends Fragment
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        mContext = getActivity();
         if (context instanceof ColorSelectFragmentListener) {
             listener = (ColorSelectFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement ColorSelectFragmentListener");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        mContext = null;
+        listener = null;
+        super.onDetach();
     }
 
     @Override
@@ -165,11 +175,17 @@ public class ColorSelectFragment extends Fragment
                     ColorSelectFragment.this.bitmap = null;
                     return;
                 }
-                Bitmap bitmap = Bitmap.createBitmap(binding.mainLayout.getWidth(),
+                final Bitmap bitmap = Bitmap.createBitmap(binding.mainLayout.getWidth(),
                         binding.mainLayout.getHeight(), Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                binding.mainLayout.draw(canvas);
-                ColorSelectFragment.this.bitmap = bitmap;
+                final Canvas canvas = new Canvas(bitmap);
+                // Draw must run on UI thread.
+                mContext.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        binding.mainLayout.draw(canvas);
+                        ColorSelectFragment.this.bitmap = bitmap;
+                    }
+                });
             }
         };
         thread.start();

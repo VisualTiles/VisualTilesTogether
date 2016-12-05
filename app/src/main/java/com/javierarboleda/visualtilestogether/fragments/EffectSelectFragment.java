@@ -1,5 +1,6 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
@@ -27,6 +28,7 @@ public class EffectSelectFragment extends Fragment
     private EffectSelectFragmentListener mListener;
     private Button mSelectedButton;
     private Bitmap bitmap = null;
+    private Activity mContext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
@@ -142,6 +144,7 @@ public class EffectSelectFragment extends Fragment
         return bitmap;
     }
 
+
     @Override
     public void takeScreenShot() {
         Thread thread = new Thread() {
@@ -151,11 +154,17 @@ public class EffectSelectFragment extends Fragment
                     EffectSelectFragment.this.bitmap = null;
                     return;
                 }
-                Bitmap bitmap = Bitmap.createBitmap(binding.mainLayout.getWidth(),
+                final Bitmap bitmap = Bitmap.createBitmap(binding.mainLayout.getWidth(),
                         binding.mainLayout.getHeight(), Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                binding.mainLayout.draw(canvas);
-                EffectSelectFragment.this.bitmap = bitmap;
+                final Canvas canvas = new Canvas(bitmap);
+                // Draw must run on UI thread.
+                mContext.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        binding.mainLayout.draw(canvas);
+                        EffectSelectFragment.this.bitmap = bitmap;
+                    }
+                });
             }
         };
         thread.start();
@@ -164,12 +173,20 @@ public class EffectSelectFragment extends Fragment
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        mContext = getActivity();
         if (context instanceof EffectSelectFragmentListener) {
             mListener = (EffectSelectFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement EffectSelectFragmentListener");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        mContext = null;
+        mListener = null;
+        super.onDetach();
     }
 
     public interface EffectSelectFragmentListener {

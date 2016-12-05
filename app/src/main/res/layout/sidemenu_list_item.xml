@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/menu_item_container"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="@dimen/modLeftMenuSize"
+                android:layout_height="@dimen/modLeftMenuSize"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:clickable="true"
-                android:background="@drawable/sidemenu_item_selector">
-
+    android:clipToPadding="false">
     <ImageView
         android:id="@+id/menu_item_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
-
+        android:layout_width="@dimen/modLeftMenuSize"
+        android:layout_height="@dimen/modLeftMenuSize"
+        android:layout_centerInParent="true"
+        android:scaleType="fitCenter"
+        android:padding="20dp"
+        android:layout_margin="2dp"
+        app:elevation="4dp"
+        android:elevation="4dp"
+        android:background="@drawable/sidemenu_item_selector" />
 
 </RelativeLayout>

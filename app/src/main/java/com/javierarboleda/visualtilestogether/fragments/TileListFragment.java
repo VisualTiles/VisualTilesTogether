@@ -1,11 +1,13 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -46,12 +48,17 @@ public abstract class TileListFragment extends Fragment
 //        Log.d(LOG_TAG, "exit onCreate");
     }
 
+    public int getBackgroundColorResId() {
+        return R.color.colorPrimaryDark;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
         final View view = inflater.inflate(R.layout.fragment_tile_list, container, false);
         containerView = view;
+        view.setBackgroundColor(ContextCompat.getColor(mContext, getBackgroundColorResId())) ;
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
@@ -122,11 +129,17 @@ public abstract class TileListFragment extends Fragment
                     TileListFragment.this.bitmap = null;
                     return;
                 }
-                Bitmap bitmap = Bitmap.createBitmap(containerView.getWidth(),
+                final Bitmap bitmap = Bitmap.createBitmap(containerView.getWidth(),
                         containerView.getHeight(), Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                containerView.draw(canvas);
-                TileListFragment.this.bitmap = bitmap;
+                final Canvas canvas = new Canvas(bitmap);
+                // Draw must run on UI thread.
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        containerView.draw(canvas);
+                        TileListFragment.this.bitmap = bitmap;
+                    }
+                });
             }
         };
         thread.start();

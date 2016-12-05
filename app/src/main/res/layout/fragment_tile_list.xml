@@ -5,8 +5,6 @@
     android:id="@+id/activity_tile_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@color/darkBackgroundColor"
     tools:context="com.javierarboleda.visualtilestogether.activities.TileListActivity">
 
         <android.support.v7.widget.RecyclerView

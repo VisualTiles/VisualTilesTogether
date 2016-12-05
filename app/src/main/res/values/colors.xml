@@ -15,4 +15,7 @@
     <color name="darkBackgroundColor">#3c535e</color>
     <color name="cardViewBackgroundColor">#1d526b</color>
     <color name="cardViewSelectedBackgroundColor">#0076ae</color>
+    <color name="modMenuSelectedColor">#ff7700</color>
+    <color name="modMenuDefaultColor">#430119</color>
+    <color name="tileSelectBackgroundColor">#176808</color>
 </resources>

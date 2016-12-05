@@ -11,4 +11,5 @@
     <dimen name="sign_in_tab_layout_height">20dp</dimen>
     <dimen name="sliding_menu_width">80dp</dimen>
     <dimen name="tutorial_item_margin_bottom">40dp</dimen>
+    <dimen name="modLeftMenuSize">80dp</dimen>
 </resources>

@@ -24,6 +24,11 @@ public class TileSelectFragment extends TileListFragment {
     }
 
     @Override
+    public int getBackgroundColorResId() {
+        return R.color.tileSelectBackgroundColor;
+    }
+
+    @Override
     TileListRecyclerViewAdapter getAdapter(DatabaseReference dbRef) {
         return new TileSelectRecyclerViewAdapter(getContext(),
                 R.layout.tile_selector_list_item,

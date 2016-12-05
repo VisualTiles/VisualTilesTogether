@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
@@ -410,10 +409,13 @@ public class PresentationFragment extends Fragment
     }
 
     private long getStartDelay() {
+        return 0;
+        /*
         long syncTime = app.getChannel().getChannelSyncTime();
         long time = AnimationUtils.currentAnimationTimeMillis();
         long delay = (time - syncTime) % masterEffectDuration;
         return delay;
+        */
     }
 
     private Runnable animationRunner = new Runnable() {
