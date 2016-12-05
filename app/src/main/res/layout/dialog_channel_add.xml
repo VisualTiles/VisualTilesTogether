@@ -5,25 +5,37 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <EditText
+    <android.support.design.widget.TextInputLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:ems="10"
-        android:layout_marginTop="32dp"
-        android:id="@+id/etChannelName"
-        android:hint="Event name"
-      />
+        android:id="@+id/tilChannelName" >
 
-    <EditText
+        <android.support.design.widget.TextInputEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:ems="10"
+            android:layout_marginTop="32dp"
+            android:id="@+id/etChannelName"
+            android:hint="Event name"
+            />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="text"
-        android:maxLength="8"
-        android:ems="10"
-        android:id="@+id/etChannelUniqueName"
-        android:hint="Event code (8 or less)"
-        android:layout_marginTop="16dp" />
+        android:id="@+id/tilChannelUniqueName" >
+
+        <android.support.design.widget.TextInputEditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLength="8"
+            android:ems="10"
+            android:id="@+id/etChannelUniqueName"
+            android:hint="Event code (8 or less)"
+            android:layout_marginTop="16dp" />
+    </android.support.design.widget.TextInputLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"

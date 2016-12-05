@@ -47,5 +47,8 @@
     <string name="title_layout_switch">Layout Switcher</string>
     <string name="begin_staging">Begin Bulk Edit</string>
     <string name="end_staging">Commit Edit</string>
+    <string name="error_event_name_empty">Please provide an event name</string>
+    <string name="error_event_code_empty">Please provide an event code</string>
+    <string name="error_event_code_in_use">" is already in use, sorry!"</string>
 
 </resources>
