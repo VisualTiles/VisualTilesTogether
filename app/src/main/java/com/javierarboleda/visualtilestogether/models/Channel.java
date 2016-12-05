@@ -20,6 +20,7 @@ public class Channel {
     public static final String RONINS = "ronins";
     private String name;
     private String uniqueName;
+    private String qrCodeUrl;
 
     private ArrayList<String> positionToTileIds;
     private String layoutId;
@@ -69,6 +70,14 @@ public class Channel {
 
     public void setUniqueName(String uniqueName) {
         this.uniqueName = uniqueName;
+    }
+
+    public String getQrCodeUrl() {
+        return qrCodeUrl;
+    }
+
+    public void setQrCodeUrl(String qrCodeUrl) {
+        this.qrCodeUrl = qrCodeUrl;
     }
 
     public ArrayList<String> getPositionToTileIds() {
