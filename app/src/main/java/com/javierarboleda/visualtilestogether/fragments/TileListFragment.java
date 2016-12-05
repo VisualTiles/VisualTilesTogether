@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +30,7 @@ public abstract class TileListFragment extends Fragment
     private Bitmap bitmap;
     private View containerView;
     private ProgressBar mProgressBar;
+    private TextView tvEmptyRvList;
     private RecyclerView mRvTileList;
     private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> mFirebaseAdapter;
     private Context mContext;
@@ -54,6 +56,7 @@ public abstract class TileListFragment extends Fragment
         containerView = view;
 
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        tvEmptyRvList = (TextView) view.findViewById(R.id.tvEmptyRvList);
         mRvTileList = (RecyclerView) view.findViewById(R.id.rvTileList);
         // for now don't light up the ProgressBar
         // TODO: show "no tiles" instead of ProgressBar when tile list is empty`
@@ -68,12 +71,24 @@ public abstract class TileListFragment extends Fragment
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
                 int tileCount = mFirebaseAdapter.getItemCount();
+                if (tvEmptyRvList != null) {
+                    tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
+                }
                 int lastVisiblePosition = mLinearLayoutManager.
                         findLastCompletelyVisibleItemPosition();
                 if (lastVisiblePosition == -1 ||
                         (positionStart >= (tileCount - 1) &&
                                 lastVisiblePosition == (positionStart - 1))) {
                     mRvTileList.scrollToPosition(positionStart);
+                }
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                super.onItemRangeRemoved(positionStart, itemCount);
+                int tileCount = mFirebaseAdapter.getItemCount();
+                if (tvEmptyRvList != null) {
+                    tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
                 }
             }
         });
