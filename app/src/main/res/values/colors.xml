@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6b7381</color>
-    <color name="colorPrimaryDark">#3e434b</color>
+    <color name="colorPrimary">#0e55d2</color>
+    <color name="colorPrimaryDark">#072b69</color>
     <color name="colorAccent">#03A9F4</color>
     <color name="divider">#E0E0E0</color>
     <color name="colorRed">#ffff0000</color>
@@ -15,4 +15,14 @@
     <color name="darkBackgroundColor">#3c535e</color>
     <color name="cardViewBackgroundColor">#1d526b</color>
     <color name="cardViewSelectedBackgroundColor">#0076ae</color>
+    <color name="modMenuSelectedColor">#ff7700</color>
+    <color name="modMenuDefaultColor">#53e4c0</color>
+    <color name="tileSelectBackgroundColor">#C2185B</color>
+    <color name="tileSelectItemBackgroundColor">#2e0b0b</color>
+    <color name="speedSelectBackgroundColor">#19a600</color>
+    <color name="layoutSelectBackgroundColor">#006c87</color>
+    <color name="colorEditorBackground">#512DA8</color>
+    <color name="effectEditorBackground">#e62a19</color>
+    <color name="tileSelectButtonBackground">#33FFFFFF</color>
+    <color name="tileSelectButtonBackgroundSelected">#88FFFFFF</color>
 </resources>

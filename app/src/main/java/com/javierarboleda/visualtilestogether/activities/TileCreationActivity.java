@@ -110,7 +110,6 @@ public class TileCreationActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         View bottomMenu = binding.amvBottom;
         View bottomMenu2 = binding.amvBottom2;
 

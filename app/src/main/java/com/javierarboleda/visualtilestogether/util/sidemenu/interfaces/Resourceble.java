@@ -7,4 +7,8 @@ public interface Resourceble {
     public int getImageRes();
 
     public String getName();
+
+    public boolean isSelected();
+
+    public void setSelected(boolean selected);
 }

@@ -24,6 +24,7 @@ public class PresentationActivity extends AppCompatActivity
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_presentation);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         PresentationFragment fragment = PresentationFragment.newInstance(false);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragmentHolder, fragment)

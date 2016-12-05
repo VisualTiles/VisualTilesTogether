@@ -6,7 +6,7 @@
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#af3805"
+        android:background="@color/effectEditorBackground"
         android:orientation="horizontal">
 
         <LinearLayout
@@ -23,7 +23,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:background="@drawable/state_list_single_all_effects_selector_card"
+                android:background="@drawable/state_list_moderator_selector_button"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_single_tile_select_24dp"/>
 
@@ -35,7 +35,7 @@
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
                 android:layout_weight="1"
-                android:background="@drawable/state_list_single_all_effects_selector_card"
+                android:background="@drawable/state_list_moderator_selector_button"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_all_tile_select_24dp"/>
 
@@ -56,21 +56,21 @@
                 <Button
                     android:id="@+id/butFadeHalf"
                     style="@style/ModeratorEffectsButtons"
-                    android:background="@drawable/state_list_effects_selector_card"
+                    android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Fade Half"
                     />
 
                 <Button
                     android:id="@+id/butFlip"
                     style="@style/ModeratorEffectsButtons"
-                    android:background="@drawable/state_list_effects_selector_card"
+                    android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Flip"
                     />
 
                 <Button
                     android:id="@+id/butFlyAway"
                     style="@style/ModeratorEffectsButtons"
-                    android:background="@drawable/state_list_effects_selector_card"
+                    android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Fly Away"
                     />
 
@@ -86,21 +86,21 @@
                 <Button
                     android:id="@+id/butRotateLeft"
                     style="@style/ModeratorEffectsButtons"
-                    android:background="@drawable/state_list_effects_selector_card"
+                    android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Rotate Left"
                     />
 
                 <Button
                     android:id="@+id/butRotateRight"
                     style="@style/ModeratorEffectsButtons"
-                    android:background="@drawable/state_list_effects_selector_card"
+                    android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Rotate Right"
                     />
 
                 <Button
                     android:id="@+id/butNone"
                     style="@style/ModeratorEffectsButtons"
-                    android:background="@drawable/state_list_effects_selector_card"
+                    android:background="@drawable/state_list_moderator_selector_button"
                     android:text="None"
                     />
 

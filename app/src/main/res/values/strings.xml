@@ -40,4 +40,12 @@
         <item>Let\'s Draw!</item>
     </string-array>
 
+    <string name="title_color_editor">Color Editor</string>
+    <string name="title_effect_editor">Effect Editor</string>
+    <string name="title_tile_select">Tile Selection</string>
+    <string name="title_animation_speed">Animation Speed</string>
+    <string name="title_layout_switch">Layout Switcher</string>
+    <string name="begin_staging">Begin Bulk Edit</string>
+    <string name="end_staging">Commit Edit</string>
+
 </resources>

@@ -6,6 +6,7 @@ import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
@@ -13,23 +14,26 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsoleBinding;
 import com.javierarboleda.visualtilestogether.fragments.ColorSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
+import com.javierarboleda.visualtilestogether.fragments.LayoutSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.PresentationFragment;
+import com.javierarboleda.visualtilestogether.fragments.SpeedSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
 import com.javierarboleda.visualtilestogether.fragments.TileSelectFragment;
 import com.javierarboleda.visualtilestogether.models.Channel;
@@ -55,6 +59,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     TileListFragment.TileListFragmentListener,
                     EffectSelectFragment.EffectSelectFragmentListener,
                     ColorSelectFragment.ColorSelectFragmentListener,
+                    LayoutSelectFragment.LayoutSelectFragmentListener,
+                    SpeedSelectFragment.SpeedSelectFragmentListener,
                     ViewAnimator.ViewAnimatorListener {
     private static final String TAG = ModeratorConsoleActivity.class.getSimpleName();
     private ActivityModeratorConsoleBinding binding;
@@ -64,6 +70,10 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     private Tile mSelectedTile;
     private String mSelectedEffect;
     private boolean mMultiTile;
+
+    private HashMap<String, Object> stagedChanges = new HashMap<>();
+    private boolean isStagingChanges = false;
+    private MenuItem menuItemStaging = null;
 
     private ColorSelectFragment.ColorFillMode colorFillMode =
             ColorSelectFragment.ColorFillMode.SINGLE_TILE;
@@ -77,7 +87,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     private List<SlideMenuItem> list = new ArrayList<>();
     private ViewAnimator viewAnimator;
     private int res = R.drawable.ic_box_24dp;
-    private LinearLayout linearLayout;
+    private LinearLayout leftDrawerLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -96,68 +106,48 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setScrimColor(Color.TRANSPARENT);
-        drawerLayout.setDrawerElevation(25f);
-        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-        linearLayout = (LinearLayout) findViewById(R.id.left_drawer);
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                drawerLayout.closeDrawers();
-            }
-        });
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+        leftDrawerLayout = (LinearLayout) findViewById(R.id.left_drawer);
 
+        setActionBar();
+
+        getSupportActionBar().setTitle(""); // Empty string.
+        binding.toolbarTitle.setText(R.string.title_tile_select);
         contentFragment = new TileSelectFragment();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragmentHolder, (Fragment) contentFragment)
                 .commit();
-        setActionBar();
+
         buildSlideMenu();
         viewAnimator = new ViewAnimator<>(this, list, contentFragment, drawerLayout, this);
     }
 
-    // run a transaction to to update the tileId of the position in channel
     private void updateDbPositionToTileId(DatabaseReference channelRef, final Tile tile,
                                           final int position) {
-        channelRef.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
-                Channel channel = mutableData.getValue(Channel.class);
-                if (channel == null) {
-                    return Transaction.success(mutableData);
-                }
-
-                ArrayList<String> positionToTileIds = channel.getPositionToTileIds();
-
-                if (positionToTileIds == null) {
-                    positionToTileIds = new ArrayList<>();
-                    channel.setPositionToTileIds(positionToTileIds);
-                }
+        ArrayList<String> positionToTileIds = app.getChannel().getPositionToTileIds();
+        if (positionToTileIds == null) {
+            positionToTileIds = new ArrayList<>();
+            app.getChannel().setPositionToTileIds(positionToTileIds);
+        }
+        try {
+            positionToTileIds.get(position);
+        } catch ( IndexOutOfBoundsException e ) {
+            for (int i = 0; i <= position; i++) {
                 try {
-                    positionToTileIds.get(position);
-                } catch ( IndexOutOfBoundsException e ) {
-
-                    for (int i = 0; i <= position; i++) {
-                        try {
-                            positionToTileIds.get(i);
-                        } catch (IndexOutOfBoundsException ex) {
-                            positionToTileIds.add(i, "");
-                        }
-                    }
-
-                } finally {
-                    channel.getPositionToTileIds().set(position, mSelectedTile.getTileId());
+                    positionToTileIds.get(i);
+                } catch (IndexOutOfBoundsException ex) {
+                    positionToTileIds.add(i, "");
+                    stagedChanges.put(Channel.TABLE_NAME + "/" + Channel.POS_TO_TILE_IDS + "/" + i,
+                            "");
                 }
-
-                mutableData.setValue(channel);
-                return Transaction.success(mutableData);
             }
-
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b,
-                                   DataSnapshot dataSnapshot) {
-//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
-            }
-        });
+        } finally {
+            positionToTileIds.set(position, mSelectedTile.getTileId());
+            stagedChanges.put(Channel.TABLE_NAME + "/" + Channel.POS_TO_TILE_IDS + "/" + position,
+                    positionToTileIds.get(position));
+        }
+        app.notifyChannelUpdated();
+        maybeCommitChanges();
     }
 
     @Override
@@ -209,26 +199,31 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         for (int i = start; i < end; i++) {
             String tileKey = app.getChannel().getPositionToTileIds().get(i);
             if (tileKey == null) continue;
-            effectMap.put(tileKey + "/" + Tile.TILE_EFFECT, tileEffect);
+            stagedChanges.put(Tile.TABLE_NAME + "/" + tileKey + "/" + Tile.TILE_EFFECT, tileEffect);
+            // Update local cache.
+            Tile tile = app.getTileObservableArrayMap().get(tileKey);
+            tile.setTileEffect(tileEffect);
+            app.getTileObservableArrayMap().put(tileKey, tile);
         }
-        if (effectMap.size() > 0)
-            dbRef.updateChildren(effectMap);
+        maybeCommitChanges();
     }
 
 
     private void initiateAndUpdateTileColor(final int start, final int end) {
         if (app.getChannel().getPositionToTileIds() == null)
             return;
-        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference()
-                .child(Tile.TABLE_NAME);
         HashMap<String, Object> effectMap = new HashMap<>();
         for (int i = start; i < end; i++) {
             String tileKey = app.getChannel().getPositionToTileIds().get(i);
             if (tileKey == null) continue;
-            effectMap.put(tileKey + "/" + Tile.TILE_COLOR, selectedColor);
+            stagedChanges.put(Tile.TABLE_NAME + "/" + tileKey + "/" + Tile.TILE_COLOR,
+                    selectedColor);
+            // Update local cache.
+            Tile tile = app.getTileObservableArrayMap().get(tileKey);
+            tile.setTileColor(selectedColor);
+            app.getTileObservableArrayMap().put(tileKey, tile);
         }
-        if (effectMap.size() > 0)
-                dbRef.updateChildren(effectMap);
+        maybeCommitChanges();
     }
 
 
@@ -271,15 +266,17 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     selectedColor = color;
                 }
                 app.getChannel().setDefaultTileColor(selectedColor);
-                FirebaseDatabase.getInstance().getReference()
-                        .child(Channel.TABLE_NAME).child(app.getChannelId())
-                        .setValue(app.getChannel());
+                app.notifyChannelUpdated();
+                stagedChanges.put(Channel.TABLE_NAME + "/" + app.getChannelId() + "/" +
+                        Channel.DEFAULT_TILE_COLOR, selectedColor);
+                maybeCommitChanges();
                 break;
             case BACKGROUND:
                 app.getChannel().setChannelBackgroundColor(selectedColor);
-                FirebaseDatabase.getInstance().getReference()
-                        .child(Channel.TABLE_NAME).child(app.getChannelId())
-                        .setValue(app.getChannel());
+                app.notifyChannelUpdated();
+                stagedChanges.put(Channel.TABLE_NAME + "/" + app.getChannelId() + "/" +
+                        Channel.CHANNEL_BACKGROUND_COLOR, selectedColor);
+                maybeCommitChanges();
                 break;
         }
     }
@@ -290,7 +287,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         list.add(new SlideMenuItem("colors", R.drawable.ic_color_fill));
         list.add(new SlideMenuItem("speed", R.drawable.ic_speedometer_white));
         list.add(new SlideMenuItem("layout", R.drawable.ic_layout_white));
-        list.add(new SlideMenuItem("close", R.drawable.ic_cancel_white_24px));
+        list.get(0).setSelected(true);
     }
     private void setActionBar() {
         setSupportActionBar(binding.toolbar);
@@ -303,18 +300,17 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 R.string.drawer_open,  /* "open drawer" description */
                 R.string.drawer_close  /* "close drawer" description */
         ) {
-
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                linearLayout.removeAllViews();
-                linearLayout.invalidate();
+                leftDrawerLayout.removeAllViews();
+                leftDrawerLayout.invalidate();
             }
 
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 super.onDrawerSlide(drawerView, slideOffset);
-                if (slideOffset > 0.6 && linearLayout.getChildCount() == 0)
+                if (slideOffset > 0.6 && leftDrawerLayout.getChildCount() == 0)
                     viewAnimator.showMenuContent();
             }
 
@@ -323,7 +319,17 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 super.onDrawerOpened(drawerView);
             }
         };
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
+        binding.toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawers();
+                } else {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            }
+        });
     }
 
     @Override
@@ -340,7 +346,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
     @Override
     public void addViewToContainer(View view) {
-        linearLayout.addView(view);
+        leftDrawerLayout.addView(view);
     }
 
     @Override
@@ -351,13 +357,24 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 return screenShotable;
             case "tiles":
                 mPagePosition = 0;
+                animateTitleChange(R.string.title_tile_select);
                 return replaceFragment(screenShotable, new TileSelectFragment(), position);
             case "effects":
                 mPagePosition = 1;
+                animateTitleChange(R.string.title_effect_editor);
                 return replaceFragment(screenShotable, new EffectSelectFragment(), position);
             case "colors":
                 mPagePosition = 2;
+                animateTitleChange(R.string.title_color_editor);
                 return replaceFragment(screenShotable, new ColorSelectFragment(), position);
+            case "speed":
+                mPagePosition = 3;
+                animateTitleChange(R.string.title_animation_speed);
+                return replaceFragment(screenShotable, new SpeedSelectFragment(), position);
+            case "layout":
+                mPagePosition = 4;
+                animateTitleChange(R.string.title_layout_switch);
+                return replaceFragment(screenShotable, new LayoutSelectFragment(), position);
         }
         return screenShotable;
     }
@@ -386,20 +403,97 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     }
 
     @Override
-    public void disableHomeButton() {
-        getSupportActionBar().setHomeButtonEnabled(false);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
+        switch(item.getItemId()) {
+            case R.id.menu_item_staging:
+                toggleStagingItem();
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
+
+    private void toggleStagingItem() {
+        isStagingChanges = !isStagingChanges;
+        if (menuItemStaging == null)
+            return;
+        menuItemStaging.setTitle(isStagingChanges ? R.string.end_staging : R.string.begin_staging);
+        menuItemStaging.setIcon(isStagingChanges ? R.drawable.ic_un_hold: R.drawable.ic_hold);
+        maybeCommitChanges();
+    }
+
+    private void animateTitleChange(final int newTitleId) {
+        AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
+        fadeOut.setDuration(250);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (getSupportActionBar() == null)
+                    return;
+                binding.toolbarTitle.setText(newTitleId);
+                AlphaAnimation fadeIn = new AlphaAnimation(0f, 1f);
+                fadeIn.setDuration(250);
+                binding.toolbarTitle.startAnimation(fadeIn);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        binding.toolbarTitle.startAnimation(fadeOut);
+    }
     @Override
-    public void enableHomeButton() {
-        getSupportActionBar().setHomeButtonEnabled(true);
-        drawerLayout.closeDrawers();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_moderator, menu);
+        menuItemStaging = menu.findItem(R.id.menu_item_staging);
+        return true;
+    }
+
+    @Override
+    public void updateChannelLayout(String layoutName) {
+        app.getChannel().setLayoutId(layoutName);
+        app.notifyChannelUpdated();
+        stagedChanges.put(
+                Channel.TABLE_NAME + "/" + app.getChannelId() + "/" + Channel.LAYOUT_NAME,
+                layoutName);
+        maybeCommitChanges();
+    }
+
+    @Override
+    public void updateAnimationSpeed(int speedMs) {
+        // Update local table (fake it for preview ).
+        app.getChannel().setMasterEffectDuration((long) speedMs);
+        // Fake notify.
+        app.notifyChannelUpdated();
+        stagedChanges.put(
+                Channel.TABLE_NAME + "/" + app.getChannelId() + "/" + Channel.EFFECT_DURATION,
+                speedMs);
+        maybeCommitChanges();
+    }
+
+    public void maybeCommitChanges() {
+        if (isStagingChanges || stagedChanges.size() == 0) {
+            return;
+        }
+        FirebaseDatabase.getInstance().getReference().updateChildren(stagedChanges)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        stagedChanges.clear();
+                    }
+                });
+    }
+
+    @Override
+    public void updateColorTransition(boolean enabled, int speedMs) {
+
     }
 }
