@@ -188,7 +188,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                         if (viewHolder.btnPublish != null) {
                             viewHolder.btnPublish.setVisibility(View.VISIBLE);
                             viewHolder.btnPublish.setImageResource(viewHolder.tile.isApproved() ?
-                                    R.drawable.ic_unpublish_black_24px : R.drawable.ic_publish_black_24px);
+                                    R.drawable.ic_star_black_24dp : R.drawable.ic_star_border_black_24dp);
                         }
                         if (viewHolder.btnDelete != null)
                             viewHolder.btnDelete.setVisibility(View.VISIBLE);
