@@ -28,9 +28,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -40,7 +37,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -337,6 +333,19 @@ public class SignInActivity extends AppCompatActivity implements
     private void launchGroupCreationActivity() {
         Intent intent = new Intent(this, CreateJoinActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        // pass center coordinates of sign in button for circular transition start point
+        View signInView = findViewById(R.id.rlSignIn);
+
+        int[] xy = new int[2];
+        signInView.getLocationOnScreen(xy);
+
+        int cx = xy[0] + (signInView.getWidth() / 2);
+        int cy = xy[1] + (signInView.getHeight() / 2);
+
+        intent.putExtra(CreateJoinActivity.CX_KEY, cx);
+        intent.putExtra(CreateJoinActivity.CY_KEY, cy);
+
         startActivity(intent);
         finish();
     }
