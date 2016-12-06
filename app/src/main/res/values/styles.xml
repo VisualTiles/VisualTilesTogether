@@ -57,7 +57,7 @@
     </style>
 
     <style name="TutorialText">
-        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginLeft">8dp</item>r
         <item name="android:layout_marginRight">8dp</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textAlignment">center</item>
@@ -71,6 +71,16 @@
 
     <style name="TutorialTextBody" parent="TutorialText">
         <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="TextLabel" parent="Widget.Design.TextInputLayout">
+        <!-- Hint color and label color in FALSE state -->
+        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textSize">20sp</item>
+        <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
+        <item name="colorAccent">@color/lightGray</item>
+        <item name="colorControlNormal">@color/lightGray</item>
+        <item name="colorControlActivated">@color/lightGray</item>
     </style>
 
 </resources>

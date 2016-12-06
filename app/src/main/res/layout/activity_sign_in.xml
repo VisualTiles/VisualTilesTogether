@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="20dp"
-            android:paddingBottom="10dp"
+            android:layout_marginBottom="40dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentBottom="true">
             <LinearLayout
