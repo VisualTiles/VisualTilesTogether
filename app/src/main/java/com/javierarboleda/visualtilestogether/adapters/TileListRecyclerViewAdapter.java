@@ -244,7 +244,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                     if (tileCreator.getPhotoUrl() != null &&
                                             !tileCreator.getPhotoUrl().isEmpty()) {
                                         viewHolder.ivCreatorImage.setVisibility(View.VISIBLE);
-                                        Glide.with(mContext).load(tileCreator.getPhotoUrl())
+                                        Glide.with(mContext.getApplicationContext()).load(tileCreator.getPhotoUrl())
                                                 .bitmapTransform(new CropCircleTransformation(mContext))
                                                 .animate(R.anim.zoom_in)
                                                 .into(viewHolder.ivCreatorImage);
