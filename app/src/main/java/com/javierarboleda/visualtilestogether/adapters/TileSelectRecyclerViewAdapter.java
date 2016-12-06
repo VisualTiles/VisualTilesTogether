@@ -3,7 +3,7 @@ package com.javierarboleda.visualtilestogether.adapters;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.view.ViewGroup;
 
 import com.google.firebase.database.Query;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
@@ -13,7 +13,7 @@ import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
  */
 
 public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
-    private RelativeLayout mLastChecked;
+    private ViewGroup mLastChecked;
     private String mSelectedTileRefId;
     private int mSelectedTilePosition;
 
@@ -23,13 +23,13 @@ public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
 
     @Override
     public void onViewAttachedToWindow(TileViewHolder holder) {
-
-        if (holder.getAdapterPosition() == mSelectedTilePosition) {
-            holder.rlMain.setSelected(true);
-        } else {
-            holder.rlMain.setSelected(false);
+        if (holder.rlMain != null) {
+            if (holder.getAdapterPosition() == mSelectedTilePosition) {
+                holder.rlMain.setSelected(true);
+            } else {
+                holder.rlMain.setSelected(false);
+            }
         }
-
         super.onViewAttachedToWindow(holder);
 }
 

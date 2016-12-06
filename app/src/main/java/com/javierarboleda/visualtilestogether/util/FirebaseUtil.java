@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -78,7 +79,14 @@ public class FirebaseUtil {
                         for (DataSnapshot channelSnapshot: dataSnapshot.getChildren()) {
                             String uniqueName;
                             String channelId = channelSnapshot.getKey();
-                            Channel channel = channelSnapshot.getValue(Channel.class);
+                            Channel channel = null;
+                            try {
+                                channel = channelSnapshot.getValue(Channel.class);
+                            } catch(Exception e) {
+                                Log.e(LOG_TAG, "Curropt channel in channel table! Deleting...");
+                                channelsRef.child(channelSnapshot.getKey()).removeValue();
+                                return;
+                            }
                             if (channel.getName() == null) {
                                 channelsRef.child(channelId).removeValue();
                             } else {

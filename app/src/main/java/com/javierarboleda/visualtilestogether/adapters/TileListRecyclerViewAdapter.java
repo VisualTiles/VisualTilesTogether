@@ -7,13 +7,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +44,7 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTil
  */
 public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> {
     private static final String TAG = TileListRecyclerViewAdapter.class.getSimpleName();
-    private final Context mContext;
+    private Context mContext;
     TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
     private int mLastPosition = -1;
@@ -81,15 +82,23 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-
                 }
             });
         }
     }
 
     private Animation getAnimation(int position) {
-        int orientation = ((LinearLayoutManager) mRecyclerView.getLayoutManager()).getOrientation();
-        if (orientation == LinearLayoutManager.VERTICAL) {
+        boolean isVertical = false;
+        RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
+        if (lm instanceof  LinearLayoutManager) {
+            isVertical = ((LinearLayoutManager) lm).getOrientation() == LinearLayoutManager
+                    .VERTICAL;
+        }
+        if (lm instanceof StaggeredGridLayoutManager) {
+            isVertical = ((StaggeredGridLayoutManager) lm).getOrientation() ==
+                    StaggeredGridLayoutManager.VERTICAL;
+        }
+        if (isVertical) {
             return AnimationUtils.loadAnimation(mContext,
                     (position > mLastPosition) ? R.anim.in_from_bottom
                             : R.anim.in_from_top);
@@ -107,14 +116,17 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         if (viewHolder.tileEventListener != null) {
             viewHolder.tileRef.removeEventListener(viewHolder.tileEventListener);
         }
-        viewHolder.ibUpVote.setEnabled(true);
-        viewHolder.ibDownVote.setEnabled(true);
+        if (viewHolder.ibUpVote != null)
+            viewHolder.ibUpVote.setEnabled(true);
+        if (viewHolder.ibDownVote != null)
+            viewHolder.ibDownVote.setEnabled(true);
         viewHolder.itemView.setSelected(false);
         viewHolder.itemView.setOnClickListener(buildTileClickListener(viewHolder));
         viewHolder.tileEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
+                    final String userId = mVisualTilesTogetherApp.getUid();
                     viewHolder.tile = dataSnapshot.getValue(Tile.class);
                     if (viewHolder.tile == null) {
                         return;
@@ -124,11 +136,48 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                 .load(viewHolder.tile.getShapeUrl())
                                 .into(viewHolder.ivShape);
                     }
-
-                    viewHolder.ibUpVote.setEnabled(true);
-                    viewHolder.ibDownVote.setEnabled(true);
-
-                    final String userId = mVisualTilesTogetherApp.getUid();
+                    if (viewHolder.ibUpVote != null) {
+                        viewHolder.ibUpVote.setEnabled(true);
+                        viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (viewHolder.ibDownVote.isEnabled()) {
+                                    // the user has voted "yes"
+                                    onVoteClicked(viewHolder.tileRef, 1, 0);
+                                    viewHolder.tileRef.child(Tile.USER_VOTES)
+                                            .child(userId)
+                                            .setValue(true);
+                                } else {
+                                    // the user has retracted a "no" vote
+                                    onVoteClicked(viewHolder.tileRef, 0, -1);
+                                    viewHolder.tileRef.child(Tile.USER_VOTES)
+                                            .child(userId)
+                                            .removeValue();
+                                }
+                            }
+                        });
+                    }
+                    if (viewHolder.ibDownVote != null) {
+                        viewHolder.ibDownVote.setEnabled(true);
+                        viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                if (viewHolder.ibUpVote.isEnabled()) {
+                                    // the user has voted "no"
+                                    onVoteClicked(viewHolder.tileRef, 0, 1);
+                                    viewHolder.tileRef.child(Tile.USER_VOTES)
+                                            .child(userId)
+                                            .setValue(false);
+                                } else {
+                                    // the user has retracted a "yes" vote
+                                    onVoteClicked(viewHolder.tileRef, -1, 0);
+                                    viewHolder.tileRef.child(Tile.USER_VOTES)
+                                            .child(userId)
+                                            .removeValue();
+                                }
+                            }
+                        });
+                    }
 
                     if (dataSnapshot.child(Tile.USER_VOTES).child(userId).exists()) {
                         boolean userVote = dataSnapshot.child(Tile.USER_VOTES)
@@ -143,47 +192,8 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                         }
                     }
 
-                    viewHolder.ibUpVote.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (viewHolder.ibDownVote.isEnabled()) {
-                                // the user has voted "yes"
-                                onVoteClicked(viewHolder.tileRef, 1, 0);
-                                viewHolder.tileRef.child(Tile.USER_VOTES)
-                                        .child(userId)
-                                        .setValue(true);
-                            } else {
-                                // the user has retracted a "no" vote
-                                onVoteClicked(viewHolder.tileRef, 0, -1);
-                                viewHolder.tileRef.child(Tile.USER_VOTES)
-                                        .child(userId)
-                                        .removeValue();
-                            }
-                        }
-                    });
-
-                    viewHolder.ibDownVote.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (viewHolder.ibUpVote.isEnabled()) {
-                                // the user has voted "no"
-                                onVoteClicked(viewHolder.tileRef, 0, 1);
-                                viewHolder.tileRef.child(Tile.USER_VOTES)
-                                        .child(userId)
-                                        .setValue(false);
-                            } else {
-                                // the user has retracted a "yes" vote
-                                onVoteClicked(viewHolder.tileRef, -1, 0);
-                                viewHolder.tileRef.child(Tile.USER_VOTES)
-                                        .child(userId)
-                                        .removeValue();
-                            }
-                        }
-                    });
-
                     viewHolder.tvVotesTotal.setText(String.valueOf(viewHolder.tile.getPosVotes()
                             - viewHolder.tile.getNegVotes()));
-
                     if (mVisualTilesTogetherApp.isChannelModerator()) {
                         if (viewHolder.btnPublish != null) {
                             viewHolder.btnPublish.setVisibility(View.VISIBLE);
@@ -279,6 +289,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
         mRecyclerView = recyclerView;
+        mContext = recyclerView.getContext();
     }
 
     @Override
@@ -329,7 +340,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         ImageButton ibDownVote;
         TextView tvVotesTotal;
         ValueEventListener tileEventListener;
-        RelativeLayout rlMain;
+        ViewGroup rlMain;
         Tile tile;
         DatabaseReference tileRef;
         ImageView ivCreatorImage;
@@ -345,7 +356,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                 ibUpVote = (ImageButton) itemView.findViewById(R.id.ibUpVote);
                 ibDownVote = (ImageButton) itemView.findViewById(R.id.ibDownVote);
                 tvVotesTotal = (TextView) itemView.findViewById(R.id.tvVotesTotal);
-                rlMain = (RelativeLayout) itemView.findViewById(R.id.rlMain);
+                rlMain = (ViewGroup) itemView.findViewById(R.id.rlMain);
                 tileEventListener = null;
                 ivCreatorImage = (ImageView) itemView.findViewById(R.id.ivCreatorImage);
                 btnDelete = (ImageButton) itemView.findViewById(R.id.btnDelete);

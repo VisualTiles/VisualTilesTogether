@@ -26,14 +26,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.javierarboleda.visualtilestogether.BuildConfig;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Layout;
-import com.javierarboleda.visualtilestogether.models.Rect;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.TileEffect;
+import com.javierarboleda.visualtilestogether.util.PresentationUtil;
 import com.javierarboleda.visualtilestogether.util.TileEffectTransformer2;
 
 import java.util.ArrayList;
@@ -197,26 +196,6 @@ public class PresentationFragment extends Fragment
         void onTileTapped(int position, Tile tile);
     }
 
-    private void moveRelativeView(View view, Rect bounds) {
-        if (view == null) {
-            Log.e(TAG, "moveRelativeView called on null view. >:(");
-            return;
-        }
-        if (BuildConfig.DEBUG && !(view.getLayoutParams()
-                instanceof PercentFrameLayout.LayoutParams)) {
-            throw new RuntimeException("View is not within a PercentRelativeLayout");
-        }
-        PercentFrameLayout.LayoutParams params = (PercentFrameLayout.LayoutParams)
-                view.getLayoutParams();
-        int height = layout.getLayoutHeight();
-        int width = layout.getLayoutWidth();
-        params.getPercentLayoutInfo().topMarginPercent = bounds.top / (float) height;
-        params.getPercentLayoutInfo().leftMarginPercent = bounds.left / (float) width;
-        params.getPercentLayoutInfo().heightPercent = (bounds.bottom - bounds.top) / (float) height;
-        params.getPercentLayoutInfo().widthPercent = (bounds.right - bounds.left) / (float) width;
-        view.invalidate();
-    }
-
     private void loadTileImage(int position, ImageView view) {
         if (view == null) {
             Log.e(TAG, "Null imageview reference in loadTileImage for position " + position);
@@ -283,7 +262,7 @@ public class PresentationFragment extends Fragment
                 viewContainer.addView(view);
                 tileFrontImageViews.put(i, view);
             }
-            moveRelativeView(view, layout.getTilePositions().get(i));
+            PresentationUtil.moveRelativeView(layout, view, layout.getTilePositions().get(i));
             loadTileImage(i, view);
             scheduleTileAnimation(i);
         }
@@ -294,7 +273,7 @@ public class PresentationFragment extends Fragment
                 viewContainer.addView(view);
                 imageResourceImageViews.put(i, view);
             }
-            moveRelativeView(view, layout.getImagePositions().get(i));
+            PresentationUtil.moveRelativeView(layout, view, layout.getImagePositions().get(i));
             String imgUrl = layout.getImageUrls().get(i);
             if (imgUrl != null) {
                 Glide.with(this).load(imgUrl)

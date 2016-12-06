@@ -143,7 +143,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
             }
         } finally {
             positionToTileIds.set(position, mSelectedTile.getTileId());
-            stagedChanges.put(Channel.TABLE_NAME + "/" + Channel.POS_TO_TILE_IDS + "/" + position,
+            stagedChanges.put(Channel.TABLE_NAME + "/" + app.getChannelId() + "/" +
+                    Channel.POS_TO_TILE_IDS + "/" + position,
                     positionToTileIds.get(position));
         }
         app.notifyChannelUpdated();
