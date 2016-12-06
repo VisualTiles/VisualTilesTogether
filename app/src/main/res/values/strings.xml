@@ -8,6 +8,8 @@
     <string name="join_button">Join</string>
     <string name="leave_channel">Leave Channel</string>
     <string name="create_new_event">Create a new event</string>
+    <string name="event_name">Event name</string>
+    <string name="event_code">Event code (8 or less)</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -50,5 +52,6 @@
     <string name="error_event_name_empty">Please provide an event name</string>
     <string name="error_event_code_empty">Please provide an event code</string>
     <string name="error_event_code_in_use">" is already in use, sorry!"</string>
+    <string name="create_event">Create event</string>
 
 </resources>
