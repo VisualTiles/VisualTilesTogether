@@ -13,9 +13,9 @@ import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
  */
 
 public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
+    // Selected tile.
     private ViewGroup mLastChecked;
     private String mSelectedTileRefId;
-    private int mSelectedTilePosition;
 
     public TileSelectRecyclerViewAdapter(Context context, int itemLayout, Query query, VisualTilesTogetherApp visualTilesTogetherApp) {
         super(context, itemLayout, query, visualTilesTogetherApp);
@@ -24,7 +24,7 @@ public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
     @Override
     public void onViewAttachedToWindow(TileViewHolder holder) {
         if (holder.rlMain != null) {
-            if (holder.getAdapterPosition() == mSelectedTilePosition) {
+            if (mSelectedTileRefId != null && mSelectedTileRefId.equals(holder.tile.getTileId())) {
                 holder.rlMain.setSelected(true);
             } else {
                 holder.rlMain.setSelected(false);
@@ -34,46 +34,28 @@ public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
 }
 
     @Override
-    protected void doTheWork(final TileViewHolder viewHolder, String tileId) {
+    protected void doTheWork(final TileViewHolder viewHolder, final String tileId) {
         super.doTheWork(viewHolder, tileId);
          viewHolder.ivShape.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 int position = viewHolder.getAdapterPosition();
-
-                // Handle selection and make sure only one item selected at a time
-                if (mLastChecked == null) {
-                    viewHolder.rlMain.setSelected(true);
-                    mSelectedTileRefId = viewHolder.tileRef.getKey();
-                    mLastChecked = viewHolder.rlMain;
-
-                    viewHolder.tile.setTileId(viewHolder.tileRef.getKey());
-                    mListener.updateSelectedTile(viewHolder.tile);
-
-                    mSelectedTilePosition = position;
-
-                } else if (mSelectedTileRefId.equals(viewHolder.tileRef.getKey())) {
+                String tileKey = viewHolder.tileRef.getKey();
+                if (tileKey.equals(mSelectedTileRefId)) {
                     viewHolder.rlMain.setSelected(false);
                     mSelectedTileRefId = null;
                     mLastChecked = null;
-
                     mListener.updateSelectedTile(null);
-
-                    mSelectedTilePosition = -1;
-
                 } else {
-
-                    mLastChecked.setSelected(false);
-                    viewHolder.rlMain.setSelected(true);
-                    mSelectedTileRefId = viewHolder.tileRef.getKey();
+                    if(mLastChecked != null)
+                        mLastChecked.setSelected(false);
                     mLastChecked = viewHolder.rlMain;
-
+                    mLastChecked.setSelected(true);
+                    mSelectedTileRefId = tileKey;
                     viewHolder.tile.setTileId(viewHolder.tileRef.getKey());
                     mListener.updateSelectedTile(viewHolder.tile);
-
-                    mSelectedTilePosition = position;
                 }
+
             }
         });
     }

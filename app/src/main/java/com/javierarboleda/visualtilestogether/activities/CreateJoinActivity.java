@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -21,8 +20,6 @@ import android.view.ViewTreeObserver;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,18 +38,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityCreateJoinBinding;
-import com.javierarboleda.visualtilestogether.fragments.ChannelAddDialog;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
 import java.lang.ref.WeakReference;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
-import static com.javierarboleda.visualtilestogether.R.id.etChannelName;
-import static com.javierarboleda.visualtilestogether.R.id.etChannelUniqueName;
-import static com.javierarboleda.visualtilestogether.R.id.tieCreateEventName;
-import static com.javierarboleda.visualtilestogether.R.id.tilChannelName;
-import static com.javierarboleda.visualtilestogether.R.id.tilChannelUniqueName;
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChannelQrCode;
 
 /**
@@ -60,7 +51,6 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChanne
  */
 
 public class CreateJoinActivity extends AppCompatActivity implements
-        ChannelAddDialog.OnFragmentInteractionListener,
         VisualTilesTogetherApp.VisualTilesListenerInterface {
     private static final String LOG_TAG = CreateJoinActivity.class.getSimpleName();
     private static final int RC_BARCODE_CAPTURE = 9001;
@@ -83,7 +73,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         app = (VisualTilesTogetherApp) getApplication();
-
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
         visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
         if (visualTilesTogetherApp.getUser() == null) {
@@ -209,7 +198,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     }
 
     public void joinEventOnClick(View view) {
-
         View[] views = new View[2];
         views[0] = binding.tvJoinText;
         views[1] = binding.viewButtonOutline;
@@ -224,7 +212,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
         if (channel == null || channel.isEmpty()) {
             visualTilesTogetherApp.initChannel();
         } else {
-            if (channel.length() >= 16  ) {
+            if (channel.length() > 8) {
                 // probably a channelId
                 visualTilesTogetherApp.initChannel(channel);
             } else {
@@ -306,7 +294,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     }
 
     public void createNewEventOnClick(View view) {
-
         // reset error states
         mCreateNameTiLayout.setErrorEnabled(false);
         mJCreateCodeTiLayout.setErrorEnabled(false);
@@ -321,7 +308,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
         if (TextUtils.isEmpty(uniqueName)) {
             mJCreateCodeTiLayout.setError(getString(R.string.error_event_code_empty));
         } else {
-            finishIfUnique(uniqueName, mCreateNameTiEditText.getText().toString(), app.getUid(),
+            finishIfUnique(uniqueName, channelName, app.getUid(),
                     error);
         }
     }
@@ -337,19 +324,21 @@ public class CreateJoinActivity extends AppCompatActivity implements
             public void onDataChange(DataSnapshot dataSnapshot) {
                 boolean unique = true;
                 boolean error = errorFlagged;
-                //for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    Channel channel = dataSnapshot.getValue(Channel.class);
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    Channel channel = data.getValue(Channel.class);
                     if (uniqueName.equals(channel.getUniqueName())) {
                         unique = false;
                     }
-                //}
+                }
                 if (!unique) {
                     mJCreateCodeTiLayout.setError(uniqueName
                             + getString(R.string.error_event_code_in_use));
                     error = true;
                 }
                 if (!error) {
-                    onFragmentInteraction(new Channel(name, uniqueName, uId));
+                    Channel channel = new Channel(name, uniqueName, uId);
+                    channel.setLayoutId("demo");
+                    onFragmentInteraction(channel);
                 }
             }
             @Override
@@ -359,15 +348,13 @@ public class CreateJoinActivity extends AppCompatActivity implements
         });
     }
 
-    @Override
-    public void onFragmentInteraction(Channel channel) {
+    public void  onFragmentInteraction(Channel channel) {
         DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference().child(
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
         setChannelQrCode(key, channel.getUniqueName());
         visualTilesTogetherApp.addListener(this);
-        visualTilesTogetherApp.getUser().setChannelId(key);
         visualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }
@@ -406,7 +393,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     }
 
     private void circularRevealActivity(int cx, int cy) {
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 
             float finalRadius = Math.max(rootLayout.getWidth(), rootLayout.getHeight());

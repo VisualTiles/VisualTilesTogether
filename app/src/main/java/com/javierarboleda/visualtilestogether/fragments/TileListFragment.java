@@ -44,10 +44,7 @@ public abstract class TileListFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
-//        Log.d(LOG_TAG, "exit onCreate");
     }
 
     public int getBackgroundColorResId() {

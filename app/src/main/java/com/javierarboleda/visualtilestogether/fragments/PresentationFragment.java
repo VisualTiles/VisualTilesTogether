@@ -363,7 +363,7 @@ public class PresentationFragment extends Fragment
             String tileId = posToTileIds.get(i);
             // Unset fields are markers.
             // TODO(team): Load a placeholder image in this case?
-            if (tileId.isEmpty()) {
+            if (tileId == null || tileId.isEmpty()) {
                 updateTile(i, null);
             }
             Tile tile = app.getTileObservableArrayMap().get(tileId);

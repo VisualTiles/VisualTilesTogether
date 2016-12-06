@@ -137,8 +137,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     positionToTileIds.get(i);
                 } catch (IndexOutOfBoundsException ex) {
                     positionToTileIds.add(i, "");
-                    stagedChanges.put(Channel.TABLE_NAME + "/" + Channel.POS_TO_TILE_IDS + "/" + i,
-                            "");
+                    stagedChanges.put(Channel.TABLE_NAME + "/" + app.getChannelId() + "/" + Channel
+                            .POS_TO_TILE_IDS + "/" + i, "");
                 }
             }
         } finally {
