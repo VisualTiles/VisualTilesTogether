@@ -36,7 +36,7 @@ public abstract class TileListFragment extends Fragment
     private RecyclerView mRvTileList;
     private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> mFirebaseAdapter;
     private Context mContext;
-    private LinearLayoutManager mLinearLayoutManager;
+    private RecyclerView.LayoutManager mLayoutManager;
     VisualTilesTogetherApp visualTilesTogetherApp;
 
     private TileListFragmentListener mListener;
@@ -44,10 +44,7 @@ public abstract class TileListFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        Log.d(LOG_TAG, "enter onCreate");
         visualTilesTogetherApp =  (VisualTilesTogetherApp) getActivity().getApplication();
-//        Log.d(LOG_TAG, "exit onCreate");
     }
 
     public int getBackgroundColorResId() {
@@ -81,12 +78,16 @@ public abstract class TileListFragment extends Fragment
                 if (tvEmptyRvList != null) {
                     tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
                 }
-                int lastVisiblePosition = mLinearLayoutManager.
-                        findLastCompletelyVisibleItemPosition();
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (tileCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    mRvTileList.scrollToPosition(positionStart);
+
+                // Manipulate scroll when linear layout (not true for tile select).
+                if (mLayoutManager instanceof LinearLayoutManager) {
+                    int lastVisiblePosition = ((LinearLayoutManager) mLayoutManager)
+                            .findLastCompletelyVisibleItemPosition();
+                    if (lastVisiblePosition == -1 ||
+                            (positionStart >= (tileCount - 1) &&
+                                    lastVisiblePosition == (positionStart - 1))) {
+                        mRvTileList.scrollToPosition(positionStart);
+                    }
                 }
             }
 
@@ -101,15 +102,20 @@ public abstract class TileListFragment extends Fragment
         });
 
         // hook up the RecyclerView
-        mLinearLayoutManager = getLayoutManager();
-        mRvTileList.setLayoutManager(mLinearLayoutManager);
+        mLayoutManager = getLayoutManager();
+        mRvTileList.setLayoutManager(mLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
         return view;
     }
 
     abstract TileListRecyclerViewAdapter getAdapter(DatabaseReference dbRef);
 
-    abstract LinearLayoutManager getLayoutManager();
+    RecyclerView.LayoutManager getLayoutManager() {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setStackFromEnd(true);
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        return layoutManager;
+    }
 
     @Override
     public void onDetach() {

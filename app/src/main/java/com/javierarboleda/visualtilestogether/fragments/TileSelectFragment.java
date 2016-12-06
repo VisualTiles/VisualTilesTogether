@@ -1,6 +1,7 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
@@ -17,7 +18,7 @@ public class TileSelectFragment extends TileListFragment {
 
     Query getDbQuery(DatabaseReference dbRef) {
         return dbRef
-                .child(visualTilesTogetherApp.getUser().getChannelId())
+                .child(visualTilesTogetherApp.getChannelId())
                 .child(Channel.TILE_IDS)
                 .orderByValue()
                 .equalTo(true);
@@ -37,10 +38,9 @@ public class TileSelectFragment extends TileListFragment {
     }
 
     @Override
-    LinearLayoutManager getLayoutManager() {
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        layoutManager.setStackFromEnd(true);
-        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        return layoutManager;
+    RecyclerView.LayoutManager getLayoutManager() {
+        StaggeredGridLayoutManager lm =
+                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
+        return lm;
     }
 }

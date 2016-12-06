@@ -332,7 +332,6 @@ public class SignInActivity extends AppCompatActivity implements
 
     private void launchGroupCreationActivity() {
         Intent intent = new Intent(this, CreateJoinActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         // pass center coordinates of sign in button for circular transition start point
         View signInView = findViewById(R.id.rlSignIn);

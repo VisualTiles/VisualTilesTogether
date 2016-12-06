@@ -7,18 +7,25 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.percent.PercentFrameLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.firebase.ui.database.FirebaseListAdapter;
+import com.bumptech.glide.Glide;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.databinding.FragmentLayoutSelectBinding;
 import com.javierarboleda.visualtilestogether.models.Layout;
+import com.javierarboleda.visualtilestogether.util.PresentationUtil;
 import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
 
 /**
@@ -31,11 +38,47 @@ public class LayoutSelectFragment extends Fragment
     private LayoutSelectFragmentListener listener;
     private Bitmap bitmap = null;
     private Activity mContext;
-    private FirebaseListAdapter mAdapter;
+    private FirebaseRecyclerAdapter mAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_layout_select, parent, false);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
+                .child(Layout.TABLE_NAME);
+        mAdapter = new FirebaseRecyclerAdapter<Layout, LayoutViewHolder>(
+                Layout.class, R.layout.list_item_layout, LayoutViewHolder.class,
+                ref) {
+            @Override
+            protected void populateViewHolder(LayoutViewHolder viewHolder,
+                                              Layout layout, final int position) {
+                viewHolder.text.setText(
+                        Html.fromHtml("<B>" + layout.getLayoutName() + "</B> (" +
+                                layout.getTileCount() + ")"));
+                Glide.with(mContext).load(layout.getBackgroundUrl()).into(
+                        viewHolder.background);
+
+                viewHolder.viewContainer.removeAllViews();
+                for (int i = 0; i < layout.getTileCount(); i++) {
+                    View view = new View(mContext);
+                    view.setBackgroundResource(R.drawable.layout_list_background_shape);
+                    view.setVisibility(View.VISIBLE);
+                    viewHolder.viewContainer.addView(view);
+                    PresentationUtil.moveRelativeView(
+                            layout, view, layout.getTilePositions().get(i));
+                }
+
+                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        listener.updateChannelLayout(mAdapter.getRef(position).getKey());
+                    }
+                });
+            }
+        };
+        binding.recyclerView.setAdapter(mAdapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
+        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        binding.recyclerView.setLayoutManager(layoutManager);
         return binding.getRoot();
     }
 
@@ -54,29 +97,12 @@ public class LayoutSelectFragment extends Fragment
             throw new RuntimeException(context.toString()
                     + " must implement LayoutSelectFragmentListener");
         }
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference()
-                .child(Layout.TABLE_NAME);
-        mAdapter = new FirebaseListAdapter<Layout>(getActivity(), Layout.class,
-                android.R.layout.two_line_list_item, ref) {
-            @Override
-            protected void populateView(View view, final Layout layout, final int position) {
-                ((TextView)view.findViewById(android.R.id.text1)).setText(layout.getLayoutName());
-                ((TextView)view.findViewById(android.R.id.text2)).setText(layout.getTileCount());
-                view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        listener.updateChannelLayout(mAdapter.getRef(position).getKey());
-                    }
-                });
-            }
-        };
     }
 
     @Override
     public void onDetach() {
         mContext = null;
-        mAdapter.cleanup();
+        if (mAdapter != null) mAdapter.cleanup();
         listener = null;
         super.onDetach();
     }
@@ -110,6 +136,20 @@ public class LayoutSelectFragment extends Fragment
         };
         thread.start();
     }
+
+    public static class LayoutViewHolder extends RecyclerView.ViewHolder {
+        public View itemView;
+        public TextView text;
+        public ImageView background;
+        public PercentFrameLayout viewContainer;
+        public LayoutViewHolder(View itemView) {
+            super(itemView);
+            this.itemView = itemView;
+            text = ((TextView)itemView.findViewById(R.id.text));
+            background = (ImageView)itemView.findViewById(R.id.imgBackground);
+            viewContainer = (PercentFrameLayout) itemView.findViewById(R.id.viewContainer);
+        }
+    };
 
     public interface LayoutSelectFragmentListener {
         void updateChannelLayout(String layoutName);

@@ -53,5 +53,6 @@
     <string name="error_event_code_empty">Please provide an event code</string>
     <string name="error_event_code_in_use">" is already in use, sorry!"</string>
     <string name="create_event">Create event</string>
+    <string name="select_speed">Drag to select speed.</string>
 
 </resources>

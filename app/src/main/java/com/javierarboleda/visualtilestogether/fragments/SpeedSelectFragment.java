@@ -18,6 +18,10 @@ import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.FragmentSpeedSelectBinding;
 import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
 
+import org.adw.library.widgets.discreteseekbar.DiscreteSeekBar;
+
+import java.util.Locale;
+
 /**
  * Created on 12/4/16.
  */
@@ -36,8 +40,49 @@ public class SpeedSelectFragment extends Fragment
         return binding.getRoot();
     }
 
+    private void setSpeedViewText(int duration) {
+        float secs = duration / 1000f;
+        int bpm = 60000 / duration;
+        binding.speedView.setText(
+                String.format(Locale.US, "%.1f seconds / %d BPM.", secs, bpm));
+    }
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        int duration = (int) app.getChannel().getMasterEffectDuration();
+        binding.speedSeeker.setProgress(duration);
+        setSpeedViewText(duration);
+
+        binding.speedSeeker.setNumericTransformer(new DiscreteSeekBar.NumericTransformer() {
+            @Override
+            public int transform(int value) {
+                // Round to increments of 100.
+                return value - value % 100;
+            }
+        });
+        binding.speedSeeker.setOnProgressChangeListener(
+                new DiscreteSeekBar.OnProgressChangeListener() {
+            @Override
+            public void onProgressChanged(DiscreteSeekBar seekBar, int value, boolean fromUser) {
+                float secs = value / 1000f;
+                int bpm = 60000 / value;
+                String string = String.format(Locale.US, "%.1f", secs);
+                setSpeedViewText(value);
+                seekBar.setIndicatorFormatter(string);
+                binding.speedView.setText(
+                        String.format(Locale.US, "%.1f seconds / %d BPM.", secs, bpm));
+            }
+
+            @Override
+            public void onStartTrackingTouch(DiscreteSeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(DiscreteSeekBar seekBar) {
+                listener.updateAnimationSpeed(seekBar.getProgress());
+            }
+        });
     }
 
     @Override
@@ -95,6 +140,7 @@ public class SpeedSelectFragment extends Fragment
     @Override
     public void onChannelUpdated() {
         // Listen for speed field changes.
+        binding.speedSeeker.setProgress((int) app.getChannel().getMasterEffectDuration());
     }
 
     @Override

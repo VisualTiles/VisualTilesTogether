@@ -1,11 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    >
-    <ListView
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
         android:background="@color/speedSelectBackgroundColor">
-    </ListView>
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#CCFFFFFF"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_margin="10dp"
+        android:padding="8dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_speed"
+            android:textSize="20sp"
+            android:padding="10dp"/>
+
+        <org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
+            android:id="@+id/speedSeeker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            app:dsb_min="100"
+            app:dsb_max="10000"
+            app:dsb_progressColor="@color/colorAccent"
+            app:dsb_thumbSize="20dp"
+            />
+
+        <TextView
+            android:id="@+id/speedView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="10sp"
+            android:padding="10dp"/>
+
+    </LinearLayout>
+    </android.support.v7.widget.CardView>
+    </LinearLayout>
 </layout>

@@ -1,8 +1,6 @@
 package com.javierarboleda.visualtilestogether.fragments;
 
 
-import android.support.v7.widget.LinearLayoutManager;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.javierarboleda.visualtilestogether.R;
@@ -25,13 +23,5 @@ public class TileListFragmentApproved extends TileListFragment {
                 R.layout.tile_list_item,
                 getDbQuery(dbRef.child(Channel.TABLE_NAME)),
                 visualTilesTogetherApp);
-    }
-
-    @Override
-    LinearLayoutManager getLayoutManager() {
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        layoutManager.setStackFromEnd(true);
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        return layoutManager;
     }
 }
