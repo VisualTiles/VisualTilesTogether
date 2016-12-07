@@ -134,7 +134,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 startActivity(new Intent(this, ModeratorConsoleActivity.class));
                 break;
             case R.id.nav_normalize_db:
-                normalizeDb();
+                normalizeDb(this);
                 break;
             case R.id.nav_show_code:
                 startActivity(new Intent(this, ShowQrCodeActivity.class));

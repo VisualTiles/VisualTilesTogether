@@ -353,7 +353,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        setChannelQrCode(key, channel.getUniqueName());
+        setChannelQrCode(this, key, channel.getUniqueName());
         visualTilesTogetherApp.addListener(this);
         visualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
