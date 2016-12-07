@@ -21,6 +21,7 @@ public class TileListFragmentNowPlaying extends TileListFragment {
         return new TileListRecyclerViewAdapter(getContext(),
                 R.layout.tile_list_item,
                 getDbQuery(dbRef.child(Channel.TABLE_NAME)),
+                R.array.empty_tile_list_now_playing,
                 visualTilesTogetherApp);
     }
 }

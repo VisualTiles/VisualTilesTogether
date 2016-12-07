@@ -18,7 +18,7 @@ public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
     private String mSelectedTileRefId;
 
     public TileSelectRecyclerViewAdapter(Context context, int itemLayout, Query query, VisualTilesTogetherApp visualTilesTogetherApp) {
-        super(context, itemLayout, query, visualTilesTogetherApp);
+        super(context, itemLayout, query, 0, visualTilesTogetherApp);
     }
 
     @Override

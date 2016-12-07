@@ -44,6 +44,7 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.toggleTil
  */
 public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> {
     private static final String TAG = TileListRecyclerViewAdapter.class.getSimpleName();
+    private final int mMsgsResId;
     private Context mContext;
     TileListFragment.TileListFragmentListener mListener;
     private VisualTilesTogetherApp mVisualTilesTogetherApp;
@@ -54,6 +55,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     public TileListRecyclerViewAdapter(Context context,
                                        int itemLayout,
                                        Query query,
+                                       int msgsResId,
                                        VisualTilesTogetherApp visualTilesTogetherApp) {
         super(Object.class,
                 itemLayout,
@@ -61,7 +63,12 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                 query);
         mContext = context;
         mListener = (TileListFragment.TileListFragmentListener) context;
+        mMsgsResId = msgsResId;
         mVisualTilesTogetherApp = visualTilesTogetherApp;
+    }
+
+    public int getMsgsResId() {
+        return mMsgsResId;
     }
 
     @Override
