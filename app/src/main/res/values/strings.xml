@@ -42,6 +42,35 @@
         <item>Let\'s Draw!</item>
     </string-array>
 
+    <string-array name="empty_tile_list_channel">
+        <item>No tiles have been created yet</item>
+        <item>Let\'s get this party started!</item>
+        <item>The room is empty, you can help!</item>
+        <item>Watch this space</item>
+        <item>Can\'t wait to see some new tiles!</item>
+    </string-array>
+
+    <string-array name="empty_tile_list_approved">
+        <item>No tiles have been approved yet</item>
+        <item>Need to get some tiles approved</item>
+        <item>Approve some tiles, let\'s get this party started!</item>
+        <item>Can\'t wait to see some tiles approved!</item>
+    </string-array>
+
+    <string-array name="empty_tile_list_mine">
+        <item>Let\'s make some tiles!</item>
+        <item>What are you waiting for?</item>
+        <item>Let\'s get this party started, you can help!</item>
+        <item>Can\'t wait to see what you come up with!</item>
+    </string-array>
+
+    <string-array name="empty_tile_list_now_playing">
+        <item>Watch this space</item>
+        <item>We\'ll have some tiles running shortly</item>
+        <item>The more tiles you make, the more you\'ll see onstage!</item>
+        <item>Can\'t wait to get this party started!</item>
+    </string-array>
+
     <string name="title_color_editor">Color Editor</string>
     <string name="title_effect_editor">Effect Editor</string>
     <string name="title_tile_select">Tile Selection</string>
