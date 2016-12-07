@@ -6,7 +6,7 @@
     android:id="@+id/rvRootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="#000000"
     android:focusableInTouchMode="true"
     >
 
@@ -30,15 +30,24 @@
         android:layout_alignParentStart="true"
         android:layout_marginStart="24dp"
         android:layout_marginTop="47dp"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textColor="@color/white"
         android:id="@+id/tvJoinEventLabel"/>
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        app:srcCompat="@drawable/ic_qrcode_scan"
+        android:onClick="joinEventOnQrCode"
+        android:layout_alignTop="@id/tvJoinEventLabel"
+        android:layout_alignParentEnd="true"/>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/tilJoin"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_alignStart="@id/tvJoinEventLabel"
         android:layout_below="@id/tvJoinEventLabel"
         android:theme="@style/TextLabel"
@@ -48,29 +57,17 @@
             android:id="@+id/tieJoin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionGo"
             android:maxLines="1"
             android:inputType="text"/>
 
     </android.support.design.widget.TextInputLayout>
-
-    <!--<EditText-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:inputType="textPersonName"-->
-        <!--android:ems="10"-->
-        <!--android:layout_alignParentTop="true"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:layout_marginTop="94dp"-->
-        <!--android:id="@+id/etEventCode"-->
-        <!--android:hint="@string/enter_event_code"/>-->
 
     <RelativeLayout
         android:id="@+id/rlJoinButton"
         android:layout_width="220dp"
         android:layout_height="wrap_content"
 
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="16dp"
         android:layout_below="@id/tilJoin"
         android:layout_centerHorizontal="true">
 
@@ -122,7 +119,7 @@
         android:layout_height="wrap_content"
         android:layout_alignStart="@id/tvJoinEventLabel"
         android:layout_below="@id/divider"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textColor="@color/white"
         android:id="@+id/tvCreateAnEventLabel"/>
 
@@ -130,7 +127,6 @@
         android:id="@+id/tilCreateEventName"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_alignStart="@id/tvCreateAnEventLabel"
         android:layout_below="@id/tvCreateAnEventLabel"
         android:theme="@style/TextLabel"
@@ -141,7 +137,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:inputType="text"/>
+            android:imeOptions="actionNext"
+            android:inputType="textImeMultiLine"/>
 
     </android.support.design.widget.TextInputLayout>
 
@@ -150,7 +147,7 @@
         android:id="@+id/tilCreateEventCode"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
         android:layout_alignStart="@id/tvCreateAnEventLabel"
         android:layout_below="@id/tilCreateEventName"
         android:theme="@style/TextLabel"
@@ -170,7 +167,7 @@
         android:id="@+id/rlCreateEvent"
         android:layout_width="220dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="22dp"
+        android:layout_marginTop="16dp"
         android:layout_below="@id/tilCreateEventCode"
         android:layout_centerHorizontal="true">
 
@@ -225,7 +222,18 @@
         android:id="@+id/btnQrCode"
         android:layout_alignParentBottom="true"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:onClick="joinEventOnQrCode" />
+        android:onClick="joinEventOnQrCode"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:srcCompat="@drawable/ic_sign_out_white"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="8dp"
+        android:onClick="signOut"
+        />
 
 </RelativeLayout>
 

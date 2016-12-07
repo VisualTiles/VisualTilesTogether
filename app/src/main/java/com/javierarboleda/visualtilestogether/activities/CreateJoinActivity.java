@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -27,7 +29,10 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.dd.CircularProgressButton;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -51,7 +56,9 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChanne
  */
 
 public class CreateJoinActivity extends AppCompatActivity implements
-        VisualTilesTogetherApp.VisualTilesListenerInterface {
+        VisualTilesTogetherApp.VisualTilesListenerInterface,
+        GoogleApiClient.OnConnectionFailedListener{
+
     private static final String LOG_TAG = CreateJoinActivity.class.getSimpleName();
     private static final int RC_BARCODE_CAPTURE = 9001;
     public static String CX_KEY = "cx_key";
@@ -68,6 +75,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
     private TextInputEditText mCreateCodeTiEditText;
 
     private VisualTilesTogetherApp app;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,16 +89,27 @@ public class CreateJoinActivity extends AppCompatActivity implements
         }
         visualTilesTogetherApp.addListener(this);
 
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .build();
 
-        Glide.with(this).load(R.drawable.vtbg2)
-                .bitmapTransform(new BlurTransformation(this, 5))
-                .into((ImageView) findViewById(R.id.ivBackgroundImage));
+        setUpLayout();
 
         setupCircularTransition(savedInstanceState);
         
+
+    }
+
+    private void setUpLayout() {
+        getWindow().getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+
+        Glide.with(this).load(R.drawable.vtbg3)
+                .bitmapTransform(new BlurTransformation(this, 20))
+                .into((ImageView) findViewById(R.id.ivBackgroundImage));
+
         setupTextFields();
     }
 
@@ -202,8 +221,15 @@ public class CreateJoinActivity extends AppCompatActivity implements
         views[0] = binding.tvJoinText;
         views[1] = binding.viewButtonOutline;
         animateButton(binding.cpbJoinButton, views, 1, 0, true);
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                joinEvent();
+            }
+        }, 500);
 
-        joinEvent();
+
     }
 
     private void joinEvent() {
@@ -299,8 +325,8 @@ public class CreateJoinActivity extends AppCompatActivity implements
         mJCreateCodeTiLayout.setErrorEnabled(false);
         boolean error = false;
 
-        String channelName = mCreateNameTiEditText.getText().toString();
-        String uniqueName = mCreateCodeTiEditText.getText().toString();
+        final String channelName = mCreateNameTiEditText.getText().toString();
+        final String uniqueName = mCreateCodeTiEditText.getText().toString();
         if (TextUtils.isEmpty(channelName)) {
             mCreateNameTiLayout.setError(getString(R.string.error_event_name_empty));
             error = true;
@@ -308,8 +334,20 @@ public class CreateJoinActivity extends AppCompatActivity implements
         if (TextUtils.isEmpty(uniqueName)) {
             mJCreateCodeTiLayout.setError(getString(R.string.error_event_code_empty));
         } else {
-            finishIfUnique(uniqueName, channelName, app.getUid(),
-                    error);
+            View[] views = new View[2];
+            views[0] = binding.tvCreateEventText;
+            views[1] = binding.viewButtonOutlineCreateEvent;
+            animateButton(binding.cpbCreateEventButton, views, 1, 0, true);
+
+            final Handler handler = new Handler();
+            final boolean finalError = error;
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    finishIfUnique(uniqueName, channelName, app.getUid(),
+                            finalError);
+                }
+            }, 500);
         }
     }
 
@@ -419,6 +457,21 @@ public class CreateJoinActivity extends AppCompatActivity implements
 
     private void hideError() {
         mJoinTiLayout.setError("");
+    }
+
+    public void signOut(View view) {
+        app.signOut();
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+        startActivity(new Intent(this, SignInActivity.class));
+        finish();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
+        // be available.
+        Log.d(LOG_TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
     private static final class ActionListener implements TextView.OnEditorActionListener {
