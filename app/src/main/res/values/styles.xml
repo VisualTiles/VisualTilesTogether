@@ -22,8 +22,8 @@
 
     <style name="divider">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:background">@color/divider</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:background">@android:color/darker_gray</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -76,7 +76,10 @@
     <style name="TextLabel" parent="Widget.Design.TextInputLayout">
         <!-- Hint color and label color in FALSE state -->
         <item name="android:textColorHint">@color/lightGray</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textColorPrimary">@color/lightGray</item>
+        <item name="android:textColor">@color/lightGray</item>
         <!-- Label color in TRUE state and bar color FALSE and TRUE State -->
         <item name="colorAccent">@color/lightGray</item>
         <item name="colorControlNormal">@color/lightGray</item>

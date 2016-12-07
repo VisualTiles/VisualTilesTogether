@@ -33,7 +33,7 @@
             android:maxLength="8"
             android:ems="10"
             android:id="@+id/etChannelUniqueName"
-            android:hint="Event code (8 or less)"
+            android:hint="@string/event_code"
             android:layout_marginTop="16dp" />
     </android.support.design.widget.TextInputLayout>
 

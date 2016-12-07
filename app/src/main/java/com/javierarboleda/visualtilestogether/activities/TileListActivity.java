@@ -4,8 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -18,6 +20,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -141,7 +144,26 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 break;
             case R.id.nav_leave_channel:
                 app.leaveChannel();
-                startActivity(new Intent(this, CreateJoinActivity.class));
+
+                final Intent intent = new Intent(this, CreateJoinActivity.class);
+
+                Display display = getWindowManager().getDefaultDisplay();
+                final Point size = new Point();
+                display.getSize(size);
+                int cx = size.x / 2;
+                int cy = size.y / 2;
+
+                intent.putExtra(CreateJoinActivity.CX_KEY, cx);
+                intent.putExtra(CreateJoinActivity.CY_KEY, cy);
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(intent);
+                    }
+                }, 350);
+
                 exitCircularReveal(fab, true);
                 break;
             case R.id.nav_sign_out:
