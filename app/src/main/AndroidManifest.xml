@@ -62,8 +62,6 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"/>
-
-        <service android:name=".util.SetChannelQrCode" />
     </application>
 
 </manifest>

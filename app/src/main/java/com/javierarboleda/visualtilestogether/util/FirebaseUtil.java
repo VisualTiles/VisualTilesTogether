@@ -1,8 +1,12 @@
 package com.javierarboleda.visualtilestogether.util;
 
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,6 +23,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.models.Channel;
 import com.javierarboleda.visualtilestogether.models.Tile;
@@ -30,6 +38,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.TRANSPARENT;
+
 public class FirebaseUtil {
     private static final String LOG_TAG = FirebaseUtil.class.getSimpleName();
 
@@ -40,7 +51,7 @@ public class FirebaseUtil {
      *
      * Shouldn't really ever need to use this
      */
-    public static void normalizeDb(final Context context) {
+    public static void normalizeDb() {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
 
         // get the list of userIds and then proceed
@@ -90,7 +101,7 @@ public class FirebaseUtil {
                                             .child(Channel.CHANNEL_UNIQUE_NAME)
                                             .setValue(uniqueName);
                                 }
-                                setChannelQrCode(context, channelId, uniqueName);
+                                setChannelQrCode(channelId, uniqueName);
                             }
                         }
                     }
@@ -290,6 +301,7 @@ public class FirebaseUtil {
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+//                Log.d(LOG_TAG, "tileTransaction:onComplete: " + databaseError);
             }
         });
     }
@@ -328,7 +340,90 @@ public class FirebaseUtil {
      * Generate a QR code for the channel,
      * for now just use the key as the encoded string
      */
-    public static void setChannelQrCode(Context context, String channelId, String uniqueName) {
-        SetChannelQrCode.launch(context, channelId, uniqueName);
+    public static void setChannelQrCode(String channelId, String uniqueName) {
+        new QrTask().execute(channelId, uniqueName);
+    }
+
+    private static class QrTask extends AsyncTask<String, Integer, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... strings) {
+            final String key = strings[0];
+            final String uniqueName = strings[1];
+            try {
+                // generate the QR code
+                BitMatrix bitMatrix = new MultiFormatWriter()
+                        .encode(key, BarcodeFormat.QR_CODE, 400, 400);
+                Bitmap bitmap = textOnBitmap(createBitmap(bitMatrix), uniqueName);
+
+                // convert it to an input stream so it can be uploaded
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
+
+                // upload it to Firebase Storage
+                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+                StorageReference qrCodesRef = firebaseStorage
+                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
+                        .child("qrCodes");
+                UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // set the channel's QR code url to point to the QR code image
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        if (downloadUrl != null) {
+                            DatabaseReference channelRef = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference()
+                                    .child(Channel.TABLE_NAME);
+                            channelRef.child(key)
+                                    .child(Channel.QRCODE_URL)
+                                    .setValue(downloadUrl.toString());
+                        }
+                    }
+                });
+                return true;
+            } catch (WriterException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
+        private static Bitmap textOnBitmap(Bitmap bitmap, String s) {
+            Canvas canvas = new Canvas(bitmap);
+            // new antialised Paint
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(Color.rgb(0, 0, 0));
+            // text size in pixels
+            paint.setTextSize(48);
+            // text shadow
+            // draw text to the Canvas bottom
+            Rect bounds = new Rect();
+            paint.getTextBounds(s, 0, s.length(), bounds);
+            int x = (bitmap.getWidth() - bounds.width())/2;
+            int y = bitmap.getHeight();
+
+            canvas.drawText(s, x, y, paint);
+            return bitmap;
+        }
+
+        private static Bitmap createBitmap(BitMatrix bitMatrix) {
+            int w = bitMatrix.getWidth();
+            int h = bitMatrix.getHeight();
+            int[] pixels = new int[w * h];
+            for (int y = 0; y < h; y++) {
+                int offset = y * w;
+                for (int x = 0; x < w; x++) {
+                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : TRANSPARENT;
+                }
+            }
+            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+            return bitmap;
+        }
     }
 }

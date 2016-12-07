@@ -74,7 +74,6 @@ public abstract class TileListFragment extends Fragment
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
-//                Log.d(LOG_TAG, "onItemRangeInserted(" + positionStart + ", " + itemCount + ")");
                 int tileCount = mFirebaseAdapter.getItemCount();
                 if (tvEmptyRvList != null) {
                     tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
@@ -95,7 +94,6 @@ public abstract class TileListFragment extends Fragment
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
                 super.onItemRangeRemoved(positionStart, itemCount);
-//                Log.d(LOG_TAG, "onItemRangeRemoved(" + positionStart + ", " + itemCount + ")");
                 int tileCount = mFirebaseAdapter.getItemCount();
                 if (tvEmptyRvList != null) {
                     tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);

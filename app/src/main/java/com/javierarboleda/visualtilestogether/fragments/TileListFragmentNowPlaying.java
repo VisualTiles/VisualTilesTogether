@@ -11,7 +11,7 @@ public class TileListFragmentNowPlaying extends TileListFragment {
 
     Query getDbQuery(DatabaseReference dbRef) {
         return dbRef
-                .child(visualTilesTogetherApp.getChannelId())
+                .child(visualTilesTogetherApp.getUser().getChannelId())
                 .child(Channel.POS_TO_TILE_IDS)
                 .orderByKey();
     }
