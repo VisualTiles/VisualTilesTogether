@@ -24,7 +24,9 @@ public class TileSelectRecyclerViewAdapter extends TileListRecyclerViewAdapter {
     @Override
     public void onViewAttachedToWindow(TileViewHolder holder) {
         if (holder.rlMain != null) {
-            if (mSelectedTileRefId != null && mSelectedTileRefId.equals(holder.tile.getTileId())) {
+            if (holder.tile != null &&
+                    mSelectedTileRefId != null && mSelectedTileRefId.equals(
+                    holder.tile.getTileId())) {
                 holder.rlMain.setSelected(true);
             } else {
                 holder.rlMain.setSelected(false);

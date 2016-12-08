@@ -1,6 +1,5 @@
 package com.javierarboleda.visualtilestogether.util;
 
-import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -25,9 +24,11 @@ public class TileEffectTransformer2 {
         this.context = context;
         this.stageDuration = duration;
     }
-    private Animator applyDuration(Animator animator, long delay, long duration) {
+    private ObjectAnimator applyDuration(ObjectAnimator animator, long delay, long duration) {
         animator.setStartDelay(delay);
         animator.setDuration(duration);
+        animator.setRepeatCount(ValueAnimator.INFINITE);
+        animator.setAutoCancel(true);
         return animator;
     }
     public AnimatorSet processTileEffect(AnimatorSet as, View view, TileEffect effect) {
@@ -44,28 +45,53 @@ public class TileEffectTransformer2 {
         } catch(IllegalArgumentException ex) {
             Log.e(TAG, "Invalid tile effect " + effect.getEffectType() + " seen in tile!");
         }
+        ObjectAnimator oa1, oa2, oa3, oa4;
         switch (effectType) {
             case FADE_HALF:
-                ObjectAnimator fade = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f);
-                applyDuration(fade, delay, halfDuration);
-                fade.setRepeatMode(ValueAnimator.REVERSE);
-                fade.setRepeatCount(ValueAnimator.INFINITE);
-                as.play(fade);
+            case FADE_OUT:
+                oa1 = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f, 1f);
+                applyDuration(oa1, delay, halfDuration);
+                oa1.setRepeatMode(ValueAnimator.RESTART);
+                oa1.setRepeatCount(ValueAnimator.INFINITE);
+                as.play(oa1);
+                break;
+            case FADE_IN:
+                oa1 = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f, 0f);
+                applyDuration(oa1, delay, halfDuration);
+                oa1.setRepeatMode(ValueAnimator.RESTART);
+                oa1.setRepeatCount(ValueAnimator.INFINITE);
+                as.play(oa1);
                 break;
             case FLIP_HORIZONTAL:
             case FLIP_HORIZONTAL_RIGHT:
-                ObjectAnimator rotateYRight = ObjectAnimator.ofFloat(view, "rotationY", 0f, 360f);
+                ObjectAnimator rotateYRight = ObjectAnimator.ofFloat(view, "rotationY",
+                        0f, 360f, 0f);
                 applyDuration(rotateYRight, delay, duration);
                 rotateYRight.setRepeatMode(ValueAnimator.RESTART);
                 rotateYRight.setRepeatCount(ValueAnimator.INFINITE);
                 as.play(rotateYRight);
                 break;
             case FLIP_HORIZONTAL_LEFT:
-                ObjectAnimator rotateYLeft = ObjectAnimator.ofFloat(view, "rotationY", 0f, -360f);
+                ObjectAnimator rotateYLeft = ObjectAnimator.ofFloat(view, "rotationY",
+                        0f, -360f, 0f);
                 applyDuration(rotateYLeft, delay, duration);
                 rotateYLeft.setRepeatMode(ValueAnimator.RESTART);
                 rotateYLeft.setRepeatCount(ValueAnimator.INFINITE);
                 as.play(rotateYLeft);
+                break;
+            case NOD_NO:
+                oa1 = ObjectAnimator.ofFloat(view, "rotationY", 0f, 60f, 0f, -60f, 0f);
+                applyDuration(oa1, delay, duration);
+                oa1.setRepeatMode(ValueAnimator.RESTART);
+                as.setInterpolator(new AccelerateDecelerateInterpolator());
+                as.play(oa1);
+                break;
+            case NOD_YES:
+                oa1 = ObjectAnimator.ofFloat(view, "rotationX", 0f, 60f, 0f, -60f, 0f);
+                applyDuration(oa1, delay, duration);
+                oa1.setRepeatMode(ValueAnimator.RESTART);
+                as.setInterpolator(new AccelerateDecelerateInterpolator());
+                as.play(oa1);
                 break;
             case ROTATE_LEFT:
                 ObjectAnimator rotateLeft = ObjectAnimator.ofFloat(view, "rotation", 0f, -360f);

@@ -14,14 +14,19 @@ public class TileEffect {
     // Do not re-use names.
     public enum EffectType {
         NONE,
-        FADE_HALF,
-        FLIP_HORIZONTAL,  // DEPRECATED.
+        FADE_OUT,
+        FADE_IN,
         FLIP_HORIZONTAL_LEFT,
         FLIP_HORIZONTAL_RIGHT,
+        NOD_YES,
+        NOD_NO,
         FLY_AWAY,
         FREEZE,
         ROTATE_LEFT,
         ROTATE_RIGHT,
+
+        FADE_HALF,  // DEPRECATED
+        FLIP_HORIZONTAL,  // DEPRECATED.
     }
     private String  effectType;
     /**
