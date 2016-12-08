@@ -75,6 +75,17 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     protected void populateViewHolder(
             final TileViewHolder viewHolder, final Object object, int position) {
 
+        if (viewHolder.itemView.isSelected()) {
+            viewHolder.itemView.setSelected(false);
+            if (viewHolder.itemView instanceof CardView) {
+                CardView card = (CardView) viewHolder.itemView;
+                card.setCardBackgroundColor(
+                        ContextCompat.getColor(mContext, R.color.cardViewBackgroundColor));
+            }
+        }
+        if (viewHolder.bubbleMenu != null)
+            viewHolder.bubbleMenu.setVisibility(View.INVISIBLE);
+
         viewHolder.itemView.startAnimation(getAnimation(position));
         mLastPosition = position;
         // if the key starts with a '-' then it must be a tileId...
