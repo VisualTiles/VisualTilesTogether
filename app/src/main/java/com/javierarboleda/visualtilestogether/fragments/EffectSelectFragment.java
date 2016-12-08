@@ -11,7 +11,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.databinding.FragmentEffectSelectBinding;
@@ -26,7 +25,7 @@ public class EffectSelectFragment extends Fragment
 
     private FragmentEffectSelectBinding binding;
     private EffectSelectFragmentListener mListener;
-    private Button mSelectedButton;
+    private View mSelectedButton;
     private Bitmap bitmap = null;
     private Activity mContext;
 
@@ -45,7 +44,7 @@ public class EffectSelectFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
     }
 
-    private void effectButtonClicked(Button button, String effect) {
+    private void effectButtonClicked(View button) {
         boolean broadcastToTilesNow = binding.ibAllTileSelect.isSelected();
         if (button.isSelected()) {
             button.setSelected(false);
@@ -57,7 +56,7 @@ public class EffectSelectFragment extends Fragment
             }
             mSelectedButton = button;
             button.setSelected(true);
-            mListener.updateSelectedEffect(broadcastToTilesNow, effect);
+            mListener.updateSelectedEffect(broadcastToTilesNow, (String) button.getTag());
         }
     }
 
@@ -94,48 +93,18 @@ public class EffectSelectFragment extends Fragment
                 }
             }
         });
-        binding.butFadeHalf.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                effectButtonClicked(binding.butFadeHalf, "FADE_HALF");
-            }
-        });
 
-        binding.butFlip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                effectButtonClicked(binding.butFlip, "FLIP_HORIZONTAL");
+        for (int k = 0; k < binding.buttons.getChildCount(); k++) {
+            ViewGroup row = (ViewGroup) binding.buttons.getChildAt(k);
+            for (int i = 0; i < row.getChildCount(); i++) {
+                row.getChildAt(i).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        effectButtonClicked(view);
+                    }
+                });
             }
-        });
-
-        binding.butFlyAway.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                effectButtonClicked(binding.butFlyAway, "FLY_AWAY");
-            }
-        });
-
-        binding.butNone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                effectButtonClicked(binding.butNone, "NONE");
-            }
-        });
-
-        binding.butRotateLeft.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                effectButtonClicked(binding.butRotateLeft, "ROTATE_LEFT");
-            }
-        });
-
-        binding.butRotateRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                effectButtonClicked(binding.butRotateRight, "ROTATE_RIGHT");
-            }
-        });
-
+        }
     }
 
 

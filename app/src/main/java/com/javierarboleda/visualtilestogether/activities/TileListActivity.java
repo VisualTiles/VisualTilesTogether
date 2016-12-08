@@ -57,7 +57,14 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile_list);
-
+        app = (VisualTilesTogetherApp) getApplication();
+        if (app.getChannel() == null) {
+            // Immediate because this activity is bogus.
+            startActivity(new Intent(this, CreateJoinActivity.class));
+            finish();
+            return;
+        }
+        app.addListener(this);
         setUpToolbar();
 
         setUpNavDrawer();
@@ -113,7 +120,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     private void setupDrawerContent(NavigationView navigationView) {
         navigationView.getMenu()
                 .setGroupVisible(R.id.nav_item_moderator_console, app.isChannelModerator());
-
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -128,7 +134,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         if (menuItem.getGroupId() == R.id.nav_item_moderator_console && !app.isChannelModerator()) {
             return;
         }
-
         switch (menuItem.getItemId()) {
             case R.id.nav_present:
                 startActivity(new Intent(this, PresentationActivity.class));
@@ -144,27 +149,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 break;
             case R.id.nav_leave_channel:
                 app.leaveChannel();
-
-                final Intent intent = new Intent(this, CreateJoinActivity.class);
-
-                Display display = getWindowManager().getDefaultDisplay();
-                final Point size = new Point();
-                display.getSize(size);
-                int cx = size.x / 2;
-                int cy = size.y / 2;
-
-                intent.putExtra(CreateJoinActivity.CX_KEY, cx);
-                intent.putExtra(CreateJoinActivity.CY_KEY, cy);
-
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        startActivity(intent);
-                    }
-                }, 350);
-
-                exitCircularReveal(fab, true);
+                goToJoinActivity();
                 break;
             case R.id.nav_sign_out:
                 app.signOut();
@@ -176,7 +161,6 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
                 exitCircularReveal(fab, true);
                 break;
         }
-
         mDrawer.closeDrawers();
     }
 
@@ -184,11 +168,31 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         final ActionBar actionBar = getSupportActionBar();
-        app = (VisualTilesTogetherApp) getApplication();
-        app.addListener(this);
 
         actionBar.setTitle(app.getChannel().getName());
         actionBar.setSubtitle(app.getChannel().getUniqueName());
+    }
+
+    private void goToJoinActivity() {
+        final Intent intent = new Intent(this, CreateJoinActivity.class);
+        Display display = getWindowManager().getDefaultDisplay();
+        final Point size = new Point();
+        display.getSize(size);
+        int cx = size.x / 2;
+        int cy = size.y / 2;
+
+        intent.putExtra(CreateJoinActivity.CX_KEY, cx);
+        intent.putExtra(CreateJoinActivity.CY_KEY, cy);
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startActivity(intent);
+            }
+        }, 350);
+
+        exitCircularReveal(fab, true);
     }
 
     private void enterCircularReveal(View view) {
@@ -284,6 +288,7 @@ public class TileListActivity extends AppCompatActivity implements GoogleApiClie
     @Override
     public void onChannelUpdated() {
         if (app.getChannel() == null) {
+            app.removeListener(this);
             startActivity(new Intent(this, CreateJoinActivity.class));
             finish();
         }

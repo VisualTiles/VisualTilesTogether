@@ -42,41 +42,74 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/buttons"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/row1"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/butFadeHalf"
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
-                    android:text="Fade Half"
+                    android:text="Fade Out->In"
+                    android:tag="FADE_OUT"
                     />
 
                 <Button
-                    android:id="@+id/butFlip"
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
-                    android:text="Flip"
+                    android:text="Flip L"
+                    android:tag="FLIP_HORIZONTAL_LEFT"
                     />
 
                 <Button
-                    android:id="@+id/butFlyAway"
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
-                    android:text="Fly Away"
+                    android:text="Nod No"
+                    android:tag="NOD_NO"
                     />
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/row2"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <Button
+                    style="@style/ModeratorEffectsButtons"
+                    android:background="@drawable/state_list_moderator_selector_button"
+                    android:text="Fade In->Out"
+                    android:tag="FADE_IN"
+                    />
+
+                <Button
+                    style="@style/ModeratorEffectsButtons"
+                    android:background="@drawable/state_list_moderator_selector_button"
+                    android:text="Flip Right"
+                    android:tag="FLIP_HORIZONTAL_RIGHT"
+                    />
+
+                <Button
+                    style="@style/ModeratorEffectsButtons"
+                    android:background="@drawable/state_list_moderator_selector_button"
+                    android:text="Nod Yes"
+                    android:tag="NOD_YES"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/row3"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -84,17 +117,17 @@
 
 
                 <Button
-                    android:id="@+id/butRotateLeft"
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Rotate Left"
+                    android:tag="ROTATE_LEFT"
                     />
 
                 <Button
-                    android:id="@+id/butRotateRight"
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
                     android:text="Rotate Right"
+                    android:tag="ROTATE_RIGHT"
                     />
 
                 <Button
@@ -102,8 +135,8 @@
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
                     android:text="None"
+                    android:tag="NONE"
                     />
-
 
             </LinearLayout>
 
