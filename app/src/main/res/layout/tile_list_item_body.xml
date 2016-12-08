@@ -79,6 +79,7 @@
         android:layout_alignParentTop="true"
         android:orientation="horizontal"
         android:gravity="right|end">
+        <!--
         <ImageButton
             android:id="@+id/btnDelete"
             android:layout_width="wrap_content"
@@ -90,13 +91,13 @@
             android:paddingEnd="5dp"
             android:clickable="true"
             android:background="?android:attr/selectableItemBackground"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"/>-->
         <ImageButton
             android:id="@+id/btnPublish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_publish_black_24px"
-            android:tint="#DDF9FF"
+            app:srcCompat="@drawable/ic_star_border_black_24dp"
+            android:tint="#FF9900"
             android:padding="10dp"
             android:paddingStart="5dp"
             android:paddingEnd="10dp"
@@ -128,7 +129,7 @@
             android:layout_margin="20dp"
             />
         <ImageView
-            android:id="@+id/btnDelete2"
+            android:id="@+id/btnDelete"
             app:srcCompat="@drawable/ic_delete_black_24px"
             android:layout_width="60dp"
             android:layout_height="60dp"
@@ -141,7 +142,7 @@
             />
         <ImageView
             android:id="@+id/btnPublish2"
-            app:srcCompat="@drawable/ic_publish_black_24px"
+            app:srcCompat="@drawable/ic_star_border_black_24dp"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:background="@drawable/image_background_circle"

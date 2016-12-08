@@ -75,6 +75,17 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     protected void populateViewHolder(
             final TileViewHolder viewHolder, final Object object, int position) {
 
+        if (viewHolder.itemView.isSelected()) {
+            viewHolder.itemView.setSelected(false);
+            if (viewHolder.itemView instanceof CardView) {
+                CardView card = (CardView) viewHolder.itemView;
+                card.setCardBackgroundColor(
+                        ContextCompat.getColor(mContext, R.color.cardViewBackgroundColor));
+            }
+        }
+        if (viewHolder.bubbleMenu != null)
+            viewHolder.bubbleMenu.setVisibility(View.INVISIBLE);
+
         viewHolder.itemView.startAnimation(getAnimation(position));
         mLastPosition = position;
         // if the key starts with a '-' then it must be a tileId...
@@ -207,11 +218,18 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                             viewHolder.btnPublish.setImageResource(viewHolder.tile.isApproved() ?
                                     R.drawable.ic_star_black_24dp : R.drawable.ic_star_border_black_24dp);
                         }
+                        if (viewHolder.btnPublish2 != null) {
+                            viewHolder.btnPublish2.setVisibility(View.VISIBLE);
+                            viewHolder.btnPublish2.setImageResource(viewHolder.tile.isApproved() ?
+                                    R.drawable.ic_star_black_24dp : R.drawable.ic_star_border_black_24dp);
+                        }
                         if (viewHolder.btnDelete != null)
                             viewHolder.btnDelete.setVisibility(View.VISIBLE);
                     } else {
                         if (viewHolder.btnPublish != null)
                             viewHolder.btnPublish.setVisibility(View.GONE);
+                        if (viewHolder.btnPublish2 != null)
+                            viewHolder.btnPublish2.setVisibility(View.GONE);
                         if (viewHolder.btnDelete != null)
                             viewHolder.btnDelete.setVisibility(
                                     userId.equals(viewHolder.tile.getCreatorId()) ? View.VISIBLE : View.GONE);
@@ -241,7 +259,14 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                             }
                         });
                     }
-
+                    if (viewHolder.btnPublish2 != null) {
+                        viewHolder.btnPublish2.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                toggleTileApproval(viewHolder.tileRef);
+                            }
+                        });
+                    }
                     // Clean out old photo load.
                     if (viewHolder.photoListener != null)
                         dbRef.removeEventListener(viewHolder.photoListener);
@@ -352,8 +377,9 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         DatabaseReference tileRef;
         ImageView ivCreatorImage;
         ValueEventListener photoListener;
-        ImageButton btnDelete;
+        View btnDelete;
         ImageButton btnPublish;
+        ImageView btnPublish2;
         View bubbleMenu;
 
         public TileViewHolder(View itemView) {
@@ -366,8 +392,9 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                 rlMain = (ViewGroup) itemView.findViewById(R.id.rlMain);
                 tileEventListener = null;
                 ivCreatorImage = (ImageView) itemView.findViewById(R.id.ivCreatorImage);
-                btnDelete = (ImageButton) itemView.findViewById(R.id.btnDelete);
+                btnDelete = itemView.findViewById(R.id.btnDelete);
                 btnPublish = (ImageButton) itemView.findViewById(R.id.btnPublish);
+                btnPublish2 = (ImageView)itemView.findViewById(R.id.btnPublish2);
                 bubbleMenu = itemView.findViewById(R.id.bubbleMenu);
             } catch (RuntimeException ex) {
                 // This catch happens when you click on a nav menu item while scrolling.
