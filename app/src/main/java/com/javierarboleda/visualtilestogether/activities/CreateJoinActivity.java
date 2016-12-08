@@ -217,10 +217,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
     }
 
     public void joinEventOnClick(View view) {
-        View[] views = new View[2];
-        views[0] = binding.tvJoinText;
-        views[1] = binding.viewButtonOutline;
-        animateButton(binding.cpbJoinButton, views, 1, 0, true);
+        animateJoinEventButton(1, 0, true);
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -230,6 +227,13 @@ public class CreateJoinActivity extends AppCompatActivity implements
         }, 500);
 
 
+    }
+
+    private void animateJoinEventButton(float fromAlpha, float toAlpha, boolean invisible) {
+        View[] views = new View[2];
+        views[0] = binding.tvJoinText;
+        views[1] = binding.viewButtonOutline;
+        animateButton(binding.cpbJoinButton, views, fromAlpha, toAlpha, invisible);
     }
 
     private void joinEvent() {
@@ -334,21 +338,27 @@ public class CreateJoinActivity extends AppCompatActivity implements
         if (TextUtils.isEmpty(uniqueName)) {
             mJCreateCodeTiLayout.setError(getString(R.string.error_event_code_empty));
         } else {
-            View[] views = new View[2];
-            views[0] = binding.tvCreateEventText;
-            views[1] = binding.viewButtonOutlineCreateEvent;
-            animateButton(binding.cpbCreateEventButton, views, 1, 0, true);
+            if (!error) {
+                animateCreateEventButton(1, 0, true);
 
-            final Handler handler = new Handler();
-            final boolean finalError = error;
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    finishIfUnique(uniqueName, channelName, app.getUid(),
-                            finalError);
-                }
-            }, 500);
+                final Handler handler = new Handler();
+                final boolean finalError = error;
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        finishIfUnique(uniqueName, channelName, app.getUid(),
+                                finalError);
+                    }
+                }, 500);
+            }
         }
+    }
+
+    private void animateCreateEventButton(float fromAlpha, float toAlpha, boolean invisible) {
+        View[] views = new View[2];
+        views[0] = binding.tvCreateEventText;
+        views[1] = binding.viewButtonOutlineCreateEvent;
+        animateButton(binding.cpbCreateEventButton, views, fromAlpha, toAlpha, invisible);
     }
 
     private void finishIfUnique(final String uniqueName,
@@ -372,6 +382,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
                     mJCreateCodeTiLayout.setError(uniqueName
                             + getString(R.string.error_event_code_in_use));
                     error = true;
+                    animateCreateEventButton(0, 1, false);
                 }
                 if (!error) {
                     Channel channel = new Channel(name, uniqueName, uId);
@@ -391,7 +402,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        setChannelQrCode(this, key, channel.getUniqueName());
+        setChannelQrCode(key, channel.getUniqueName());
         visualTilesTogetherApp.addListener(this);
         visualTilesTogetherApp.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);

@@ -13,13 +13,14 @@
             android:icon="@drawable/ic_moderator_console"
             android:title="Moderator console" />
 
-        <item
-            android:id="@+id/nav_normalize_db"
-            android:icon="@drawable/ic_normalize_db"
-            android:title="@string/menu_normalize_database"
-            />
-
     </group>
+
+    <item
+        android:id="@+id/nav_normalize_db"
+        android:icon="@drawable/ic_normalize_db"
+        android:title="@string/menu_normalize_database"
+        android:visible="false"
+        />
 
     <item android:title="Session">
         <menu>

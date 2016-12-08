@@ -25,6 +25,8 @@ import com.javierarboleda.visualtilestogether.adapters.TileListRecyclerViewAdapt
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.util.sidemenu.interfaces.ScreenShotable;
 
+import java.util.Random;
+
 public abstract class TileListFragment extends Fragment
     implements ScreenShotable {
     private static final String LOG_TAG = TileListFragment.class.getSimpleName();
@@ -35,6 +37,7 @@ public abstract class TileListFragment extends Fragment
     private TextView tvEmptyRvList;
     private RecyclerView mRvTileList;
     private FirebaseRecyclerAdapter<Object, TileListRecyclerViewAdapter.TileViewHolder> mFirebaseAdapter;
+    private String[] mNoTilesMsgs;
     private Context mContext;
     private RecyclerView.LayoutManager mLayoutManager;
     VisualTilesTogetherApp visualTilesTogetherApp;
@@ -69,16 +72,23 @@ public abstract class TileListFragment extends Fragment
         // bind the tiles table to the RecyclerView
         mFirebaseAdapter = getAdapter(dbRef);
 
+        // the resource Id for an array of "empty list" strings
+        // is passed in through the adapter because
+        // the adapter is the one element
+        // that every derived class has to provide
+        int msgsResId = ((TileListRecyclerViewAdapter)mFirebaseAdapter).getMsgsResId();
+        if (msgsResId > 0) {
+            mNoTilesMsgs = getResources().getStringArray(msgsResId);
+        }
+        emptyMessage(mFirebaseAdapter.getItemCount());
+
         // watch for realtime changes
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
-//                Log.d(LOG_TAG, "onItemRangeInserted(" + positionStart + ", " + itemCount + ")");
                 int tileCount = mFirebaseAdapter.getItemCount();
-                if (tvEmptyRvList != null) {
-                    tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
-                }
+                emptyMessage(mFirebaseAdapter.getItemCount());
 
                 // Manipulate scroll when linear layout (not true for tile select).
                 if (mLayoutManager instanceof LinearLayoutManager) {
@@ -95,11 +105,7 @@ public abstract class TileListFragment extends Fragment
             @Override
             public void onItemRangeRemoved(int positionStart, int itemCount) {
                 super.onItemRangeRemoved(positionStart, itemCount);
-//                Log.d(LOG_TAG, "onItemRangeRemoved(" + positionStart + ", " + itemCount + ")");
-                int tileCount = mFirebaseAdapter.getItemCount();
-                if (tvEmptyRvList != null) {
-                    tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
-                }
+                emptyMessage(mFirebaseAdapter.getItemCount());
             }
         });
 
@@ -108,6 +114,16 @@ public abstract class TileListFragment extends Fragment
         mRvTileList.setLayoutManager(mLayoutManager);
         mRvTileList.setAdapter(mFirebaseAdapter);
         return view;
+    }
+
+    private void emptyMessage(int tileCount) {
+        if (tvEmptyRvList != null) {
+            if (tileCount == 0 && mNoTilesMsgs != null) {
+                Random r = new Random();
+                tvEmptyRvList.setText(mNoTilesMsgs[r.nextInt(mNoTilesMsgs.length)]);
+            }
+            tvEmptyRvList.setVisibility(tileCount == 0? View.VISIBLE : View.INVISIBLE);
+        }
     }
 
     abstract TileListRecyclerViewAdapter getAdapter(DatabaseReference dbRef);

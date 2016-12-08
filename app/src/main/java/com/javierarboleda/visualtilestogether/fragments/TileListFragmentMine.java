@@ -21,6 +21,7 @@ public class TileListFragmentMine extends TileListFragment {
         return new TileListRecyclerViewAdapter(getContext(),
                 R.layout.tile_list_item,
                 getDbQuery(dbRef.child(User.TABLE_NAME)),
+                R.array.empty_tile_list_mine,
                 visualTilesTogetherApp);
     }
 }

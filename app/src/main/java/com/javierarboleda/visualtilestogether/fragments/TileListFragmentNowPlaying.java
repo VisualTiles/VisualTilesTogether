@@ -11,7 +11,7 @@ public class TileListFragmentNowPlaying extends TileListFragment {
 
     Query getDbQuery(DatabaseReference dbRef) {
         return dbRef
-                .child(visualTilesTogetherApp.getChannelId())
+                .child(visualTilesTogetherApp.getUser().getChannelId())
                 .child(Channel.POS_TO_TILE_IDS)
                 .orderByKey();
     }
@@ -21,6 +21,7 @@ public class TileListFragmentNowPlaying extends TileListFragment {
         return new TileListRecyclerViewAdapter(getContext(),
                 R.layout.tile_list_item,
                 getDbQuery(dbRef.child(Channel.TABLE_NAME)),
+                R.array.empty_tile_list_now_playing,
                 visualTilesTogetherApp);
     }
 }
