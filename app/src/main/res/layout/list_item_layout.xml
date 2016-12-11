@@ -6,7 +6,8 @@
     android:layout_margin="8dp"
     android:layout_height="match_parent"
     android:focusable="false"
-    android:clickable="true">
+    android:clickable="true"
+    android:descendantFocusability="blocksDescendants">
     <android.support.v7.widget.CardView
         android:layout_width="300dp"
         android:layout_height="220dp"
