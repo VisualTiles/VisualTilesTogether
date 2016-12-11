@@ -1,3 +1,7 @@
+# Release keystore
+*.keystore
+*.keystore.jks
+
 # built application files
 *.apk
 *.ap_
