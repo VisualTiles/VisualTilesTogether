@@ -4,8 +4,8 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import com.javierarboleda.visualtilestogether.R;
@@ -16,7 +16,7 @@ import com.javierarboleda.visualtilestogether.models.Tile;
  * Created by chris on 11/10/16.
  */
 
-public class PresentationActivity extends AppCompatActivity
+public class PresentationActivity extends BaseVisualTilesActivity
         implements PresentationFragment.PresentationFragmentListener {
     private static final String TAG = PresentationActivity.class.getSimpleName();
 
@@ -24,6 +24,8 @@ public class PresentationActivity extends AppCompatActivity
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_presentation);
+        super.setTopViewGroup((ViewGroup) findViewById(R.id.fragmentHolder));
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         PresentationFragment fragment = PresentationFragment.newInstance(false);
@@ -100,11 +102,10 @@ public class PresentationActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        // beginFunAnimation();
     }
 
     @Override
     public void onTileTapped(int position, Tile tile) {
-        // Do nothing.
+        // Does nothing in present mode.
     }
 }

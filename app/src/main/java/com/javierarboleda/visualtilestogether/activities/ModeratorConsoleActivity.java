@@ -12,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,14 +19,12 @@ import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.LinearLayout;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityModeratorConsoleBinding;
 import com.javierarboleda.visualtilestogether.fragments.ColorSelectFragment;
 import com.javierarboleda.visualtilestogether.fragments.EffectSelectFragment;
@@ -54,7 +51,7 @@ import io.codetail.animation.ViewAnimationUtils;
  * Created on 11/15/16.
  */
 
-public class ModeratorConsoleActivity extends AppCompatActivity
+public class ModeratorConsoleActivity extends BaseVisualTilesActivity
                 implements PresentationFragment.PresentationFragmentListener,
                     TileListFragment.TileListFragmentListener,
                     EffectSelectFragment.EffectSelectFragmentListener,
@@ -64,7 +61,6 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                     ViewAnimator.ViewAnimatorListener {
     private static final String TAG = ModeratorConsoleActivity.class.getSimpleName();
     private ActivityModeratorConsoleBinding binding;
-    private VisualTilesTogetherApp app;
 
     private int mPagePosition = 0;
     private Tile mSelectedTile;
@@ -82,32 +78,27 @@ public class ModeratorConsoleActivity extends AppCompatActivity
     private ScreenShotable contentFragment;
 
     /* Experiment slide menu drawer layout UI Elements */
-    private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private List<SlideMenuItem> list = new ArrayList<>();
     private ViewAnimator viewAnimator;
     private int res = R.drawable.ic_box_24dp;
-    private LinearLayout leftDrawerLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Check user is moderator.
-        app = (VisualTilesTogetherApp) getApplication();
         if (!app.isChannelModerator()) finish();
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_moderator_console);
+        super.setTopViewGroup(binding.drawerLayout);
 
         PresentationFragment mPresentationFragment = PresentationFragment.newInstance(true);
         getSupportFragmentManager().beginTransaction().replace(
                 R.id.fragmentHolderMc, mPresentationFragment)
                 .commit();
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerLayout.setScrimColor(Color.TRANSPARENT);
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-        leftDrawerLayout = (LinearLayout) findViewById(R.id.left_drawer);
+        binding.drawerLayout.setScrimColor(Color.TRANSPARENT);
+        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
 
         setActionBar();
 
@@ -119,7 +110,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 .commit();
 
         buildSlideMenu();
-        viewAnimator = new ViewAnimator<>(this, list, contentFragment, drawerLayout, this);
+        viewAnimator = new ViewAnimator<>(this, list, contentFragment, binding.drawerLayout, this);
     }
 
     private void updateDbPositionToTileId(DatabaseReference channelRef, final Tile tile,
@@ -296,7 +287,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         drawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
-                drawerLayout,         /* DrawerLayout object */
+                binding.drawerLayout,         /* DrawerLayout object */
                 binding.toolbar,  /* nav drawer icon to replace 'Up' caret */
                 R.string.drawer_open,  /* "open drawer" description */
                 R.string.drawer_close  /* "close drawer" description */
@@ -304,14 +295,14 @@ public class ModeratorConsoleActivity extends AppCompatActivity
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                leftDrawerLayout.removeAllViews();
-                leftDrawerLayout.invalidate();
+                binding.leftDrawer.removeAllViews();
+                binding.leftDrawer.invalidate();
             }
 
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 super.onDrawerSlide(drawerView, slideOffset);
-                if (slideOffset > 0.6 && leftDrawerLayout.getChildCount() == 0)
+                if (slideOffset > 0.6 && binding.leftDrawer.getChildCount() == 0)
                     viewAnimator.showMenuContent();
             }
 
@@ -320,14 +311,14 @@ public class ModeratorConsoleActivity extends AppCompatActivity
                 super.onDrawerOpened(drawerView);
             }
         };
-        drawerLayout.addDrawerListener(drawerToggle);
+        binding.drawerLayout.addDrawerListener(drawerToggle);
         binding.toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    drawerLayout.closeDrawers();
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawers();
                 } else {
-                    drawerLayout.openDrawer(GravityCompat.START);
+                    binding.drawerLayout.openDrawer(GravityCompat.START);
                 }
             }
         });
@@ -347,7 +338,7 @@ public class ModeratorConsoleActivity extends AppCompatActivity
 
     @Override
     public void addViewToContainer(View view) {
-        leftDrawerLayout.addView(view);
+        binding.leftDrawer.addView(view);
     }
 
     @Override
@@ -393,8 +384,8 @@ public class ModeratorConsoleActivity extends AppCompatActivity
         animator.setInterpolator(new AccelerateInterpolator());
         animator.setDuration(ViewAnimator.CIRCULAR_REVEAL_ANIMATION_DURATION);
 
-        binding.contentOverlay.setBackgroundDrawable(
-                new BitmapDrawable(getResources(), oldFragment.getBitmap()));
+        binding.contentOverlay.setBackground(new BitmapDrawable(
+                getResources(), oldFragment.getBitmap()));
         animator.start();
         contentFragment = newFragment;
         getSupportFragmentManager().beginTransaction()

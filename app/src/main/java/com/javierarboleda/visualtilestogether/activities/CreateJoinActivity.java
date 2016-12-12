@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -41,7 +40,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityCreateJoinBinding;
 import com.javierarboleda.visualtilestogether.models.Channel;
 
@@ -55,9 +53,8 @@ import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChanne
  * Created on 11/13/16.
  */
 
-public class CreateJoinActivity extends AppCompatActivity implements
-        VisualTilesTogetherApp.VisualTilesListenerInterface,
-        GoogleApiClient.OnConnectionFailedListener{
+public class CreateJoinActivity extends BaseVisualTilesActivity implements
+        GoogleApiClient.OnConnectionFailedListener {
 
     private static final String LOG_TAG = CreateJoinActivity.class.getSimpleName();
     private static final int RC_BARCODE_CAPTURE = 9001;
@@ -65,7 +62,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
     public static String CY_KEY = "cY_key";
 
     private ActivityCreateJoinBinding binding;
-    private VisualTilesTogetherApp visualTilesTogetherApp;
     private RelativeLayout rootLayout;
     private TextInputLayout mJoinTiLayout;
     private TextInputEditText mJoinTiEditText;
@@ -74,26 +70,12 @@ public class CreateJoinActivity extends AppCompatActivity implements
     private TextInputLayout mJCreateCodeTiLayout;
     private TextInputEditText mCreateCodeTiEditText;
 
-    private VisualTilesTogetherApp app;
-    private GoogleApiClient mGoogleApiClient;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        app = (VisualTilesTogetherApp) getApplication();
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
-        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
-        if (visualTilesTogetherApp.getUser() == null) {
-            startActivity(new Intent(this, SignInActivity.class));
-            finish();
-        }
-        visualTilesTogetherApp.addListener(this);
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API)
-                .build();
-
+        super.setTopViewGroup(binding.rvRootLayout);
         setUpLayout();
 
         setupCircularTransition(savedInstanceState);
@@ -150,6 +132,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
                     public void onGlobalLayout() {
                         circularRevealActivity(cx, cy);
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                            //noinspection deprecation
                             rootLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                         } else {
                             rootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
@@ -158,12 +141,6 @@ public class CreateJoinActivity extends AppCompatActivity implements
                 });
             }
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        visualTilesTogetherApp.removeListener(this);
-        super.onDestroy();
     }
 
     public void joinEventOnQrCode(View view) {
@@ -192,7 +169,7 @@ public class CreateJoinActivity extends AppCompatActivity implements
                     Log.d(LOG_TAG, "QR read: " + barcode.displayValue);
                     String channelId = barcode.displayValue;
                     if (validChannelId(channelId)) {
-                        visualTilesTogetherApp.initChannel(channelId);
+                        app.initChannel(channelId);
                     } else {
                         Log.d(LOG_TAG, "should be showing a snackbar here");
                         Snackbar snackbar = Snackbar
@@ -240,11 +217,11 @@ public class CreateJoinActivity extends AppCompatActivity implements
         final String channel = binding.tieJoin.getText().toString();
 
         if (channel == null || channel.isEmpty()) {
-            visualTilesTogetherApp.initChannel();
+            app.initChannel();
         } else {
             if (channel.length() > 8) {
                 // probably a channelId
-                visualTilesTogetherApp.initChannel(channel);
+                app.initChannel(channel);
             } else {
                 // assume an event code
                 // look up its channelId and use that
@@ -257,13 +234,14 @@ public class CreateJoinActivity extends AppCompatActivity implements
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
+                            //noinspection LoopStatementThatDoesntLoop
                             for (DataSnapshot channelSnapshot : dataSnapshot.getChildren()) {
-                                visualTilesTogetherApp.initChannel(channelSnapshot.getKey());
+                                app.initChannel(channelSnapshot.getKey());
                                 break;
                             }
                         } else {
                             // TODO: handle incorrect event code properly
-                            visualTilesTogetherApp.initChannel();
+                            app.initChannel();
                         }
                     }
 
@@ -403,42 +381,18 @@ public class CreateJoinActivity extends AppCompatActivity implements
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
         setChannelQrCode(key, channel.getUniqueName());
-        visualTilesTogetherApp.addListener(this);
-        visualTilesTogetherApp.initChannel(key);
+        app.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
-    }
-
-
-    @Override
-    public void onError(DatabaseError error) {
-        Toast.makeText(this, "Oh no! User db failed (or cancelled)!", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onUserUpdated() {
-        // User updates may naturally happen (if channel ID changes for example).
-        // Only handle log-out race conditions.
-        if (visualTilesTogetherApp.getUser() == null) {
-            startActivity(new Intent(this, SignInActivity.class));
-            finish();
-        }
     }
 
     @Override
     public void onChannelUpdated() {
-        if (visualTilesTogetherApp.getChannelId() != null &&
-            visualTilesTogetherApp.getChannel() == null) {
-            Toast.makeText(this, "Joining channel failed.", Toast.LENGTH_LONG).show();
-            return;
+        super.onChannelUpdated();
+        if (app.getChannel() != null) {
+            // Channel is ready.
+            startActivity(new Intent(this, TileListActivity.class));
+            finish();
         }
-        // Channel is ready.
-        startActivity(new Intent(this, TileListActivity.class));
-        finish();
-    }
-
-    @Override
-    public void onTilesUpdated() {
-        // Not interested at this point. Do nothing.
     }
 
     private void circularRevealActivity(int cx, int cy) {

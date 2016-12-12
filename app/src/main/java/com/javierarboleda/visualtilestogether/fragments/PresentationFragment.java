@@ -3,6 +3,7 @@ package com.javierarboleda.visualtilestogether.fragments;
 import android.animation.AnimatorSet;
 import android.content.Context;
 import android.databinding.ObservableMap;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.support.percent.PercentFrameLayout;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,9 +38,7 @@ import com.javierarboleda.visualtilestogether.util.PresentationUtil;
 import com.javierarboleda.visualtilestogether.util.TileEffectTransformer2;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -57,10 +57,10 @@ public class PresentationFragment extends Fragment
     private boolean isEditorMode;
     private PercentFrameLayout mainLayout;
     private PercentFrameLayout viewContainer;
-    private HashMap<Integer, ImageView> imageResourceImageViews;
-    private HashMap<Integer, ImageView> tileFrontImageViews;
-    private HashMap<Integer, AnimatorSet> tileAnimations;
-    private HashMap<Integer, Tile> tileCache;
+    private SparseArray<ImageView> imageResourceImageViews;
+    private SparseArray<ImageView> tileFrontImageViews;
+    private SparseArray<AnimatorSet> tileAnimations;
+    private SparseArray<Tile> tileCache;
     private Handler animationHandler = new Handler();
     private int masterEffectDuration = 5000;
     private TileEffect defaultEffect;
@@ -106,10 +106,10 @@ public class PresentationFragment extends Fragment
             return view;
         }
 
-        imageResourceImageViews = new HashMap<>();
-        tileFrontImageViews = new HashMap<>();
-        tileAnimations = new HashMap<>();
-        tileCache = new HashMap<>();
+        imageResourceImageViews = new SparseArray<>();
+        tileFrontImageViews = new SparseArray<>();
+        tileAnimations = new SparseArray<>();
+        tileCache = new SparseArray<>();
 
         viewContainer = (PercentFrameLayout) view.findViewById(R.id.viewContainer);
         mainLayout = (PercentFrameLayout) view.findViewById(R.id.mainLayout);
@@ -168,7 +168,7 @@ public class PresentationFragment extends Fragment
             mListener = (PresentationFragmentListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement PresentationFragmentListener");
         }
         app = (VisualTilesTogetherApp) getActivity().getApplication();
         app.addListener(this);
@@ -210,7 +210,7 @@ public class PresentationFragment extends Fragment
             Log.i(TAG, "Null tile reference in loadTileImage for position " + position);
             // TODO: Maybe expect this null to unload a tile.
             view.setTag(null);
-            view.setImageResource(android.R.color.black);
+            view.setImageDrawable(new ColorDrawable(fallbackImageColor()));
             return;
         }
         if (tile.getShapeUrl() == null) {
@@ -226,6 +226,10 @@ public class PresentationFragment extends Fragment
                 .into(view);
         view.setColorFilter(new PorterDuffColorFilter(resolveTileColor(tile) | 0xFF000000,
                 PorterDuff.Mode.MULTIPLY));
+    }
+
+    private int fallbackImageColor() {
+        return isEditorMode ? Color.parseColor("#AA660000") : Color.TRANSPARENT;
     }
 
     private int resolveTileColor(Tile tile) {
@@ -258,7 +262,7 @@ public class PresentationFragment extends Fragment
         for (int i = 0; i < layout.getTileCount(); i++) {
             ImageView view = tileFrontImageViews.get(i);
             if (view == null) {
-                view = buildTileView(i);
+                view = buildTileView(i, viewContainer);
                 viewContainer.addView(view);
                 tileFrontImageViews.put(i, view);
             }
@@ -269,7 +273,7 @@ public class PresentationFragment extends Fragment
         for (int i = 0; i < layout.getImageCount(); i++) {
             ImageView view = imageResourceImageViews.get(i);
             if (view == null) {
-                view = buildTileView(i);
+                view = buildTileView(i, viewContainer);
                 viewContainer.addView(view);
                 imageResourceImageViews.put(i, view);
             }
@@ -282,30 +286,37 @@ public class PresentationFragment extends Fragment
                         .into(view);
             }
         }
-        Iterator<Map.Entry<Integer, ImageView>> iterator = tileFrontImageViews.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, ImageView> entry = iterator.next();
-            int key = entry.getKey();
-            if (key >= 0 && key < layout.getTileCount())
+
+        List<Integer> tileRemovals = new ArrayList<>();
+        for (int i = 0; i < tileFrontImageViews.size(); i++) {
+            Integer key = tileFrontImageViews.keyAt(i);
+            ImageView view = tileFrontImageViews.get(key);
+            if (key >= 0 && key < layout.getTileCount()) {
                 break;
-            if (tileAnimations.containsKey(key)) {
+            }
+            if (tileAnimations.get(key) != null) {
                 tileAnimations.get(key).removeAllListeners();
                 tileAnimations.get(key).end();
                 tileAnimations.get(key).cancel();
                 tileAnimations.remove(key);
             }
-            final View discardedView = entry.getValue();
-            viewContainer.removeView(discardedView);
-            iterator.remove();
+            viewContainer.removeView(view);
+            tileRemovals.add(key);
         }
-        iterator = imageResourceImageViews.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, ImageView> entry = iterator.next();
-            if (entry.getKey() >= 0 && entry.getKey() < layout.getImageCount())
+        for (Integer i : tileRemovals) {
+            tileFrontImageViews.remove(i);
+        }
+        List<Integer> imageRemovals = new ArrayList<>();
+        for (int i = 0; i < imageResourceImageViews.size(); i++) {
+            Integer key = imageResourceImageViews.keyAt(i);
+            ImageView view = imageResourceImageViews.get(key);
+            if (key >= 0 && key < layout.getImageCount())
                 break;
-            final View discardedView = entry.getValue();
-            viewContainer.removeView(discardedView);
-            iterator.remove();
+            viewContainer.removeView(view);
+            imageRemovals.add(key);
+        }
+        for (Integer i : imageRemovals) {
+            imageResourceImageViews.remove(i);
         }
         if (backgroundColor == null) {
             String backgroundUrl = layout.getBackgroundUrl();
@@ -331,7 +342,7 @@ public class PresentationFragment extends Fragment
         masterEffectDuration = (int) channel.getMasterEffectDuration();
         tileEffectTransformer = new TileEffectTransformer2(getContext(), masterEffectDuration);
         boolean needsDraw = false;
-        if (channel.getChannelBackgroundColor() != backgroundColor)
+        if (!channel.getChannelBackgroundColor().equals(backgroundColor))
             needsDraw = true;
         backgroundColor = channel.getChannelBackgroundColor();
 
@@ -375,7 +386,8 @@ public class PresentationFragment extends Fragment
         resyncAndStartAnimation();
     }
 
-    private ImageView buildTileView(final int position) {
+    private ImageView buildTileView(final int position, ViewGroup root) {
+        // Don't pass 'root' or else 'root' will be returned from .inflate. (Dumb.).
         ImageView iv = (ImageView) inflater.inflate(R.layout.iv_tile, null);
         iv.setOnClickListener(new View.OnClickListener() {
             @Override

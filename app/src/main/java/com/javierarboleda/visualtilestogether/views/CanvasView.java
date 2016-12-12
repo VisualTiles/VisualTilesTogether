@@ -38,7 +38,7 @@ public class CanvasView extends View {
     public enum Mode {
         DRAW,
         TEXT,
-        ERASER;
+        ERASER
     }
 
     // Enumeration for Drawer
@@ -49,12 +49,14 @@ public class CanvasView extends View {
         CIRCLE,
         ELLIPSE,
         QUADRATIC_BEZIER,
-        QUBIC_BEZIER;
+        QUBIC_BEZIER
     }
 
     private Context context = null;
     private Canvas canvas   = null;
     private Bitmap bitmap   = null;
+
+    private final Paint defaultPaint = new Paint();
 
     private List<Path>  pathLists  = new ArrayList<Path>();
     private List<Paint> paintLists = new ArrayList<Paint>();
@@ -417,7 +419,7 @@ public class CanvasView extends View {
         canvas.drawColor(this.baseColor);
 
         if (this.bitmap != null) {
-            canvas.drawBitmap(this.bitmap, 0F, 0F, new Paint());
+            canvas.drawBitmap(this.bitmap, 0F, 0F, defaultPaint);
         }
 
         for (int i = 0; i < this.historyPointer; i++) {
@@ -645,7 +647,7 @@ public class CanvasView extends View {
      */
     public int getPaintFillColor() {
         return this.paintFillColor;
-    };
+    }
 
     /**
      * This method is setter for fill color.

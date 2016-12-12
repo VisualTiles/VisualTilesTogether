@@ -47,7 +47,8 @@ public class ViewAnimator<T extends Resourceble> {
         viewList.clear();
         double size = list.size();
         for (int i = 0; i < size; i++) {
-            final View viewMenu = activity.getLayoutInflater().inflate(R.layout.sidemenu_list_item, null);
+            final View viewMenu = activity.getLayoutInflater().inflate(
+                    R.layout.sidemenu_list_item, null);
             final int finalI = i;
             viewMenu.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -180,9 +181,9 @@ public class ViewAnimator<T extends Resourceble> {
 
     public interface ViewAnimatorListener {
 
-        public ScreenShotable onSwitch(Resourceble slideMenuItem, ScreenShotable screenShotable, int position);
+        ScreenShotable onSwitch(Resourceble slideMenuItem, ScreenShotable screenShotable, int position);
 
-        public void addViewToContainer(View view);
+        void addViewToContainer(View view);
 
     }
 }

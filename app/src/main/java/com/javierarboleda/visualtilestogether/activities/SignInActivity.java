@@ -23,9 +23,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Toast;
@@ -34,10 +34,7 @@ import android.widget.VideoView;
 import com.dd.CircularProgressButton;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -47,7 +44,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseError;
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.adapters.TutorialImageAdapter;
 
 import java.util.Timer;
@@ -55,9 +51,8 @@ import java.util.TimerTask;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class SignInActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener,
-        VisualTilesTogetherApp.VisualTilesListenerInterface {
+public class SignInActivity extends BaseVisualTilesActivity implements
+        View.OnClickListener {
     private static final String LOG_TAG = SignInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
 
@@ -65,8 +60,6 @@ public class SignInActivity extends AppCompatActivity implements
 
     private View preSignInButtons;
 
-    private GoogleApiClient mGoogleApiClient;
-    private VisualTilesTogetherApp visualTilesTogetherApp;
     private ViewPager mPager;
 
     Timer mTimer;
@@ -79,10 +72,9 @@ public class SignInActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+        super.setTopViewGroup((ViewGroup) findViewById(R.id.activity_entrance));
 
-        // Listen for user and channel callbacks.
-        visualTilesTogetherApp = (VisualTilesTogetherApp) getApplication();
-        visualTilesTogetherApp.addListener(this);
+        bypassIfSignedIn();
 
         // Assign fields
         mSignInButton = (CircularProgressButton) findViewById(R.id.sign_in_button);
@@ -91,34 +83,16 @@ public class SignInActivity extends AppCompatActivity implements
         // Set click listeners
         mSignInButton.setOnClickListener(this);
 
-        checkIfSignedIn();
-
-        // Configure Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
         // Initialize FirebaseAuth.
         mFirebaseAuth = FirebaseAuth.getInstance();
 
         initTutorialView();
 
-        showPreSignInButtons();
+        resetPreSignInState();
 
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        visualTilesTogetherApp.removeListener(this);
     }
 
     private void initTutorialView() {
@@ -245,14 +219,6 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-        // be available.
-        Log.d(LOG_TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -296,7 +262,7 @@ public class SignInActivity extends AppCompatActivity implements
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            visualTilesTogetherApp.initUser(task.getResult().getUser());
+                            app.initUser(task.getResult().getUser());
                         }
                     }
                 });
@@ -304,64 +270,41 @@ public class SignInActivity extends AppCompatActivity implements
 
     @Override
     public void onChannelUpdated() {
-        if (visualTilesTogetherApp.getChannel() == null) {
+        super.onChannelUpdated();
+        if (app.getChannel() == null) {
             Toast.makeText(this, "Channel didn't load correctly.", Toast.LENGTH_LONG).show();
+            resetPreSignInState();
             return;
         }
-        launchChannelActivity();
+        launchMainActivity();
     }
 
     @Override
     public void onError(DatabaseError error) {
-        showPreSignInButtons();
+        super.onError(error);
+        resetPreSignInState();
     }
 
-    private void showPreSignInButtons() {
+    private void resetPreSignInState() {
         preSignInButtons.setVisibility(View.VISIBLE);
     }
 
-    private void checkIfSignedIn() {
-        if (visualTilesTogetherApp.getUser() != null) {
-            if (visualTilesTogetherApp.getChannel() != null) {
-                launchChannelActivity();
+    protected void bypassIfSignedIn() {
+        if (app.getUser() != null) {
+            if (app.getChannel() != null) {
+                launchMainActivity();
             } else {
-                launchGroupCreationActivity();
+                launchChannelCreateActivity();
             }
         }
     }
 
-    private void launchGroupCreationActivity() {
-        Intent intent = new Intent(this, CreateJoinActivity.class);
-
-        // pass center coordinates of sign in button for circular transition start point
-        View signInView = findViewById(R.id.rlSignIn);
-
-        int[] xy = new int[2];
-        signInView.getLocationOnScreen(xy);
-
-        int cx = xy[0] + (signInView.getWidth() / 2);
-        int cy = xy[1] + (signInView.getHeight() / 2);
-
-        intent.putExtra(CreateJoinActivity.CX_KEY, cx);
-        intent.putExtra(CreateJoinActivity.CY_KEY, cy);
-
-        startActivity(intent);
-        finish();
-    }
-    private void launchChannelActivity() {
-        startActivity(new Intent(this, TileListActivity.class));
-        finish();
-    }
-
     @Override
     public void onUserUpdated() {
-        // Show channel creation or join buttons.
-        launchGroupCreationActivity();
-    }
-
-    @Override
-    public void onTilesUpdated() {
-        // Do nothing with tiles.
+        if (app.getUser() != null) {
+            // Show channel creation or join buttons.
+            launchChannelCreateActivity();
+        }
     }
 
     @Override
