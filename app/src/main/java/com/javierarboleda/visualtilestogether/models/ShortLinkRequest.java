@@ -11,4 +11,23 @@ import com.google.gson.annotations.SerializedName;
 public class ShortLinkRequest {
     @SerializedName("longDynamicLink")
     public String longDynamicLink;
+
+    public class SuffixType {
+        public String option;
+        public SuffixType() {}
+        public SuffixType(String option) {
+            this.option = option;
+        }
+    }
+
+    @SerializedName("suffix")
+    public SuffixType suffix;
+
+    public ShortLinkRequest() {
+    }
+
+    public ShortLinkRequest(String dynamicLink) {
+        longDynamicLink = dynamicLink;
+        suffix = new SuffixType("short");
+    }
 }

@@ -386,11 +386,13 @@ public class FirebaseUtil {
             final String deepLinkUrl = buildChannelDeepLink(mContext, uniqueName);
 
             Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("https://firebasedynamiclinks.googleapis.com")
                     .addConverterFactory(GsonConverterFactory.create()).build();
             FirebaseShortLinkInterface shortLinkInterface =
                     retrofit.create(FirebaseShortLinkInterface.class);
             Call<ShortLinkResponse> responseCall = shortLinkInterface.buildShortLink(
-                    new ShortLinkRequest(), mContext.getString(R.string.firebase_web_api_key));
+                    new ShortLinkRequest(deepLinkUrl),
+                    mContext.getString(R.string.firebase_web_api_key));
             String finalDeepLink = deepLinkUrl;
             try {
                 Response<ShortLinkResponse> response = responseCall.execute();

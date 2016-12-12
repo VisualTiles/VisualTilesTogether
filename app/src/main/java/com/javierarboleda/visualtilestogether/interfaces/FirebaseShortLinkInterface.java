@@ -13,7 +13,7 @@ import retrofit2.http.Query;
  * Created by chris on 12/11/16.
  */
 public interface FirebaseShortLinkInterface {
-    @POST("https://firebasedynamiclinks.googleapis.com/v1/shortLinks")
+    @POST("v1/shortLinks")
     Call<ShortLinkResponse> buildShortLink(@Body ShortLinkRequest request,
                                            @Query("key") String api_key);
 }
