@@ -7,14 +7,12 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.javierarboleda.visualtilestogether.R;
-import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.databinding.ActivityTileCreationBinding;
 import com.javierarboleda.visualtilestogether.fragments.ShapeAddDialog;
 import com.javierarboleda.visualtilestogether.views.CanvasView;
@@ -23,7 +21,7 @@ import java.util.Random;
 
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.createTile;
 
-public class TileCreationActivity extends AppCompatActivity
+public class TileCreationActivity extends BaseVisualTilesActivity
         implements ShapeAddDialog.OnFragmentInteractionListener {
 
     ActivityTileCreationBinding binding;
@@ -34,6 +32,7 @@ public class TileCreationActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_tile_creation);
+        super.setTopViewGroup(binding.activityTileCreation);
 
         setUpToolbar();
 
@@ -191,7 +190,6 @@ public class TileCreationActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(Bitmap bitmap) {
-        createTile(bitmap, ((VisualTilesTogetherApp) getApplication()).getChannelId(),
-                ((VisualTilesTogetherApp) getApplication()).getUid());
+        createTile(bitmap, app.getChannelId(), app.getUid());
     }
 }

@@ -6,7 +6,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorEditorBackground"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:baselineAligned="false">
         <LinearLayout
             android:layout_width="100dp"
             android:layout_height="match_parent"
@@ -179,7 +180,6 @@
                     android:layout_height="@dimen/color_button_dimen"
                     android:padding="@dimen/color_button_padding"
                     android:background="@drawable/state_list_moderator_selector_button"
-                    android:onClick="handleButton"
                     android:src="#8BC34A"
                     android:tag="#8BC34A"
                     android:text="Light Green 500"

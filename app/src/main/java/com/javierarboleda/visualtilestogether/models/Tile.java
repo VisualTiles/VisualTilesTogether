@@ -32,7 +32,7 @@ public class Tile {
 
     public Tile() {}
 
-    public static boolean almostEqual(double a, double b) {
+    private static boolean almostEqual(double a, double b) {
         return Math.abs(a-b)<1E-7;
     }
 
@@ -52,16 +52,15 @@ public class Tile {
                 isEqual = false;
         }
         return (isEqual &&
-                (shapeUrl == null || (shapeUrl != null && shapeUrl.equals(t.getShapeUrl()))) &&
-                (shapeFbStorage == null || (shapeFbStorage != null && shapeFbStorage.equals(t
-                .getShapeFbStorage()))) &&
-                (creatorId == null || (creatorId != null && creatorId.equals(t.getCreatorId()))) &&
-                (channelId == null || (channelId != null && channelId.equals(t.getChannelId()))) &&
+                (shapeUrl == null || shapeUrl.equals(t.getShapeUrl())) &&
+                (shapeFbStorage == null || shapeFbStorage.equals(t.getShapeFbStorage())) &&
+                (creatorId == null || creatorId.equals(t.getCreatorId())) &&
+                (channelId == null || channelId.equals(t.getChannelId())) &&
                 posVotes == t.getPosVotes() &&
                 negVotes == t.getNegVotes() &&
                 approved == t.approved &&
                 submitTimeMs == t.getSubmitTimeMs() &&
-                tileColor == t.getTileColor());
+                (tileColor == null || tileColor.equals(t.getTileColor())));
     }
 
     public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage,

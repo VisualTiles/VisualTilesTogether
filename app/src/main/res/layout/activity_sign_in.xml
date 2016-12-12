@@ -36,7 +36,7 @@
             android:orientation="vertical"
             android:paddingTop="20dp"
             android:layout_marginBottom="40dp"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true">
             <LinearLayout
                 android:id="@+id/pre_sign_in_buttons"
@@ -71,7 +71,6 @@
                         android:layout_height="30dp"
                         android:layout_marginTop="4dp"
                         android:layout_marginBottom="4dp"
-                        android:layout_marginLeft="20dp"
                         android:layout_marginStart="20dp"
                         app:srcCompat="@drawable/ic_google_white"
                         android:layout_centerVertical="true"/>
@@ -104,7 +103,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_above="@id/view_footer"
             />
 
@@ -113,8 +112,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/sign_in_tab_layout_height"
             app:tabBackground="@drawable/intro_tab_selector"
-            android:layout_alignLeft="@id/tutorial_view_pager"
-            android:layout_alignRight="@id/tutorial_view_pager"
+            android:layout_alignStart="@id/tutorial_view_pager"
+            android:layout_alignEnd="@id/tutorial_view_pager"
             android:layout_alignBottom="@id/tutorial_view_pager"
             app:tabGravity="center"
             app:tabIndicatorHeight="0dp"

@@ -4,11 +4,11 @@ package com.javierarboleda.visualtilestogether.util.sidemenu.interfaces;
  * Created by Konstantin on 12.01.2015.
  */
 public interface Resourceble {
-    public int getImageRes();
+    int getImageRes();
 
-    public String getName();
+    String getName();
 
-    public boolean isSelected();
+    boolean isSelected();
 
-    public void setSelected(boolean selected);
+    void setSelected(boolean selected);
 }

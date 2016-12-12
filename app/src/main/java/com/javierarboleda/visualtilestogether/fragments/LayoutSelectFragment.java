@@ -149,7 +149,7 @@ public class LayoutSelectFragment extends Fragment
             background = (ImageView)itemView.findViewById(R.id.imgBackground);
             viewContainer = (PercentFrameLayout) itemView.findViewById(R.id.viewContainer);
         }
-    };
+    }
 
     public interface LayoutSelectFragmentListener {
         void updateChannelLayout(String layoutName);
