@@ -117,7 +117,10 @@ public class TileListActivity extends BaseVisualTilesActivity
                 startActivity(new Intent(this, ModeratorConsoleActivity.class));
                 break;
             case R.id.nav_normalize_db:
-                normalizeDb();
+                normalizeDb(getApplicationContext());
+                break;
+            case R.id.nav_user_invite:
+                sendAppInvite();
                 break;
             case R.id.nav_show_code:
                 startActivity(new Intent(this, ShowQrCodeActivity.class));

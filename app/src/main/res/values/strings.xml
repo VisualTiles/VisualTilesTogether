@@ -84,5 +84,7 @@
     <string name="create_event">Create event</string>
     <string name="select_speed">Drag to select speed.</string>
     <string name="scan_to_join">Scan QR to join</string>
+    <string name="join_channel_message">Would you like to join the channel code \'%s\'?</string>
+    <string name="try_visual_tiles">Join my Visual Tiles event, "%s"!</string>
 
 </resources>

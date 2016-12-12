@@ -1,5 +1,6 @@
 package com.javierarboleda.visualtilestogether.util;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -50,8 +51,10 @@ public class FirebaseUtil {
      * and setting up the tileIds entry in the creator's User table entry.
      *
      * Shouldn't really ever need to use this
+     *
+     * @param context The Application context.
      */
-    public static void normalizeDb() {
+    public static void normalizeDb(final Context context) {
         final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference();
 
         // get the list of userIds and then proceed
@@ -101,7 +104,7 @@ public class FirebaseUtil {
                                             .child(Channel.CHANNEL_UNIQUE_NAME)
                                             .setValue(uniqueName);
                                 }
-                                setChannelQrCode(channelId, uniqueName);
+                                setChannelQrCode(context, channelId, uniqueName);
                             }
                         }
                     }
@@ -337,22 +340,44 @@ public class FirebaseUtil {
     }
 
     /**
+     * Generates a deep link URL for this app.
+     * @param context The application context.
+     * @param channelShortName The short unique name for the channel.
+     * @return The QR code URL.
+     */
+    public static String buildChannelDeepLink(Context context, String channelShortName) {
+        final String deepLinkUrl = "http://www.visualtilestogether.com/channel/" + channelShortName;
+        Uri.Builder qrCodeUrl = Uri.parse("https://zas63.app.goo.gl/").buildUpon();
+        qrCodeUrl.appendQueryParameter("link", deepLinkUrl);
+        qrCodeUrl.appendQueryParameter("apn",
+                context.getApplicationContext().getPackageName());
+        return qrCodeUrl.build().toString();
+    }
+
+    /**
      * Generate a QR code for the channel,
      * for now just use the key as the encoded string
-     */
-    public static void setChannelQrCode(String channelId, String uniqueName) {
-        new QrTask().execute(channelId, uniqueName);
+     * @param context The Application context.
+     * */
+    public static void setChannelQrCode(Context context, String channelId, String uniqueName) {
+        new QrTask(context).execute(channelId, uniqueName);
     }
 
     private static class QrTask extends AsyncTask<String, Integer, Boolean> {
+        private Context mContext;
+        public QrTask(Context context) {
+            mContext = context;
+        }
         @Override
         protected Boolean doInBackground(String... strings) {
             final String key = strings[0];
             final String uniqueName = strings[1];
+            // The URL encoded in the QR code.
+            final String deepLinkUrl = buildChannelDeepLink(mContext, uniqueName);
             try {
                 // generate the QR code
                 BitMatrix bitMatrix = new MultiFormatWriter()
-                        .encode(key, BarcodeFormat.QR_CODE, 400, 400);
+                        .encode(deepLinkUrl, BarcodeFormat.QR_CODE, 400, 400);
                 Bitmap bitmap = textOnBitmap(createBitmap(bitMatrix), uniqueName);
 
                 // convert it to an input stream so it can be uploaded

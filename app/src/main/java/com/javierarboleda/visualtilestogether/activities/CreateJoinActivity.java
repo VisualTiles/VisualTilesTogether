@@ -1,6 +1,8 @@
 package com.javierarboleda.visualtilestogether.activities;
 
 import android.animation.Animator;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
@@ -47,6 +49,7 @@ import java.lang.ref.WeakReference;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
+import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.PREF_REQUESTED_CHANNEL;
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChannelQrCode;
 
 /**
@@ -77,10 +80,38 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
         super.setTopViewGroup(binding.rvRootLayout);
         setUpLayout();
-
         setupCircularTransition(savedInstanceState);
-        
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        final String pendingChannel = sharedPreferences.getString(PREF_REQUESTED_CHANNEL, "");
+        if (!pendingChannel.isEmpty()) {
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setMessage(
+                    String.format(getString(R.string.join_channel_message), pendingChannel))
+                    .setTitle(R.string.app_name)
+                    .setPositiveButton(R.string.join_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            mJoinTiEditText.setText(pendingChannel);
+                            binding.cpbJoinButton.callOnClick();
+                            sharedPreferences.edit().remove(PREF_REQUESTED_CHANNEL).apply();
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    // Close.
+                                    sharedPreferences.edit().remove(PREF_REQUESTED_CHANNEL).apply();
+                                    dialogInterface.cancel();
+                                }
+                            });
+            dialogBuilder.create().show();
+        }
     }
 
     private void setUpLayout() {
@@ -380,7 +411,7 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        setChannelQrCode(key, channel.getUniqueName());
+        setChannelQrCode(getApplicationContext(), key, channel.getUniqueName());
         app.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }

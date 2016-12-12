@@ -31,6 +31,11 @@
                 android:title="Show code" />
 
             <item
+                android:id="@+id/nav_user_invite"
+                android:icon="@drawable/ic_invite"
+                android:title="Invite to channel" />
+
+            <item
                 android:id="@+id/nav_leave_channel"
                 android:icon="@drawable/ic_leave_channel"
                 android:title="Leave channel" />

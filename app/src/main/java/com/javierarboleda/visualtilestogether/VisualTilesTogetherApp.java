@@ -29,6 +29,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public class VisualTilesTogetherApp extends Application {
     private static final String LOG_TAG = VisualTilesTogetherApp.class.getSimpleName();
     private static final String ANONYMOUS = "anonymous";
+    public static final String APP_PREFS = "vt-prefs";
+    public static final String PREF_REQUESTED_CHANNEL = "REQUESTED_CHANNEL";
     private FirebaseAuth firebaseAuth;
     private String uId;
     private User user = null;

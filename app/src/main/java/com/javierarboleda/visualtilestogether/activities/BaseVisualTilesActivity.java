@@ -1,6 +1,9 @@
 package com.javierarboleda.visualtilestogether.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -11,10 +14,14 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.appinvite.AppInvite;
+import com.google.android.gms.appinvite.AppInviteInvitation;
+import com.google.android.gms.appinvite.AppInviteInvitationResult;
+import com.google.android.gms.appinvite.AppInviteReferral;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -22,8 +29,11 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
+import com.javierarboleda.visualtilestogether.util.FirebaseUtil;
 
 import java.util.HashMap;
+
+import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.PREF_REQUESTED_CHANNEL;
 
 /**
  * Created by chris on 12/11/16.
@@ -36,8 +46,10 @@ implements GoogleApiClient.OnConnectionFailedListener,
     protected GoogleApiClient mGoogleApiClient;
     protected VisualTilesTogetherApp app;
     protected FirebaseDatabase db;
+    protected SharedPreferences sharedPreferences;
     private ViewGroup topViewGroup;
     private HashMap<ValueEventListener, Query> firebaseListeners = new HashMap<>();
+    private static final int REQUEST_INVITE = 1002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +59,15 @@ implements GoogleApiClient.OnConnectionFailedListener,
         app = (VisualTilesTogetherApp) getApplication();
         app.addListener(this);
         db = FirebaseDatabase.getInstance();
+
+        sharedPreferences = getSharedPreferences(
+                VisualTilesTogetherApp.APP_PREFS,
+                Context.MODE_PRIVATE);
+
+        // Handle deep link before any actions that might cause a 'finish'.
+        // Make sure that unhandled deep link gets thrown somewhere.
+        handleDeepLinks(getIntent());
+
 
         if (!handleIfSignedOut()) {
             handleIfLeftChannel();
@@ -68,6 +89,31 @@ implements GoogleApiClient.OnConnectionFailedListener,
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .addApi(AppInvite.API)
                 .build();
+
+        // Check if this app was launched from a deep link. Setting autoLaunchDeepLink to true
+        // would automatically launch the deep link if one is found.
+        boolean autoLaunchDeepLink = false;
+        AppInvite.AppInviteApi.getInvitation(mGoogleApiClient, this, autoLaunchDeepLink)
+                .setResultCallback(
+                        new ResultCallback<AppInviteInvitationResult>() {
+                            @Override
+                            public void onResult(@NonNull AppInviteInvitationResult result) {
+                                if (result.getStatus().isSuccess()) {
+                                    // Extract deep link from Intent
+                                    Intent intent = result.getInvitationIntent();
+                                    String deepLink = AppInviteReferral.getDeepLink(intent);
+                                    handleDeepLinkUrl(deepLink);
+                                } else {
+                                    Log.d(TAG, "getInvitation: no deep link found.");
+                                }
+                            }
+                        });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleDeepLinks(intent);
     }
 
     @Override
@@ -216,6 +262,36 @@ implements GoogleApiClient.OnConnectionFailedListener,
             }
         }
         return false;
+    }
+
+    private void handleDeepLinks(Intent intent) {
+        String action = intent.getAction();
+        Uri data = intent.getData();
+        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+                handleDeepLinkUrl(data.toString());
+        }
+    }
+
+    protected void sendAppInvite() {
+        Intent intent = new AppInviteInvitation
+                .IntentBuilder("Invite to Visual Tiles app")
+                // Ensure valid length for any message used before calling otherwise this will throw
+                // an IllegalArgumentException if greater than MAX_MESSAGE_LENGTH.
+                .setMessage(String.format(getString(R.string.try_visual_tiles),
+                        app.getChannel().getName()))
+                .setDeepLink(Uri.parse(FirebaseUtil.buildChannelDeepLink(getApplicationContext(),
+                        app.getChannel().getUniqueName())))
+                .setCallToActionText("Join the party!").build();
+        startActivityForResult(intent, REQUEST_INVITE);
+    }
+
+    private void handleDeepLinkUrl(String url) {
+        Uri uri = Uri.parse(url);
+        if (uri.getPath().startsWith("/channel/")) {
+            String channelCode = uri.getLastPathSegment();
+            // Store as an option later.
+            sharedPreferences.edit().putString(PREF_REQUESTED_CHANNEL, channelCode).apply();
+        }
     }
 
     @Override
