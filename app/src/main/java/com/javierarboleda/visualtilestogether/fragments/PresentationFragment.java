@@ -342,7 +342,8 @@ public class PresentationFragment extends Fragment
         masterEffectDuration = (int) channel.getMasterEffectDuration();
         tileEffectTransformer = new TileEffectTransformer2(getContext(), masterEffectDuration);
         boolean needsDraw = false;
-        if (!channel.getChannelBackgroundColor().equals(backgroundColor))
+        if (channel.getChannelBackgroundColor() != null &&
+                !channel.getChannelBackgroundColor().equals(backgroundColor))
             needsDraw = true;
         backgroundColor = channel.getChannelBackgroundColor();
 

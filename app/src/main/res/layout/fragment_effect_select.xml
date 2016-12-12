@@ -66,7 +66,7 @@
                 <Button
                     style="@style/ModeratorEffectsButtons"
                     android:background="@drawable/state_list_moderator_selector_button"
-                    android:text="Flip L"
+                    android:text="Flip Left"
                     android:tag="FLIP_HORIZONTAL_LEFT"
                     />
 

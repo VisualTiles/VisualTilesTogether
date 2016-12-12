@@ -53,13 +53,13 @@ dependencies {
         transitive = true;
     }
     compile 'com.github.QuadFlask:colorpicker:0.0.12'
-    compile 'com.google.android.gms:play-services-appinvite:10.0.1'
     compile 'com.google.android.gms:play-services-auth:10.0.1'
     compile 'com.google.android.gms:play-services-vision:10.0.1'
     compile 'com.google.firebase:firebase-auth:10.0.1'
     compile 'com.google.firebase:firebase-core:10.0.1'
     compile 'com.google.firebase:firebase-crash:10.0.1'
     compile 'com.google.firebase:firebase-database:10.0.1'
+    compile 'com.google.firebase:firebase-invites:10.0.1'
     compile 'com.google.firebase:firebase-storage:10.0.1'
     compile 'com.google.zxing:core:3.3.0'
     compile 'com.xgc1986.android:parallaxpagertransformer:1.0.4'
