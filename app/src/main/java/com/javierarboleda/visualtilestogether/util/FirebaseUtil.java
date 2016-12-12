@@ -28,16 +28,26 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
+import com.javierarboleda.visualtilestogether.interfaces.FirebaseShortLinkInterface;
 import com.javierarboleda.visualtilestogether.models.Channel;
+import com.javierarboleda.visualtilestogether.models.ShortLinkRequest;
+import com.javierarboleda.visualtilestogether.models.ShortLinkResponse;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
+
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.graphics.Color.BLACK;
 import static android.graphics.Color.TRANSPARENT;
@@ -374,10 +384,28 @@ public class FirebaseUtil {
             final String uniqueName = strings[1];
             // The URL encoded in the QR code.
             final String deepLinkUrl = buildChannelDeepLink(mContext, uniqueName);
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .addConverterFactory(GsonConverterFactory.create()).build();
+            FirebaseShortLinkInterface shortLinkInterface =
+                    retrofit.create(FirebaseShortLinkInterface.class);
+            Call<ShortLinkResponse> responseCall = shortLinkInterface.buildShortLink(
+                    new ShortLinkRequest(), mContext.getString(R.string.firebase_web_api_key));
+            String finalDeepLink = deepLinkUrl;
+            try {
+                Response<ShortLinkResponse> response = responseCall.execute();
+                if (response.isSuccessful()) {
+                    finalDeepLink = response.body().shortLink;
+                    if (finalDeepLink == null || finalDeepLink.isEmpty())
+                        finalDeepLink = deepLinkUrl;
+                }
+            } catch(IOException exception) {
+                Log.i(LOG_TAG, "Offline, could not create short link for channel.");
+            }
             try {
                 // generate the QR code
                 BitMatrix bitMatrix = new MultiFormatWriter()
-                        .encode(deepLinkUrl, BarcodeFormat.QR_CODE, 400, 400);
+                        .encode(finalDeepLink, BarcodeFormat.QR_CODE, 400, 400);
                 Bitmap bitmap = textOnBitmap(createBitmap(bitMatrix), uniqueName);
 
                 // convert it to an input stream so it can be uploaded
