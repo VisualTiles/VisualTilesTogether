@@ -77,7 +77,7 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (shouldNotLoad()) return;
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
         super.setTopViewGroup(binding.rvRootLayout);
         setUpLayout();
@@ -246,6 +246,11 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
     }
 
     public void joinEventOnClick(View view) {
+        if (mJoinTiEditText.getText().toString().isEmpty()) {
+            showError("Event code cannot be empty.");
+            return;
+        }
+        hideError();
         animateJoinEventButton(1, 0, true);
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -446,6 +451,9 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
             // Channel is ready.
             startActivity(new Intent(this, TileListActivity.class));
             finish();
+        } else {
+            showError("Event code does not exist.");
+            animateJoinEventButton(0, 1, false);
         }
     }
 
@@ -470,12 +478,13 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
         return textLength > 0 && textLength < 10;
     }
 
-    private void showError() {
-        mJoinTiLayout.setError("Danger!");
+    private void showError(String error) {
+        mJoinTiLayout.setErrorEnabled(true);
+        mJoinTiLayout.setError(error);
     }
 
     private void hideError() {
-        mJoinTiLayout.setError("");
+        mJoinTiLayout.setErrorEnabled(false);
     }
 
     public void signOut(View view) {
@@ -510,7 +519,7 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
             CreateJoinActivity mainActivity = mainActivityWeakReference.get();
             if (mainActivity != null) {
                 if (actionId == EditorInfo.IME_ACTION_GO && mainActivity.shouldShowError()) {
-                    mainActivity.showError();
+                    mainActivity.showError("Danger!");
                 } else {
                     mainActivity.hideError();
                 }

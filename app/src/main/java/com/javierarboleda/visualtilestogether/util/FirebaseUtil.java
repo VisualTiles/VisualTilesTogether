@@ -380,66 +380,71 @@ public class FirebaseUtil {
         }
         @Override
         protected Boolean doInBackground(String... strings) {
-            final String key = strings[0];
-            final String uniqueName = strings[1];
-            // The URL encoded in the QR code.
-            final String deepLinkUrl = buildChannelDeepLink(mContext, uniqueName);
-
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("https://firebasedynamiclinks.googleapis.com")
-                    .addConverterFactory(GsonConverterFactory.create()).build();
-            FirebaseShortLinkInterface shortLinkInterface =
-                    retrofit.create(FirebaseShortLinkInterface.class);
-            Call<ShortLinkResponse> responseCall = shortLinkInterface.buildShortLink(
-                    new ShortLinkRequest(deepLinkUrl),
-                    mContext.getString(R.string.firebase_web_api_key));
-            String finalDeepLink = deepLinkUrl;
             try {
-                Response<ShortLinkResponse> response = responseCall.execute();
-                if (response.isSuccessful()) {
-                    finalDeepLink = response.body().shortLink;
-                    if (finalDeepLink == null || finalDeepLink.isEmpty())
-                        finalDeepLink = deepLinkUrl;
+                final String key = strings[0];
+                final String uniqueName = strings[1];
+                // The URL encoded in the QR code.
+                final String deepLinkUrl = buildChannelDeepLink(mContext, uniqueName);
+
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://firebasedynamiclinks.googleapis.com")
+                        .addConverterFactory(GsonConverterFactory.create()).build();
+                FirebaseShortLinkInterface shortLinkInterface =
+                        retrofit.create(FirebaseShortLinkInterface.class);
+                Call<ShortLinkResponse> responseCall = shortLinkInterface.buildShortLink(
+                        new ShortLinkRequest(deepLinkUrl),
+                        mContext.getString(R.string.firebase_web_api_key));
+                String finalDeepLink = deepLinkUrl;
+                try {
+                    Response<ShortLinkResponse> response = responseCall.execute();
+                    if (response.isSuccessful()) {
+                        finalDeepLink = response.body().shortLink;
+                        if (finalDeepLink == null || finalDeepLink.isEmpty())
+                            finalDeepLink = deepLinkUrl;
+                    }
+                } catch (IOException exception) {
+                    Log.i(LOG_TAG, "Offline, could not create short link for channel.");
                 }
-            } catch(IOException exception) {
-                Log.i(LOG_TAG, "Offline, could not create short link for channel.");
-            }
-            Bitmap bitmap = makeQrBitmap(finalDeepLink, uniqueName);
-            if (bitmap == null) {
+                Bitmap bitmap = makeQrBitmap(finalDeepLink, uniqueName);
+                if (bitmap == null) {
+                    return false;
+                }
+
+                // convert it to an input stream so it can be uploaded
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
+
+                // upload it to Firebase Storage
+                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+                StorageReference qrCodesRef = firebaseStorage
+                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
+                        .child("qrCodes");
+                UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // set the channel's QR code url to point to the QR code image
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        if (downloadUrl != null) {
+                            DatabaseReference channelRef = FirebaseDatabase
+                                    .getInstance()
+                                    .getReference()
+                                    .child(Channel.TABLE_NAME);
+                            channelRef.child(key)
+                                    .child(Channel.QRCODE_URL)
+                                    .setValue(downloadUrl.toString());
+                        }
+                    }
+                });
+            } catch(IllegalStateException ex) {
+                // This happens when channel gets deleted.
                 return false;
             }
-
-            // convert it to an input stream so it can be uploaded
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
-
-            // upload it to Firebase Storage
-            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-            StorageReference qrCodesRef = firebaseStorage
-                    .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
-                    .child("qrCodes");
-            UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    // set the channel's QR code url to point to the QR code image
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    if (downloadUrl != null) {
-                        DatabaseReference channelRef = FirebaseDatabase
-                                .getInstance()
-                                .getReference()
-                                .child(Channel.TABLE_NAME);
-                        channelRef.child(key)
-                                .child(Channel.QRCODE_URL)
-                                .setValue(downloadUrl.toString());
-                    }
-                }
-            });
             return true;
         }
 

@@ -51,6 +51,15 @@ implements GoogleApiClient.OnConnectionFailedListener,
     protected HashMap<ValueEventListener, Query> firebaseListeners = new HashMap<>();
     private static final int REQUEST_INVITE = 1002;
 
+    public boolean shouldNotLoad() {
+        if (handleIfSignedOut()) {
+            return true;
+        }
+        if (handleIfLeftChannel()) {
+            return true;
+        }
+        return false;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,9 +77,8 @@ implements GoogleApiClient.OnConnectionFailedListener,
         // Make sure that unhandled deep link gets thrown somewhere.
         handleDeepLinks(getIntent());
 
-
-        if (!handleIfSignedOut()) {
-            handleIfLeftChannel();
+        if (shouldNotLoad()) {
+            return;
         }
 
         startOfflineListener();

@@ -91,4 +91,6 @@
     <string name="qr_code_url">https://zas63.app.goo.gl/</string>
     <string name="link_param">link</string>
     <string name="apn_param">apn</string>
+    <string name="channel_qr_code">Channel QR Code:</string>
+    <string name="delete_channel">Delete Channel</string>
 </resources>

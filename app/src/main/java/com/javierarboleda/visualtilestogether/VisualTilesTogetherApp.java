@@ -182,6 +182,15 @@ public class VisualTilesTogetherApp extends Application {
             new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()) {
+                        channel = null;
+                        resetChannelConnectedNotifier();
+                        for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                            if (listener.get() != null)
+                                listener.get().onChannelUpdated();
+                        }
+                        return;
+                    }
                     channel = dataSnapshot.getValue(Channel.class);
                     boolean didSet = false;
                     if (channel.getUserList() == null) {
@@ -225,12 +234,15 @@ public class VisualTilesTogetherApp extends Application {
 
     private DatabaseReference dbChannelRef;
     public void initChannel(String newChannelId) {
-        if (newChannelId == null) {
-            // Fallback channel for when it doesn't exist.
-            // TODO(jav): Remove this once create/join login screen is working.
-            newChannelId = "-KWVuJtz9tfBvdQUn4F_";
+        if (newChannelId == null || newChannelId.isEmpty()) {
+            channel = null;
+            channelId = null;
+            for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
+                if (listener.get() != null)
+                    listener.get().onChannelUpdated();
+            }
+            return;
         }
-
         // Already loaded, notify the activity.
         boolean needsNotify = channelId != null && channelId.equals(newChannelId);
 
@@ -417,6 +429,14 @@ public class VisualTilesTogetherApp extends Application {
             if (listener.get() != null)
                 listener.get().onChannelUpdated();
         }
+    }
+
+    public void deleteChannel() {
+        // This is super dangerous.. but I think it'll work.
+        // TODO: Do any other clean up operations here (remove users from channel??)
+        dbChannelRef.removeValue();
+        dbChannelRef = null;
+        leaveChannel();
     }
 
     public DatabaseReference getDbChannelRef() {
