@@ -92,7 +92,7 @@ public class FirebaseUtil {
                         for (DataSnapshot channelSnapshot: dataSnapshot.getChildren()) {
                             String uniqueName;
                             String channelId = channelSnapshot.getKey();
-                            Channel channel = null;
+                            Channel channel;
                             try {
                                 channel = channelSnapshot.getValue(Channel.class);
                             } catch(Exception e) {
@@ -356,10 +356,10 @@ public class FirebaseUtil {
      * @return The QR code URL.
      */
     public static String buildChannelDeepLink(Context context, String channelShortName) {
-        final String deepLinkUrl = "http://www.visualtilestogether.com/channel/" + channelShortName;
-        Uri.Builder qrCodeUrl = Uri.parse("https://zas63.app.goo.gl/").buildUpon();
-        qrCodeUrl.appendQueryParameter("link", deepLinkUrl);
-        qrCodeUrl.appendQueryParameter("apn",
+        final String deepLinkUrl = context.getString(R.string.deep_link_url) + channelShortName;
+        Uri.Builder qrCodeUrl = Uri.parse(context.getString(R.string.qr_code_url)).buildUpon();
+        qrCodeUrl.appendQueryParameter(context.getString(R.string.link_param), deepLinkUrl);
+        qrCodeUrl.appendQueryParameter(context.getString(R.string.apn_param),
                 context.getApplicationContext().getPackageName());
         return qrCodeUrl.build().toString();
     }
@@ -375,7 +375,7 @@ public class FirebaseUtil {
 
     private static class QrTask extends AsyncTask<String, Integer, Boolean> {
         private Context mContext;
-        public QrTask(Context context) {
+        QrTask(Context context) {
             mContext = context;
         }
         @Override
@@ -404,81 +404,91 @@ public class FirebaseUtil {
             } catch(IOException exception) {
                 Log.i(LOG_TAG, "Offline, could not create short link for channel.");
             }
-            try {
-                // generate the QR code
-                BitMatrix bitMatrix = new MultiFormatWriter()
-                        .encode(finalDeepLink, BarcodeFormat.QR_CODE, 400, 400);
-                Bitmap bitmap = textOnBitmap(createBitmap(bitMatrix), uniqueName);
-
-                // convert it to an input stream so it can be uploaded
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
-
-                // upload it to Firebase Storage
-                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-                StorageReference qrCodesRef = firebaseStorage
-                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
-                        .child("qrCodes");
-                UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // set the channel's QR code url to point to the QR code image
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        if (downloadUrl != null) {
-                            DatabaseReference channelRef = FirebaseDatabase
-                                    .getInstance()
-                                    .getReference()
-                                    .child(Channel.TABLE_NAME);
-                            channelRef.child(key)
-                                    .child(Channel.QRCODE_URL)
-                                    .setValue(downloadUrl.toString());
-                        }
-                    }
-                });
-                return true;
-            } catch (WriterException e) {
-                e.printStackTrace();
+            Bitmap bitmap = makeQrBitmap(finalDeepLink, uniqueName);
+            if (bitmap == null) {
+                return false;
             }
-            return false;
-        }
 
-        private static Bitmap textOnBitmap(Bitmap bitmap, String s) {
-            Canvas canvas = new Canvas(bitmap);
-            // new antialised Paint
-            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setColor(Color.rgb(0, 0, 0));
-            // text size in pixels
-            paint.setTextSize(48);
-            // text shadow
-            // draw text to the Canvas bottom
-            Rect bounds = new Rect();
-            paint.getTextBounds(s, 0, s.length(), bounds);
-            int x = (bitmap.getWidth() - bounds.width())/2;
-            int y = bitmap.getHeight();
+            // convert it to an input stream so it can be uploaded
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
 
-            canvas.drawText(s, x, y, paint);
-            return bitmap;
-        }
-
-        private static Bitmap createBitmap(BitMatrix bitMatrix) {
-            int w = bitMatrix.getWidth();
-            int h = bitMatrix.getHeight();
-            int[] pixels = new int[w * h];
-            for (int y = 0; y < h; y++) {
-                int offset = y * w;
-                for (int x = 0; x < w; x++) {
-                    pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : TRANSPARENT;
+            // upload it to Firebase Storage
+            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+            StorageReference qrCodesRef = firebaseStorage
+                    .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
+                    .child("qrCodes");
+            UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
                 }
-            }
-            Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-            bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
-            return bitmap;
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // set the channel's QR code url to point to the QR code image
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    if (downloadUrl != null) {
+                        DatabaseReference channelRef = FirebaseDatabase
+                                .getInstance()
+                                .getReference()
+                                .child(Channel.TABLE_NAME);
+                        channelRef.child(key)
+                                .child(Channel.QRCODE_URL)
+                                .setValue(downloadUrl.toString());
+                    }
+                }
+            });
+            return true;
         }
+
+
+    }
+
+    public static Bitmap makeQrBitmap(String key, String name) {
+        BitMatrix bitMatrix;
+//        Log.d(LOG_TAG, "makeQrBitmap(" + key + ", " + name + ")");
+        try {
+            bitMatrix = new MultiFormatWriter()
+                    .encode(key, BarcodeFormat.QR_CODE, 400, 400);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return textOnBitmap(createBitmap(bitMatrix), name);
+    }
+
+    private static Bitmap textOnBitmap(Bitmap bitmap, String s) {
+        Canvas canvas = new Canvas(bitmap);
+        // new antialised Paint
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(Color.rgb(0, 0, 0));
+        // text size in pixels
+        paint.setTextSize(48);
+        // text shadow
+        // draw text to the Canvas bottom
+        Rect bounds = new Rect();
+        paint.getTextBounds(s, 0, s.length(), bounds);
+        int x = (bitmap.getWidth() - bounds.width())/2;
+        int y = bitmap.getHeight();
+
+        canvas.drawText(s, x, y, paint);
+        return bitmap;
+    }
+
+    private static Bitmap createBitmap(BitMatrix bitMatrix) {
+        int w = bitMatrix.getWidth();
+        int h = bitMatrix.getHeight();
+        int[] pixels = new int[w * h];
+        for (int y = 0; y < h; y++) {
+            int offset = y * w;
+            for (int x = 0; x < w; x++) {
+                pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : TRANSPARENT;
+            }
+        }
+        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
+        return bitmap;
     }
 }
