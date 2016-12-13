@@ -21,11 +21,13 @@
         <activity
             android:name=".activities.TileListActivity"
             android:screenOrientation="portrait"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.SignInActivity"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
             android:screenOrientation="portrait"
             android:theme="@style/TransparentSystemBar">
             <intent-filter>
@@ -47,7 +49,8 @@
         <activity
             android:name=".activities.CreateJoinActivity"
             android:label="@string/app_name"
-            android:launchMode="singleTop"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Transparent">
             <intent-filter>
@@ -67,7 +70,7 @@
         <activity
             android:name=".activities.BarcodeCaptureActivity"
             android:label="Scan QR to Join Event" />
-        <activity android:name=".activities.ShowQrCodeActivity"
+        <activity android:name=".activities.ShowChannelActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"/>

@@ -59,6 +59,8 @@ public class TileListActivity extends BaseVisualTilesActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile_list);
         super.setTopViewGroup((ViewGroup) findViewById(R.id.drawer_layout));
+        if (shouldNotLoad()) return;
+
         setUpToolbar();
         setUpNavDrawer();
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -137,7 +139,7 @@ public class TileListActivity extends BaseVisualTilesActivity
                 sendAppInvite();
                 break;
             case R.id.nav_show_code:
-                startActivity(new Intent(this, ShowQrCodeActivity.class));
+                startActivity(new Intent(this, ShowChannelActivity.class));
                 break;
             case R.id.nav_leave_channel:
                 app.leaveChannel();
@@ -173,6 +175,10 @@ public class TileListActivity extends BaseVisualTilesActivity
         actionBar.setSubtitle(app.getChannel().getUniqueName());
         */
         TextView tvTitle = (TextView) mToolbar.findViewById(R.id.tvTitle);
+
+        if (app.getChannel() == null) {
+            return;
+        }
         tvTitle.setText(app.getChannel().getName());
 
         // Open drawer on title click.
