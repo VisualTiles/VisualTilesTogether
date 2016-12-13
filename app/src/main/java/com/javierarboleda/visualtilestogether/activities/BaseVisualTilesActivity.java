@@ -100,7 +100,7 @@ implements GoogleApiClient.OnConnectionFailedListener,
 
         // Check if this app was launched from a deep link. Setting autoLaunchDeepLink to true
         // would automatically launch the deep link if one is found.
-        boolean autoLaunchDeepLink = true;
+        boolean autoLaunchDeepLink = false;
         AppInvite.AppInviteApi.getInvitation(mGoogleApiClient, this, autoLaunchDeepLink)
                 .setResultCallback(
                         new ResultCallback<AppInviteInvitationResult>() {
@@ -111,6 +111,7 @@ implements GoogleApiClient.OnConnectionFailedListener,
                                     Intent intent = result.getInvitationIntent();
                                     String deepLink = AppInviteReferral.getDeepLink(intent);
                                     handleDeepLinkUrl(deepLink);
+                                    onNewIntent(intent);
                                 } else {
                                     Log.d(TAG, "getInvitation: no deep link found.");
                                 }
@@ -299,7 +300,16 @@ implements GoogleApiClient.OnConnectionFailedListener,
 
     private void handleDeepLinkUrl(String url) {
         Uri uri = Uri.parse(url);
-        if (uri.getPath().startsWith("/channel/")) {
+        // Invite deep links aren't stripping out 'link' for some reason. Pull it manually.
+        // example: https://zas63.app.goo.gl/?link=vistile%3A%2F%2Fchannel%2Fme&apn=com.javierarboleda.visualtilestogether
+        if (uri.getQueryParameter("link") != null) {
+            uri = Uri.parse(uri.getQueryParameter("link"));
+        }
+
+        if (uri.getHost().equals("channel")) {
+            String channelCode = uri.getLastPathSegment();
+            sharedPreferences.edit().putString(PREF_REQUESTED_CHANNEL, channelCode).apply();
+        } else if (uri.getPath().startsWith("/channel/")) {
             String channelCode = uri.getLastPathSegment();
             // Store as an option later.
             sharedPreferences.edit().putString(PREF_REQUESTED_CHANNEL, channelCode).apply();
