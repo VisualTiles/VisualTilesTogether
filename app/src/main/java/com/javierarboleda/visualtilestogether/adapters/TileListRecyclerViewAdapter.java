@@ -3,7 +3,15 @@ package com.javierarboleda.visualtilestogether.adapters;
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +27,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,6 +43,11 @@ import com.javierarboleda.visualtilestogether.VisualTilesTogetherApp;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
 import com.javierarboleda.visualtilestogether.models.Tile;
 import com.javierarboleda.visualtilestogether.models.User;
+import com.javierarboleda.visualtilestogether.util.FirebaseUtil;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import jp.wasabeef.glide.transformations.CropCircleTransformation;
 
@@ -47,7 +62,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
     private final int mMsgsResId;
     private Context mContext;
     TileListFragment.TileListFragmentListener mListener;
-    private VisualTilesTogetherApp mVisualTilesTogetherApp;
+    private VisualTilesTogetherApp app;
     private int mLastPosition = -1;
     private RecyclerView mRecyclerView;
     private static final int CARD_ANIMATION_DURATION_MS = 400;
@@ -64,7 +79,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         mContext = context;
         mListener = (TileListFragment.TileListFragmentListener) context;
         mMsgsResId = msgsResId;
-        mVisualTilesTogetherApp = visualTilesTogetherApp;
+        app = visualTilesTogetherApp;
     }
 
     public int getMsgsResId() {
@@ -144,7 +159,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
-                    final String userId = mVisualTilesTogetherApp.getUid();
+                    final String userId = app.getUid();
                     viewHolder.tile = dataSnapshot.getValue(Tile.class);
                     if (viewHolder.tile == null) {
                         return;
@@ -212,7 +227,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
                     viewHolder.tvVotesTotal.setText(String.valueOf(viewHolder.tile.getPosVotes()
                             - viewHolder.tile.getNegVotes()));
-                    if (mVisualTilesTogetherApp.isChannelModerator()) {
+                    if (app.isChannelModerator()) {
                         if (viewHolder.btnPublish != null) {
                             viewHolder.btnPublish.setVisibility(View.VISIBLE);
                             viewHolder.btnPublish.setImageResource(viewHolder.tile.isApproved() ?
@@ -222,6 +237,15 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                             viewHolder.btnPublish2.setVisibility(View.VISIBLE);
                             viewHolder.btnPublish2.setImageResource(viewHolder.tile.isApproved() ?
                                     R.drawable.ic_star_black_24dp : R.drawable.ic_star_border_black_24dp);
+                        }
+
+                        if (viewHolder.btnShare != null) {
+                            viewHolder.btnShare.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    shareTile(viewHolder.tile);
+                                }
+                            });
                         }
                         if (viewHolder.btnDelete != null)
                             viewHolder.btnDelete.setVisibility(View.VISIBLE);
@@ -245,8 +269,8 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                                 }
                                 deleteTile(viewHolder.tileRef,
                                         tileId,
-                                        mVisualTilesTogetherApp,
-                                        mVisualTilesTogetherApp.getChannelId(),
+                                        app,
+                                        app.getChannelId(),
                                         viewHolder.tile.getCreatorId());
                             }
                         });
@@ -324,6 +348,35 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         mContext = recyclerView.getContext();
     }
 
+    private void shareTile(Tile tile) {
+        // Extract Bitmap from ImageView drawable
+        Glide.with(mContext).load(tile.getShapeUrl()).asBitmap().into(
+                new SimpleTarget<Bitmap>(400, 400) {
+            @Override
+            public void onResourceReady(Bitmap resource,
+                                        GlideAnimation<? super Bitmap> glideAnimation) {
+                if (resource == null)
+                    return;
+                Uri bmpUri = getBitmapUri(resource);
+                // Construct share intent as described above based on bitmap
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
+                String deepLink = "";
+                if (app != null && app.getChannel() != null) {
+                    deepLink = FirebaseUtil.buildChannelDeepLink(mContext,
+                            app.getChannel().getUniqueName());
+                }
+                shareIntent.putExtra(Intent.EXTRA_TEXT,
+                    String.format("This tile was seen in Visual Tiles! Join the show: %s",
+                            deepLink));
+                shareIntent.setType("image/*");
+                mContext.startActivity(Intent.createChooser(shareIntent, "Share Tile using"));
+            }
+        });
+    }
+
     @Override
     public void onViewDetachedFromWindow(TileViewHolder holder) {
         // Prevent problems when fast scrolling due to
@@ -381,6 +434,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
         ImageButton btnPublish;
         ImageView btnPublish2;
         View bubbleMenu;
+        ImageView btnShare;
 
         public TileViewHolder(View itemView) {
             super(itemView);
@@ -395,6 +449,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
                 btnDelete = itemView.findViewById(R.id.btnDelete);
                 btnPublish = (ImageButton) itemView.findViewById(R.id.btnPublish);
                 btnPublish2 = (ImageView)itemView.findViewById(R.id.btnPublish2);
+                btnShare = (ImageView)itemView.findViewById(R.id.btnShare);
                 bubbleMenu = itemView.findViewById(R.id.bubbleMenu);
             } catch (RuntimeException ex) {
                 // This catch happens when you click on a nav menu item while scrolling.
@@ -441,4 +496,37 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
             }
         };
     }
+
+    public Uri getBitmapUri(Bitmap bmp) {
+        // Store image to default external storage directory
+        Uri bmpUri = null;
+        try {
+            // Background fill paint.
+            Paint paint = new Paint();
+            paint.setColor(Color.BLACK);
+            Bitmap bitmapResult = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmapResult);
+            canvas.drawRect(0, 0, 400, 400, paint);
+            canvas.drawBitmap(bmp, 0, 0, paint);
+
+            // Use methods on Context to access package-specific directories on external storage.
+            // This way, you don't need to request external read/write permission.
+            // See https://youtu.be/5xVh-7ywKpE?t=25m25s
+            File file =  new File(
+                    mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    "share_image_" + System.currentTimeMillis() + ".png");
+            FileOutputStream out = new FileOutputStream(file);
+            bitmapResult.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.close();
+            bmpUri = FileProvider.getUriForFile(
+                    mContext,
+                    "com.javierarboleda.visualtilestogether.fileprovider",
+                    file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bmpUri;
+    }
+
 }

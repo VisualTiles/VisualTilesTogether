@@ -18,6 +18,7 @@ public class Channel {
     public static final String EFFECT_DURATION = "masterEffectDuration";
     public static final String QRCODE_URL = "qrCodeUrl";
     public static final String RONINS = "ronins";
+    public static final String USER_LIST = "userList";
     private String name;
     private String uniqueName;
     private String qrCodeUrl;
@@ -26,6 +27,8 @@ public class Channel {
     private String layoutId;
     private HashMap<String, Boolean> tileIds;
     private ArrayList<String> moderators;
+
+    private HashMap<String, String> userList;
 
     // Effect fields.
     /**
@@ -195,5 +198,13 @@ public class Channel {
 
     public void setChannelBackgroundColor(Integer channelBackgroundColor) {
         this.channelBackgroundColor = channelBackgroundColor;
+    }
+
+    public HashMap<String, String> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(HashMap<String, String> userList) {
+        this.userList = userList;
     }
 }

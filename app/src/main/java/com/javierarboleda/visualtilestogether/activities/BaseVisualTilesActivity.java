@@ -48,7 +48,7 @@ implements GoogleApiClient.OnConnectionFailedListener,
     protected FirebaseDatabase db;
     protected SharedPreferences sharedPreferences;
     private ViewGroup topViewGroup;
-    private HashMap<ValueEventListener, Query> firebaseListeners = new HashMap<>();
+    protected HashMap<ValueEventListener, Query> firebaseListeners = new HashMap<>();
     private static final int REQUEST_INVITE = 1002;
 
     @Override

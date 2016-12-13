@@ -40,7 +40,7 @@
             android:theme="@style/FullscreenAppTheme" />
         <activity
             android:name=".activities.TileCreationActivity"
-            android:label="Tile Creat"
+            android:label="Tile Creation"
             android:parentActivityName=".activities.TileListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -71,6 +71,15 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.javierarboleda.visualtilestogether.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/fileprovider" />
+        </provider>
     </application>
 
 </manifest>
