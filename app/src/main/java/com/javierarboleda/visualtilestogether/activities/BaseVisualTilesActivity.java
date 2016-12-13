@@ -111,7 +111,6 @@ implements GoogleApiClient.OnConnectionFailedListener,
                                     Intent intent = result.getInvitationIntent();
                                     String deepLink = AppInviteReferral.getDeepLink(intent);
                                     handleDeepLinkUrl(deepLink);
-                                    onNewIntent(intent);
                                 } else {
                                     Log.d(TAG, "getInvitation: no deep link found.");
                                 }
