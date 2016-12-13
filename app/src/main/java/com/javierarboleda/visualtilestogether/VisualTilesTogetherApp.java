@@ -20,6 +20,7 @@ import com.javierarboleda.visualtilestogether.models.User;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -182,6 +183,18 @@ public class VisualTilesTogetherApp extends Application {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     channel = dataSnapshot.getValue(Channel.class);
+                    boolean didSet = false;
+                    if (channel.getUserList() == null) {
+                        channel.setUserList(new HashMap<String, String>());
+                        didSet = true;
+                    }
+                    if (!channel.getUserList().containsKey(uId)) {
+                        channel.getUserList().put(uId, "true");
+                        didSet = true;
+                    }
+                    if (didSet) dbChannelRef.setValue(channel);
+
+                    resetChannelConnectedNotifier();
 
                     for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                         if (listener.get() != null)
@@ -245,11 +258,48 @@ public class VisualTilesTogetherApp extends Application {
             dbRef.child(User.TABLE_NAME).child(uId).child(User.CHANNEL_ID).setValue(channelId);
         }
         initTilesForChannel();
+
+        resetChannelConnectedNotifier();
+
         if (needsNotify) {
             for (WeakReference<VisualTilesListenerInterface> listener : listeners) {
                 if (listener.get() != null)
                     listener.get().onChannelUpdated();
             }
+        }
+    }
+
+    private DatabaseReference userListRef;
+    private DatabaseReference isOnlineRef;
+    private ValueEventListener userChannelPresenceListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+            // Remove ourselves when we disconnect.
+            userListRef.onDisconnect().removeValue();
+            userListRef.setValue("true");
+        }
+
+        @Override
+        public void onCancelled(DatabaseError firebaseError) {
+            Log.e(LOG_TAG, "The read failed: " + firebaseError.getMessage());
+            userListRef = null;
+        }
+    };
+
+    private void resetChannelConnectedNotifier() {
+        if (userChannelPresenceListener != null && isOnlineRef != null)
+            isOnlineRef.removeEventListener(userChannelPresenceListener);
+
+        if (userListRef != null) {
+            userListRef.removeValue();
+            userListRef = null;
+        }
+
+        if (getChannel() != null) {
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            userListRef = ref.child("/usersInChannel/").child(getChannelId()).push();
+            isOnlineRef = ref.child(".info/connected");
+            isOnlineRef.addValueEventListener(userChannelPresenceListener);
         }
     }
 
@@ -330,11 +380,15 @@ public class VisualTilesTogetherApp extends Application {
     }
 
     public void leaveChannel() {
+        if (dbChannelRef != null && uId != null) {
+            dbChannelRef.child(Channel.USER_LIST).child(uId).removeValue();
+        }
         cleanUpChannel();
         if (this.user != null && dbUserRef != null) {
             user.setChannelId(null);
             dbUserRef.child(User.CHANNEL_ID).setValue(null);
         }
+        resetChannelConnectedNotifier();
     }
 
     public boolean isChannelModerator() {

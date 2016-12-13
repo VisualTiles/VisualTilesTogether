@@ -12,22 +12,34 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.javierarboleda.visualtilestogether.R;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapterModerator;
 import com.javierarboleda.visualtilestogether.adapters.TileListPagerAdapterUser;
 import com.javierarboleda.visualtilestogether.fragments.TileListFragment;
 import com.javierarboleda.visualtilestogether.models.Tile;
+
+import java.text.NumberFormat;
 
 import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.normalizeDb;
 
@@ -40,15 +52,15 @@ public class TileListActivity extends BaseVisualTilesActivity
     private NavigationView nvDrawer;
     private ActionBarDrawerToggle mDrawerToggle;
     private FloatingActionButton fab;
+    private TextView tvUsersOnline;
+    private View usersOnlineHolder;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tile_list);
         super.setTopViewGroup((ViewGroup) findViewById(R.id.drawer_layout));
         setUpToolbar();
-
         setUpNavDrawer();
-
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setVisibility(View.INVISIBLE);
 
@@ -70,6 +82,8 @@ public class TileListActivity extends BaseVisualTilesActivity
             TabLayout tabLayout = (TabLayout) findViewById(R.id.tlTabs);
             tabLayout.setupWithViewPager(mViewPager);
         }
+
+        initChannelUserCounter();
     }
 
     private void setUpNavDrawer() {
@@ -143,11 +157,35 @@ public class TileListActivity extends BaseVisualTilesActivity
 
     private void setUpToolbar() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        /*
+        LayoutInflater mInflater= LayoutInflater.from(this);
+        View mCustomView = mInflater.inflate(R.layout.toolbar_activity_main, null);
+        mToolbar.addView(mCustomView);
+        */
         setSupportActionBar(mToolbar);
-        final ActionBar actionBar = getSupportActionBar();
 
+        final ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowTitleEnabled(false);
+        tvUsersOnline = (TextView) mToolbar.findViewById(R.id.tvUsersOnline);
+        usersOnlineHolder = mToolbar.findViewById(R.id.usersOnline);
+        /*
         actionBar.setTitle(app.getChannel().getName());
         actionBar.setSubtitle(app.getChannel().getUniqueName());
+        */
+        TextView tvTitle = (TextView) mToolbar.findViewById(R.id.tvTitle);
+        tvTitle.setText(app.getChannel().getName());
+
+        // Open drawer on title click.
+        mToolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mDrawer.isDrawerOpen(GravityCompat.START)) {
+                    mDrawer.closeDrawers();
+                } else {
+                    mDrawer.openDrawer(GravityCompat.START);
+                }
+            }
+        });
     }
 
     private void goToJoinActivity() {
@@ -260,5 +298,72 @@ public class TileListActivity extends BaseVisualTilesActivity
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggles
         mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    private void updateOnlineTextView() {
+        if (usersOnlineHolder == null || tvUsersOnline == null)
+            return;
+        if (activeUsers == -1 && joinedUsers == -1) {
+            tvUsersOnline.setVisibility(View.GONE);
+            return;
+        }
+        tvUsersOnline.setVisibility(View.VISIBLE);
+        StringBuilder result = new StringBuilder();
+        if (activeUsers != -1) {
+            result.append("<B>");
+            result.append(NumberFormat.getInstance().format(activeUsers));
+            result.append("</B>");
+        }
+        if (joinedUsers != -1) {
+            if (activeUsers != -1) {
+                result.append(" of ");
+            }
+            result.append(NumberFormat.getInstance().format(joinedUsers));
+        }
+        tvUsersOnline.setText(Html.fromHtml(result.toString()));
+    }
+
+    private int joinedUsers = -1;
+    private void updateJoinedUsers(int count) {
+        joinedUsers = count;
+        updateOnlineTextView();
+    }
+    private int activeUsers = -1;
+    private void updateActiveUsers(int count) {
+        activeUsers = count;
+        updateOnlineTextView();
+    }
+        private ValueEventListener usersInChannelListener =
+            new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    updateActiveUsers((int) dataSnapshot.getChildrenCount());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    updateActiveUsers(-1);
+                    Log.e(LOG_TAG, "The read failed: " + databaseError.getMessage());
+                }
+            };
+    private void initChannelUserCounter() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+        // firebaseListeners will manage onDestroy automatically.
+        Query tmp = ref.child("/usersInChannel/").child(app.getChannelId());
+        tmp.addValueEventListener(usersInChannelListener);
+        firebaseListeners.put(usersInChannelListener, tmp);
+        updateJoinedUsers(app.getChannel().getUserList().size());
+        updateOnlineTextView();
+    }
+
+    @Override
+    public void onChannelUpdated() {
+        super.onChannelUpdated();
+        if (app.getChannel() != null) {
+            if (app.getChannel().getUserList() != null)
+                updateJoinedUsers(app.getChannel().getUserList().size());
+        } else {
+            updateJoinedUsers(-1);
+        }
     }
 }
