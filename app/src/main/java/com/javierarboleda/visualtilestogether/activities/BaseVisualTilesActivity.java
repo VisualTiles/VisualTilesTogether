@@ -100,7 +100,7 @@ implements GoogleApiClient.OnConnectionFailedListener,
 
         // Check if this app was launched from a deep link. Setting autoLaunchDeepLink to true
         // would automatically launch the deep link if one is found.
-        boolean autoLaunchDeepLink = false;
+        boolean autoLaunchDeepLink = true;
         AppInvite.AppInviteApi.getInvitation(mGoogleApiClient, this, autoLaunchDeepLink)
                 .setResultCallback(
                         new ResultCallback<AppInviteInvitationResult>() {
@@ -165,12 +165,16 @@ implements GoogleApiClient.OnConnectionFailedListener,
     }
 
     protected void launchMainActivity() {
-        startActivity(new Intent(this, TileListActivity.class));
+        Intent intent = new Intent(this, TileListActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
     protected void launchSignInActivity() {
-        startActivity(new Intent(this, SignInActivity.class));
+        Intent intent = new Intent(this, SignInActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
