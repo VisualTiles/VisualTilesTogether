@@ -40,7 +40,7 @@
             android:theme="@style/FullscreenAppTheme" />
         <activity
             android:name=".activities.TileCreationActivity"
-            android:label="Tile Creat"
+            android:label="Tile Creation"
             android:parentActivityName=".activities.TileListActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
