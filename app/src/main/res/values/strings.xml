@@ -86,4 +86,9 @@
     <string name="scan_to_join">Scan QR to join</string>
     <string name="join_channel_message">Would you like to join the channel code \'%s\'?</string>
     <string name="try_visual_tiles">Join my Visual Tiles event, "%s"!</string>
+    <string name="deep_link_url">http://www.visualtilestogether.com/channel/</string>
+    <string name="qr_code_authority">zas63.app.goo.gl</string>
+    <string name="qr_code_url">https://zas63.app.goo.gl/</string>
+    <string name="link_param">link</string>
+    <string name="apn_param">apn</string>
 </resources>

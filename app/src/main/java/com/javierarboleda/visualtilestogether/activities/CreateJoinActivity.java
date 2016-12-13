@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -202,10 +203,15 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
                     if (validChannelId(channelId)) {
                         app.initChannel(channelId);
                     } else {
-                        Log.d(LOG_TAG, "should be showing a snackbar here");
-                        Snackbar snackbar = Snackbar
-                                .make(binding.getRoot(), "There's no event for this QR code", Snackbar.LENGTH_LONG);
-                        snackbar.show();
+                        String uniqueName = parseUniqueNameFromUrl(channelId);
+                        Log.d(LOG_TAG, "URL link param channel code: " + uniqueName);
+                        if (uniqueName != null) {
+                            tryToJoinEvent(uniqueName);
+                        } else {
+                            Snackbar snackbar = Snackbar
+                                    .make(binding.getRoot(), "There's no event for this QR code", Snackbar.LENGTH_LONG);
+                            snackbar.show();
+                        }
                     }
                 } else {
                     Log.d(LOG_TAG, "No QR code captured, intent data is null");
@@ -217,6 +223,21 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
         else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    private String parseUniqueNameFromUrl(String url) {
+        if (TextUtils.isEmpty(url)) {
+            return null;
+        }
+        Uri uri = Uri.parse(url);
+        if (!uri.getAuthority().equals(getString(R.string.qr_code_authority))) {
+            return null;
+        }
+        String linkParam = uri.getQueryParameter(getString(R.string.link_param));
+        if (linkParam == null) {
+            return null;
+        }
+        return linkParam.substring(linkParam.lastIndexOf('/') + 1);
     }
 
     private boolean validChannelId(String channelId) {
@@ -245,8 +266,10 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
     }
 
     private void joinEvent() {
-        final String channel = binding.tieJoin.getText().toString();
+        tryToJoinEvent(binding.tieJoin.getText().toString());
+    }
 
+    private void tryToJoinEvent(String channel) {
         if (channel == null || channel.isEmpty()) {
             app.initChannel();
         } else {
