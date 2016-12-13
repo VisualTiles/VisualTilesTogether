@@ -165,12 +165,16 @@ implements GoogleApiClient.OnConnectionFailedListener,
     }
 
     protected void launchMainActivity() {
-        startActivity(new Intent(this, TileListActivity.class));
+        Intent intent = new Intent(this, TileListActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
     protected void launchSignInActivity() {
-        startActivity(new Intent(this, SignInActivity.class));
+        Intent intent = new Intent(this, SignInActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         finish();
     }
 
@@ -295,7 +299,16 @@ implements GoogleApiClient.OnConnectionFailedListener,
 
     private void handleDeepLinkUrl(String url) {
         Uri uri = Uri.parse(url);
-        if (uri.getPath().startsWith("/channel/")) {
+        // Invite deep links aren't stripping out 'link' for some reason. Pull it manually.
+        // example: https://zas63.app.goo.gl/?link=vistile%3A%2F%2Fchannel%2Fme&apn=com.javierarboleda.visualtilestogether
+        if (uri.getQueryParameter("link") != null) {
+            uri = Uri.parse(uri.getQueryParameter("link"));
+        }
+
+        if (uri.getHost().equals("channel")) {
+            String channelCode = uri.getLastPathSegment();
+            sharedPreferences.edit().putString(PREF_REQUESTED_CHANNEL, channelCode).apply();
+        } else if (uri.getPath().startsWith("/channel/")) {
             String channelCode = uri.getLastPathSegment();
             // Store as an option later.
             sharedPreferences.edit().putString(PREF_REQUESTED_CHANNEL, channelCode).apply();
