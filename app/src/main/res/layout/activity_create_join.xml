@@ -2,239 +2,238 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<RelativeLayout
-    android:id="@+id/rvRootLayout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#000000"
-    android:focusableInTouchMode="true"
-    >
-
-    <ImageView
-        android:id="@+id/ivBackgroundImage"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:layout_alignParentTop="true"/>
+        android:background="#000000">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/scrim_join_create"/>
-
-    <TextView
-        android:text="@string/join_event"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="47dp"
-        android:textSize="28sp"
-        android:textColor="@color/white"
-        android:id="@+id/tvJoinEventLabel"/>
-
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="24dp"
-        app:srcCompat="@drawable/ic_qrcode_scan"
-        android:onClick="joinEventOnQrCode"
-        android:layout_alignTop="@id/tvJoinEventLabel"
-        android:layout_alignParentEnd="true"/>
-
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/tilJoin"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@id/tvJoinEventLabel"
-        android:layout_below="@id/tvJoinEventLabel"
-        android:theme="@style/TextLabel"
-        >
-
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/tieJoin"
+        <ImageView
+            android:id="@+id/ivBackgroundImage"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:inputType="text"/>
+            android:layout_height="match_parent"
+            android:layout_gravity="top|center_horizontal"
+            android:scaleType="centerCrop"/>
 
-    </android.support.design.widget.TextInputLayout>
-
-    <RelativeLayout
-        android:id="@+id/rlJoinButton"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-
-        android:layout_marginTop="16dp"
-        android:layout_below="@id/tilJoin"
-        android:layout_centerHorizontal="true">
-
-
-        <com.dd.CircularProgressButton
-            android:id="@+id/cpbJoinButton"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:onClick="joinEventOnClick"
-            app:cpb_cornerRadius="48dp"
-            app:cpb_colorProgress="@android:color/transparent"
-            app:cpb_selectorIdle="@drawable/state_list_sign_in_button_selector"
-            app:cpb_colorIndicator="@color/darkGray"
-            />
+            android:layout_height="match_parent"
+            android:descendantFocusability="afterDescendants"
+            android:fillViewport="true"
+            android:fitsSystemWindows="true"
+            android:isScrollContainer="true">
 
-        <TextView
-            android:id="@+id/tvJoinText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="@string/join_button"/>
+            <RelativeLayout
+                android:id="@+id/rvRootLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-        <View
-            android:id="@+id/viewButtonOutline"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@drawable/shape_sign_in_button"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/scrim_join_create"/>
 
-    </RelativeLayout>
+                <TextView
+                    android:id="@+id/tvJoinEventLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="47dp"
+                    android:text="@string/join_event"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"/>
 
-    <View
-        android:id="@+id/divider"
-        style="@style/divider"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="30dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_below="@+id/rlJoinButton"/>
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignTop="@id/tvJoinEventLabel"
+                    android:layout_marginEnd="24dp"
+                    android:layout_marginTop="12dp"
+                    android:onClick="joinEventOnQrCode"
+                    app:srcCompat="@drawable/ic_qrcode_scan"/>
 
-    <TextView
-        android:text="@string/create_new_event"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@id/tvJoinEventLabel"
-        android:layout_below="@id/divider"
-        android:textSize="28sp"
-        android:textColor="@color/white"
-        android:id="@+id/tvCreateAnEventLabel"/>
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/tilJoin"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@id/tvJoinEventLabel"
+                    android:layout_below="@id/tvJoinEventLabel"
+                    android:theme="@style/TextLabel"
+                    >
 
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/tilCreateEventName"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_alignStart="@id/tvCreateAnEventLabel"
-        android:layout_below="@id/tvCreateAnEventLabel"
-        android:theme="@style/TextLabel"
-        >
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/tieJoin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"/>
 
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/tieCreateEventName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:imeOptions="actionNext"
-            android:inputType="textImeMultiLine"/>
+                </android.support.design.widget.TextInputLayout>
 
-    </android.support.design.widget.TextInputLayout>
+                <RelativeLayout
+                    android:id="@+id/rlJoinButton"
+                    android:layout_width="220dp"
+                    android:layout_height="wrap_content"
+
+                    android:layout_below="@id/tilJoin"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="16dp">
 
 
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/tilCreateEventCode"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:layout_alignStart="@id/tvCreateAnEventLabel"
-        android:layout_below="@id/tilCreateEventName"
-        android:theme="@style/TextLabel"
-        >
+                    <com.dd.CircularProgressButton
+                        android:id="@+id/cpbJoinButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:onClick="joinEventOnClick"
+                        app:cpb_colorIndicator="@color/darkGray"
+                        app:cpb_colorProgress="@android:color/transparent"
+                        app:cpb_cornerRadius="48dp"
+                        app:cpb_selectorIdle="@drawable/state_list_sign_in_button_selector"
+                        />
 
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/tieCreateEventCode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLength="8"
-            android:ems="10"
-            android:inputType="text"/>
+                    <TextView
+                        android:id="@+id/tvJoinText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/join_button"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
 
-    </android.support.design.widget.TextInputLayout>
+                    <View
+                        android:id="@+id/viewButtonOutline"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/shape_sign_in_button"/>
 
-    <RelativeLayout
-        android:id="@+id/rlCreateEvent"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_below="@id/tilCreateEventCode"
-        android:layout_centerHorizontal="true">
+                </RelativeLayout>
+
+                <View
+                    android:id="@+id/divider"
+                    style="@style/divider"
+                    android:layout_below="@+id/rlJoinButton"
+                    android:layout_marginBottom="30dp"
+                    android:layout_marginEnd="24dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="30dp"/>
+
+                <TextView
+                    android:id="@+id/tvCreateAnEventLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@id/tvJoinEventLabel"
+                    android:layout_below="@id/divider"
+                    android:text="@string/create_new_event"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"/>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/tilCreateEventName"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@id/tvCreateAnEventLabel"
+                    android:layout_below="@id/tvCreateAnEventLabel"
+                    android:theme="@style/TextLabel"
+                    >
+
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/tieCreateEventName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:imeOptions="actionNext"
+                        android:inputType="text"
+                        android:maxLength="48"
+                        android:maxLines="1"
+                        android:nextFocusForward="@+id/tieCreateEventCode"
+                        />
+
+                </android.support.design.widget.TextInputLayout>
 
 
-        <com.dd.CircularProgressButton
-            android:id="@+id/cpbCreateEventButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:onClick="createNewEventOnClick"
-            app:cpb_cornerRadius="48dp"
-            app:cpb_colorProgress="@android:color/transparent"
-            app:cpb_selectorIdle="@drawable/state_list_sign_in_button_selector"
-            app:cpb_colorIndicator="@color/darkGray"
-            />
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/tilCreateEventCode"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@id/tvCreateAnEventLabel"
+                    android:layout_below="@id/tilCreateEventName"
+                    android:layout_marginBottom="4dp"
+                    android:theme="@style/TextLabel"
+                    >
 
-        <TextView
-            android:id="@+id/tvCreateEventText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="@string/create_event"/>
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/tieCreateEventCode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:imeOptions="actionNext"
+                        android:inputType="text"
+                        android:maxLength="8"
+                        android:maxLines="1"
+                        android:nextFocusForward="@+id/cpbCreateEventButton"/>
 
-        <View
-            android:id="@+id/viewButtonOutlineCreateEvent"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@drawable/shape_sign_in_button"/>
+                </android.support.design.widget.TextInputLayout>
 
-    </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/rlCreateEvent"
+                    android:layout_width="220dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tilCreateEventCode"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="16dp">
 
-    <Button
-        android:text="@string/create_new_event"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/btnCreateEvent"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:onClick="createNewEventOnClick"
-        android:visibility="gone"/>
 
-    <Button
-        android:text="QR Code"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/btnQrCode"
-        android:layout_alignParentBottom="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:onClick="joinEventOnQrCode"
-        android:visibility="gone"/>
+                    <com.dd.CircularProgressButton
+                        android:id="@+id/cpbCreateEventButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:onClick="createNewEventOnClick"
+                        app:cpb_colorIndicator="@color/darkGray"
+                        app:cpb_colorProgress="@android:color/transparent"
+                        app:cpb_cornerRadius="48dp"
+                        app:cpb_selectorIdle="@drawable/state_list_sign_in_button_selector"
+                        />
 
-    <ImageView
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        app:srcCompat="@drawable/ic_sign_out_white"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="8dp"
-        android:onClick="signOut"
-        />
+                    <TextView
+                        android:id="@+id/tvCreateEventText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerVertical="true"
+                        android:text="@string/create_event"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
 
-</RelativeLayout>
+                    <View
+                        android:id="@+id/viewButtonOutlineCreateEvent"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/shape_sign_in_button"/>
 
+                </RelativeLayout>
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_below="@+id/rlCreateEvent"
+                    android:layout_centerHorizontal="true"
+                    android:layout_margin="8dp"
+                    android:onClick="signOut"
+                    app:srcCompat="@drawable/ic_sign_out_white"
+                    />
+
+            </RelativeLayout>
+
+        </ScrollView>
+    </FrameLayout>
 </layout>

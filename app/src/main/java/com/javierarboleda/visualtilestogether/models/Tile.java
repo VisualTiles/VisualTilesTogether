@@ -60,7 +60,8 @@ public class Tile {
                 negVotes == t.getNegVotes() &&
                 approved == t.approved &&
                 submitTimeMs == t.getSubmitTimeMs() &&
-                (tileColor == null || tileColor.equals(t.getTileColor())));
+                ((t.getTileColor() == null && tileColor == null) ||
+                        (tileColor != null && tileColor.equals(t.getTileColor()))));
     }
 
     public Tile(boolean approved, int negVotes, int posVotes, String shapeFbStorage,
