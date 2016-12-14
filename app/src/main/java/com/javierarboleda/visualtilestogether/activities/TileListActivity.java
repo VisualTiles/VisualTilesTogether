@@ -143,7 +143,13 @@ public class TileListActivity extends BaseVisualTilesActivity
                 break;
             case R.id.nav_leave_channel:
                 app.leaveChannel();
-                launchChannelCreateActivity();
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        launchChannelCreateActivity(null);
+                    }
+                }, 250);
                 exitCircularReveal(fab, true);
                 break;
             case R.id.nav_sign_out:
