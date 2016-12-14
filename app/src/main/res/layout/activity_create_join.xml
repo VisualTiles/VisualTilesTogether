@@ -3,6 +3,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <FrameLayout
+        android:id="@+id/flRootLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#000000">
@@ -28,7 +29,6 @@
             android:isScrollContainer="true">
 
             <RelativeLayout
-                android:id="@+id/rvRootLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 

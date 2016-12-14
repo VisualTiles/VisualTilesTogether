@@ -78,7 +78,7 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
         super.onCreate(savedInstanceState);
         if (shouldNotLoad()) return;
         binding = DataBindingUtil.setContentView(this, R.layout.activity_create_join);
-        super.setTopViewGroup(binding.rvRootLayout);
+        super.setTopViewGroup(binding.flRootLayout);
         setUpLayout();
         setupCircularTransition(savedInstanceState);
     }
@@ -144,7 +144,7 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
     }
 
     private void setupCircularTransition(Bundle savedInstanceState) {
-        rootLayout = binding.rvRootLayout;
+        rootLayout = binding.flRootLayout;
 
         overridePendingTransition(R.anim.do_not_move, R.anim.do_not_move);
 
