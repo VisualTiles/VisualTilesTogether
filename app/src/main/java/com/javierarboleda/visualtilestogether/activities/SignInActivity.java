@@ -294,7 +294,7 @@ public class SignInActivity extends BaseVisualTilesActivity implements
             if (app.getChannel() != null) {
                 launchMainActivity();
             } else {
-                launchChannelCreateActivity();
+                launchChannelCreateActivity(findViewById(R.id.rlSignIn));
             }
         }
     }
@@ -303,7 +303,7 @@ public class SignInActivity extends BaseVisualTilesActivity implements
     public void onUserUpdated() {
         if (app.getUser() != null) {
             // Show channel creation or join buttons.
-            launchChannelCreateActivity();
+            launchChannelCreateActivity(findViewById(R.id.rlSignIn));
         }
     }
 

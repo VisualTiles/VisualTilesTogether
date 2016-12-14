@@ -3,12 +3,14 @@ package com.javierarboleda.visualtilestogether.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -178,23 +180,28 @@ implements GoogleApiClient.OnConnectionFailedListener,
         finish();
     }
 
-    protected void launchChannelCreateActivity() {
+    protected void launchChannelCreateActivity(View view) {
         Intent intent = new Intent(this, CreateJoinActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        int cx, cy;
 
-        // pass center coordinates of sign in button for circular transition start point
-        View signInView = findViewById(R.id.rlSignIn);
-
-        if (signInView != null) {
+        // pass center coordinates of view circular transition start point
+        if (view != null) {
             int[] xy = new int[2];
-            signInView.getLocationOnScreen(xy);
+            view.getLocationOnScreen(xy);
 
-            int cx = xy[0] + (signInView.getWidth() / 2);
-            int cy = xy[1] + (signInView.getHeight() / 2);
+            cx = xy[0] + (view.getWidth() / 2);
+            cy = xy[1] + (view.getHeight() / 2);
+        } else {
+            Display display = getWindowManager().getDefaultDisplay();
+            final Point size = new Point();
+            display.getSize(size);
 
-            intent.putExtra(CreateJoinActivity.CX_KEY, cx);
-            intent.putExtra(CreateJoinActivity.CY_KEY, cy);
+            cx = size.x / 2;
+            cy = size.y / 2;
         }
+
+        intent.putExtra(CreateJoinActivity.CX_KEY, cx);
+        intent.putExtra(CreateJoinActivity.CY_KEY, cy);
 
         startActivity(intent);
         finish();
@@ -270,7 +277,7 @@ implements GoogleApiClient.OnConnectionFailedListener,
                 || app.getChannel() == null) {
             if (!(this instanceof CreateJoinActivity) && (!(this instanceof SignInActivity))) {
                 // Go to sign in page.
-                launchChannelCreateActivity();
+                launchChannelCreateActivity(null);
                 return true;
             }
         }
