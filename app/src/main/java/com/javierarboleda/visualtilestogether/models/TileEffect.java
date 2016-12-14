@@ -24,6 +24,9 @@ public class TileEffect {
         FREEZE,
         ROTATE_LEFT,
         ROTATE_RIGHT,
+        PIVOT_LEFT_SMALL,
+        PIVOT_RIGHT_SMALL,
+        THUMP,
 
         FADE_HALF,  // DEPRECATED
         FLIP_HORIZONTAL,  // DEPRECATED.

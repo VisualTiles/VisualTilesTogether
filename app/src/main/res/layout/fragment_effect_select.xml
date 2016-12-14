@@ -80,11 +80,11 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/row2"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:orientation="horizontal">
+
 
                 <Button
                     style="@style/ModeratorEffectsButtons"
@@ -92,6 +92,7 @@
                     android:text="Fade In->Out"
                     android:tag="FADE_IN"
                     />
+
 
                 <Button
                     style="@style/ModeratorEffectsButtons"
@@ -106,11 +107,40 @@
                     android:text="Nod Yes"
                     android:tag="NOD_YES"
                     />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <Button
+                    style="@style/ModeratorEffectsButtons"
+                    android:background="@drawable/state_list_moderator_selector_button"
+                    android:text="Thump"
+                    android:tag="THUMP"
+                    />
+
+                <Button
+                    style="@style/ModeratorEffectsButtons"
+                    android:background="@drawable/state_list_moderator_selector_button"
+                    android:text="Pivot Left"
+                    android:tag="PIVOT_LEFT_SMALL"
+                    />
+
+                <Button
+                    style="@style/ModeratorEffectsButtons"
+                    android:background="@drawable/state_list_moderator_selector_button"
+                    android:text="Pivot Right"
+                    android:tag="PIVOT_RIGHT_SMALL"
+                    />
+
 
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/row3"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
