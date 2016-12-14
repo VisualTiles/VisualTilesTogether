@@ -21,8 +21,8 @@ android {
         applicationId "com.javierarboleda.visualtilestogether"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 5
-        versionName "5.0"
+        versionCode 6
+        versionName "6.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

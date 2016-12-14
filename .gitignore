@@ -2,6 +2,9 @@
 *.keystore
 *.keystore.jks
 
+# keystore passwords
+keystore.properties
+
 # built application files
 *.apk
 *.ap_
