@@ -339,6 +339,9 @@ public class PresentationFragment extends Fragment
 
     private void loadChannelData() {
         Channel channel = app.getChannel();
+        if (channel == null) {
+            return;
+        }
         masterEffectDuration = (int) channel.getMasterEffectDuration();
         tileEffectTransformer = new TileEffectTransformer2(getContext(), masterEffectDuration);
         boolean needsDraw = false;

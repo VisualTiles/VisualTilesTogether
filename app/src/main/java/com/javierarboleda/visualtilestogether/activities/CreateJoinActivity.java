@@ -25,7 +25,6 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,7 +65,7 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
     public static String CY_KEY = "cY_key";
 
     private ActivityCreateJoinBinding binding;
-    private RelativeLayout rootLayout;
+    private View rootLayout;
     private TextInputLayout mJoinTiLayout;
     private TextInputEditText mJoinTiEditText;
     private TextInputLayout mCreateNameTiLayout;
@@ -142,8 +141,6 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
         mJCreateCodeTiLayout = binding.tilCreateEventCode;
         mJCreateCodeTiLayout.setHint(getString(R.string.event_code));
         mCreateCodeTiEditText.setOnEditorActionListener(ActionListener.newInstance(this));
-
-        binding.btnQrCode.requestFocus();
     }
 
     private void setupCircularTransition(Bundle savedInstanceState) {
