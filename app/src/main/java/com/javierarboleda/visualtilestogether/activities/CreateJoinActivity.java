@@ -50,7 +50,6 @@ import java.lang.ref.WeakReference;
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
 import static com.javierarboleda.visualtilestogether.VisualTilesTogetherApp.PREF_REQUESTED_CHANNEL;
-import static com.javierarboleda.visualtilestogether.util.FirebaseUtil.setChannelQrCode;
 
 /**
  * Created on 11/13/16.
@@ -436,7 +435,6 @@ public class CreateJoinActivity extends BaseVisualTilesActivity implements
                 Channel.TABLE_NAME);
         String key = dbRef.push().getKey();
         dbRef.child(key).setValue(channel);
-        setChannelQrCode(getApplicationContext(), key, channel.getUniqueName());
         app.initChannel(key);
         Log.d(LOG_TAG, "key is " + key);
     }

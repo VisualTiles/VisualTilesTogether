@@ -1,7 +1,7 @@
 package com.javierarboleda.visualtilestogether.models;
 
 
-import com.android.annotations.Nullable;
+import android.support.annotation.Nullable;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.HashMap;
