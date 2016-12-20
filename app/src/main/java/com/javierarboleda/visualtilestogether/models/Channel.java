@@ -16,12 +16,10 @@ public class Channel {
     public static final String LAYOUT_NAME = "layoutId";
     public static final String DEFAULT_TILE_COLOR = "defaultTileColor";
     public static final String EFFECT_DURATION = "masterEffectDuration";
-    public static final String QRCODE_URL = "qrCodeUrl";
     public static final String RONINS = "ronins";
     public static final String USER_LIST = "userList";
     private String name;
     private String uniqueName;
-    private String qrCodeUrl;
 
     private ArrayList<String> positionToTileIds;
     private String layoutId;
@@ -73,14 +71,6 @@ public class Channel {
 
     public void setUniqueName(String uniqueName) {
         this.uniqueName = uniqueName;
-    }
-
-    public String getQrCodeUrl() {
-        return qrCodeUrl;
-    }
-
-    public void setQrCodeUrl(String qrCodeUrl) {
-        this.qrCodeUrl = qrCodeUrl;
     }
 
     public ArrayList<String> getPositionToTileIds() {

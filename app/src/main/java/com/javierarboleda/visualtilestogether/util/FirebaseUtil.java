@@ -96,8 +96,8 @@ public class FirebaseUtil {
                             try {
                                 channel = channelSnapshot.getValue(Channel.class);
                             } catch(Exception e) {
-                                Log.e(LOG_TAG, "Curropt channel in channel table! Deleting...");
-                                channelsRef.child(channelSnapshot.getKey()).removeValue();
+                                Log.e(LOG_TAG, "Corrupt channel in channel table! Deleting...");
+                                channelsRef.child(channelId).removeValue();
                                 return;
                             }
                             if (channel.getName() == null) {
@@ -105,16 +105,14 @@ public class FirebaseUtil {
                             } else {
                                 legitChannels.add(channelId);
 
-                                if (channel.getUniqueName() != null) {
-                                    uniqueName = channel.getUniqueName();
-                                } else {
+                                uniqueName = channel.getUniqueName();
+                                if (uniqueName == null) {
                                     uniqueName = generateChannelUniqueName(dataSnapshot);
                                     channelsRef
                                             .child(channelId)
                                             .child(Channel.CHANNEL_UNIQUE_NAME)
                                             .setValue(uniqueName);
                                 }
-                                setChannelQrCode(context, channelId, uniqueName);
                             }
                         }
                     }
@@ -196,7 +194,7 @@ public class FirebaseUtil {
     private static boolean nameIsUnique(String name, DataSnapshot dataSnapshot) {
         for (DataSnapshot channelSnapshot : dataSnapshot.getChildren()) {
             Channel channel = channelSnapshot.getValue(Channel.class);
-            if (name.equals(channel.getUniqueName())) {
+            if (channel != null && name.equals(channel.getUniqueName())) {
                 return false;
             }
         }
@@ -362,138 +360,5 @@ public class FirebaseUtil {
         qrCodeUrl.appendQueryParameter(context.getString(R.string.apn_param),
                 context.getApplicationContext().getPackageName());
         return qrCodeUrl.build().toString();
-    }
-
-    /**
-     * Generate a QR code for the channel,
-     * for now just use the key as the encoded string
-     * @param context The Application context.
-     * */
-    public static void setChannelQrCode(Context context, String channelId, String uniqueName) {
-        new QrTask(context).execute(channelId, uniqueName);
-    }
-
-    private static class QrTask extends AsyncTask<String, Integer, Boolean> {
-        private Context mContext;
-        QrTask(Context context) {
-            mContext = context;
-        }
-        @Override
-        protected Boolean doInBackground(String... strings) {
-            try {
-                final String key = strings[0];
-                final String uniqueName = strings[1];
-                // The URL encoded in the QR code.
-                final String deepLinkUrl = buildChannelDeepLink(mContext, uniqueName);
-
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl("https://firebasedynamiclinks.googleapis.com")
-                        .addConverterFactory(GsonConverterFactory.create()).build();
-                FirebaseShortLinkInterface shortLinkInterface =
-                        retrofit.create(FirebaseShortLinkInterface.class);
-                Call<ShortLinkResponse> responseCall = shortLinkInterface.buildShortLink(
-                        new ShortLinkRequest(deepLinkUrl),
-                        mContext.getString(R.string.firebase_web_api_key));
-                String finalDeepLink = deepLinkUrl;
-                try {
-                    Response<ShortLinkResponse> response = responseCall.execute();
-                    if (response.isSuccessful()) {
-                        finalDeepLink = response.body().shortLink;
-                        if (finalDeepLink == null || finalDeepLink.isEmpty())
-                            finalDeepLink = deepLinkUrl;
-                    }
-                } catch (IOException exception) {
-                    Log.i(LOG_TAG, "Offline, could not create short link for channel.");
-                }
-                Bitmap bitmap = makeQrBitmap(finalDeepLink, uniqueName);
-                if (bitmap == null) {
-                    return false;
-                }
-
-                // convert it to an input stream so it can be uploaded
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-                ByteArrayInputStream inputstream = new ByteArrayInputStream(baos.toByteArray());
-
-                // upload it to Firebase Storage
-                FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
-                StorageReference qrCodesRef = firebaseStorage
-                        .getReferenceFromUrl("gs://visual-tiles-together.appspot.com")
-                        .child("qrCodes");
-                UploadTask uploadTask = qrCodesRef.child(key).putStream(inputstream);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // set the channel's QR code url to point to the QR code image
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        if (downloadUrl != null) {
-                            DatabaseReference channelRef = FirebaseDatabase
-                                    .getInstance()
-                                    .getReference()
-                                    .child(Channel.TABLE_NAME);
-                            channelRef.child(key)
-                                    .child(Channel.QRCODE_URL)
-                                    .setValue(downloadUrl.toString());
-                        }
-                    }
-                });
-            } catch(IllegalStateException ex) {
-                // This happens when channel gets deleted.
-                return false;
-            }
-            return true;
-        }
-
-
-    }
-
-    public static Bitmap makeQrBitmap(String key, String name) {
-        BitMatrix bitMatrix;
-//        Log.d(LOG_TAG, "makeQrBitmap(" + key + ", " + name + ")");
-        try {
-            bitMatrix = new MultiFormatWriter()
-                    .encode(key, BarcodeFormat.QR_CODE, 400, 400);
-        } catch (WriterException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return textOnBitmap(createBitmap(bitMatrix), name);
-    }
-
-    private static Bitmap textOnBitmap(Bitmap bitmap, String s) {
-        Canvas canvas = new Canvas(bitmap);
-        // new antialised Paint
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.rgb(0, 0, 0));
-        // text size in pixels
-        paint.setTextSize(48);
-        // text shadow
-        // draw text to the Canvas bottom
-        Rect bounds = new Rect();
-        paint.getTextBounds(s, 0, s.length(), bounds);
-        int x = (bitmap.getWidth() - bounds.width())/2;
-        int y = bitmap.getHeight();
-
-        canvas.drawText(s, x, y, paint);
-        return bitmap;
-    }
-
-    private static Bitmap createBitmap(BitMatrix bitMatrix) {
-        int w = bitMatrix.getWidth();
-        int h = bitMatrix.getHeight();
-        int[] pixels = new int[w * h];
-        for (int y = 0; y < h; y++) {
-            int offset = y * w;
-            for (int x = 0; x < w; x++) {
-                pixels[offset + x] = bitMatrix.get(x, y) ? BLACK : TRANSPARENT;
-            }
-        }
-        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
-        return bitmap;
     }
 }
