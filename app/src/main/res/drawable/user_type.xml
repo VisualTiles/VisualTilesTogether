@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:drawable="@drawable/ic_person"
+        app:state_user="true"/>
+    <item android:drawable="@drawable/ic_7point"
+        app:state_moderator="true"/>
+    <item android:drawable="@drawable/ic_block"
+        app:state_blocked="true"/>
+</selector>

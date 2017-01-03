@@ -85,6 +85,12 @@ public abstract class TileListFragment extends Fragment
         // watch for realtime changes
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
+            public void onChanged() {
+                super.onChanged();
+                mFirebaseAdapter.notifyDataSetChanged();
+            }
+
+            @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 super.onItemRangeInserted(positionStart, itemCount);
                 int tileCount = mFirebaseAdapter.getItemCount();

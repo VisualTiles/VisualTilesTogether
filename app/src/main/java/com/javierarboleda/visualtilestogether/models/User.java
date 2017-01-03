@@ -1,12 +1,24 @@
 package com.javierarboleda.visualtilestogether.models;
 
 
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 
 public class User {
+
+    public static final int REGULAR_USER = 0;
+    public static final int MODERATOR = 1;
+    public static final int BLOCKED = 2;
+
+    @IntDef({REGULAR_USER, MODERATOR, BLOCKED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UserType {}
+
     public static final String TABLE_NAME = "users";
     public static final String CHANNEL_ID = "channelId";
     public static final String TILE_IDS = "tileIds";
