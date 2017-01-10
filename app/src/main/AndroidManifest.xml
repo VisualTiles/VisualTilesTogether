@@ -20,8 +20,8 @@
 
         <activity
             android:name=".activities.TileListActivity"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.SignInActivity"
@@ -49,18 +49,25 @@
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/Theme.Transparent">
+            android:theme="@style/Theme.Transparent"
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:host="www.visualtilestogether.com" android:scheme="http"/>
-                <data android:host="www.visualtilestogether.com" android:scheme="https"/>
-                <data android:host="channel" android:scheme="vistile"/>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.visualtilestogether.com"
+                    android:scheme="http" />
+                <data
+                    android:host="www.visualtilestogether.com"
+                    android:scheme="https" />
+                <data
+                    android:host="channel"
+                    android:scheme="vistile" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.ModeratorConsoleActivity"
             android:label="@string/app_name"
@@ -69,10 +76,12 @@
         <activity
             android:name=".activities.BarcodeCaptureActivity"
             android:label="Scan QR to Join Event" />
-        <activity android:name=".activities.ShowChannelActivity"
+        <activity
+            android:name=".activities.ShowChannelActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.javierarboleda.visualtilestogether.fileprovider"
@@ -82,6 +91,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/fileprovider" />
         </provider>
+
     </application>
 
 </manifest>

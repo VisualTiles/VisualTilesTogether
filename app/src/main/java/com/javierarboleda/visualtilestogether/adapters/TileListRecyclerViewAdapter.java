@@ -122,7 +122,7 @@ public class TileListRecyclerViewAdapter extends FirebaseRecyclerAdapter<Object,
 
     private Animation getAnimation(int position) {
         boolean isVertical = false;
-        RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
+    RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
         if (lm instanceof  LinearLayoutManager) {
             isVertical = ((LinearLayoutManager) lm).getOrientation() == LinearLayoutManager
                     .VERTICAL;

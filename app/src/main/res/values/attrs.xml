@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="UserType">
+        <attr name="state_user" format="boolean"/>
+        <attr name="state_moderator" format="boolean"/>
+        <attr name="state_blocked" format="boolean"/>
+    </declare-styleable>
+</resources>

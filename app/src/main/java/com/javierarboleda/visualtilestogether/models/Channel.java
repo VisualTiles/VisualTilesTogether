@@ -1,10 +1,16 @@
 package com.javierarboleda.visualtilestogether.models;
 
+import android.support.annotation.IntDef;
+
 import com.google.firebase.database.DatabaseReference;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+
+import static com.javierarboleda.visualtilestogether.models.User.MODERATOR;
 
 public class Channel {
     public static final String TABLE_NAME = "channels";
@@ -18,6 +24,7 @@ public class Channel {
     public static final String EFFECT_DURATION = "masterEffectDuration";
     public static final String RONINS = "ronins";
     public static final String USER_LIST = "userList";
+    public static final String USERS = "users";
     private String name;
     private String uniqueName;
 
@@ -27,6 +34,7 @@ public class Channel {
     private ArrayList<String> moderators;
 
     private HashMap<String, String> userList;
+    private HashMap<String, Integer> users;
 
     // Effect fields.
     /**
@@ -54,7 +62,7 @@ public class Channel {
     public Channel(String name, String uniqueName, String userId) {
         this.name = name;
         this.uniqueName = uniqueName;
-        this.moderators = new ArrayList<>(Collections.singletonList(userId));
+        this.addModerator(userId);
     }
 
     public String getName() {
@@ -156,20 +164,33 @@ public class Channel {
     }
 
     public void addModerator(String moderator) {
-        if (this.moderators != null)
-            this.moderators.add(moderator);
+        if (this.moderators == null) {
+            this.moderators = new ArrayList<>();
+        }
+        this.moderators.add(moderator);
+        if (users == null) {
+            this.users = new HashMap<>();
+        }
+        users.put(moderator, MODERATOR);
     }
 
     public void removeModerator(String moderator) {
         if (this.moderators != null)
             this.moderators.remove(moderator);
+        if (users != null) {
+            users.remove(moderator);
+        }
     }
 
     public boolean hasModerator(String moderator) {
-        if (this.moderators == null) return false;
-        for (String mod : moderators) {
-            if (mod.equals(moderator))
-                return true;
+        if (this.moderators != null) {
+            for (String mod : moderators) {
+                if (mod.equals(moderator))
+                    return true;
+            }
+        }
+        if (users != null) {
+            return users.get(moderator) == MODERATOR;
         }
         return false;
     }
@@ -196,5 +217,13 @@ public class Channel {
 
     public void setUserList(HashMap<String, String> userList) {
         this.userList = userList;
+    }
+
+    public HashMap<String, Integer> getUsers() {
+        return users;
+    }
+
+    public void setUsers(HashMap<String, Integer> users) {
+        this.users = users;
     }
 }

@@ -26,6 +26,8 @@ import java.util.List;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
+import static com.javierarboleda.visualtilestogether.models.User.REGULAR_USER;
+
 
 public class VisualTilesTogetherApp extends Application {
     private static final String LOG_TAG = VisualTilesTogetherApp.class.getSimpleName();
@@ -201,6 +203,14 @@ public class VisualTilesTogetherApp extends Application {
                         channel.getUserList().put(uId, "true");
                         didSet = true;
                     }
+                    if (channel.getUsers() == null) {
+                        channel.setUsers(new HashMap<String, Integer>());
+                        didSet = true;
+                    }
+                    if (!channel.getUsers().containsKey(uId)) {
+                        channel.getUsers().put(uId, REGULAR_USER);
+                        didSet = true;
+                    }
                     if (didSet) dbChannelRef.setValue(channel);
 
                     resetChannelConnectedNotifier();
@@ -258,15 +268,6 @@ public class VisualTilesTogetherApp extends Application {
         if (user.getChannelId() != channelId) {
             Log.i(LOG_TAG, "User channel is not the same channel as initChannel!");
             user.setChannelId(channelId);
-
-            // Update channel field in DB.
-            // Switched from undateChildren() to setValue()
-            // so that only the ChannelId field would be rewritten instead of the entire entry.
-            // Not sure why this was called after adding a new tile,
-            // but it was making the tileIds entry disappear. (geo.)
-//            HashMap<String, Object> userUpdates = new HashMap<>();
-//            userUpdates.put(User.CHANNEL_ID, channelId);
-//            dbRef.child(User.TABLE_NAME).child(uId).updateChildren(userUpdates);
             dbRef.child(User.TABLE_NAME).child(uId).child(User.CHANNEL_ID).setValue(channelId);
         }
         initTilesForChannel();
@@ -393,7 +394,25 @@ public class VisualTilesTogetherApp extends Application {
 
     public void leaveChannel() {
         if (dbChannelRef != null && uId != null) {
+            // TODO: phase out USER_LIST
             dbChannelRef.child(Channel.USER_LIST).child(uId).removeValue();
+
+            dbChannelRef.child(Channel.USERS).child(uId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        @User.UserType int userType = dataSnapshot.getValue(Integer.class);
+                        if (userType == REGULAR_USER) {
+                            dbChannelRef.child(Channel.USERS).child(uId).removeValue();
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
         }
         cleanUpChannel();
         if (this.user != null && dbUserRef != null) {
