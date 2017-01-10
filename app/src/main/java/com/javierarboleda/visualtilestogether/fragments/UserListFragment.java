@@ -47,7 +47,8 @@ public class UserListFragment extends Fragment {
         mUserFbAdapter = new UserListRecyclerViewAdapter(Object.class,
                 R.layout.user_list_item,
                 UserListRecyclerViewAdapter.UserViewHolder.class,
-                getQuery());
+                getQuery(),
+                visualTilesTogetherApp);
 
         mUserFbAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override

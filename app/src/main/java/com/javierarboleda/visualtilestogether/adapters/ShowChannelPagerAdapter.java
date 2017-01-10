@@ -20,10 +20,10 @@ public class ShowChannelPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0: {
-                return ShowChannelFragment.newInstance(mUniqueName);
+                return new UserListFragment();
             }
             case 1: {
-                return new UserListFragment();
+                return ShowChannelFragment.newInstance(mUniqueName);
             }
         }
         return null;
@@ -38,9 +38,9 @@ public class ShowChannelPagerAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         switch (position) {
             case 0:
-                return "Channel";
-            case 1:
                 return "Users";
+            case 1:
+                return "Channel";
         }
         return null;
     }

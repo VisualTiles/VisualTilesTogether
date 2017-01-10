@@ -16,40 +16,92 @@
     app:cardMaxElevation="8dp"
     android:stateListAnimator="@animator/card_lift_animator" >
     <LinearLayout
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/ivUserPhoto"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_weight="0"
-            android:paddingRight="16dp"
-            android:paddingEnd="16dp"
-            tools:src="@mipmap/ic_launcher" />
-
-        <TextView
-            android:id="@+id/tvUserName"
-            android:layout_width="wrap_content"
+        android:orientation="vertical">
+        <LinearLayout
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingTop="24sp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@color/white"
-            tools:text="User Name" />
+            android:orientation="horizontal">
 
-        <com.javierarboleda.visualtilestogether.views.UserButton
-            android:layout_width="wrap_content"
+            <ImageView
+                android:id="@+id/ivUserPhoto"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_weight="0"
+                android:paddingRight="16dp"
+                android:paddingEnd="16dp"
+                tools:src="@mipmap/ic_launcher" />
+
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingTop="24sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/white"
+                tools:text="User Name" />
+
+            <com.javierarboleda.visualtilestogether.views.UserButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/ubUserType"
+                android:src="@drawable/user_type"
+                android:background="@android:color/transparent"
+                android:layout_gravity="center"
+                android:paddingRight="16dp"
+                android:paddingEnd="16dp"
+                />
+        </LinearLayout>
+        <LinearLayout
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/ubUserType"
-            android:src="@drawable/user_type"
-            android:background="@android:color/transparent"
-            android:layout_gravity="center"
-            android:paddingRight="16dp"
-            android:paddingEnd="16dp"
-            />
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:id="@+id/llExpansion">
 
+            <android.support.v4.widget.Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <com.javierarboleda.visualtilestogether.views.UserButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/user_type"
+                android:background="@android:color/transparent"
+                android:layout_gravity="center"
+                android:paddingRight="16dp"
+                android:paddingEnd="16dp"
+                android:id="@+id/ubUser"
+                app:state_user="true"
+                />
+            <com.javierarboleda.visualtilestogether.views.UserButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/user_type"
+                android:background="@android:color/transparent"
+                android:layout_gravity="center"
+                android:paddingRight="16dp"
+                android:paddingEnd="16dp"
+                android:id="@+id/ubModerator"
+                app:state_moderator="true"
+                />
+            <com.javierarboleda.visualtilestogether.views.UserButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/user_type"
+                android:background="@android:color/transparent"
+                android:layout_gravity="center"
+                android:paddingRight="16dp"
+                android:paddingEnd="16dp"
+                android:id="@+id/ubBlocked"
+                app:state_blocked="true"
+                />
+        </LinearLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>

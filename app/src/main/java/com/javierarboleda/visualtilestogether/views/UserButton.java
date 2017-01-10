@@ -1,6 +1,7 @@
 package com.javierarboleda.visualtilestogether.views;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.Log;
 
@@ -21,6 +22,17 @@ public class UserButton extends android.support.v7.widget.AppCompatImageButton {
 
     public UserButton(Context context, AttributeSet attrs) {
         super(context, attrs);
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.UserType, 0, 0);
+        try {
+            boolean isUser = a.getBoolean(R.styleable.UserType_state_user, false);
+            boolean isModerator = a.getBoolean(R.styleable.UserType_state_moderator, false);
+            boolean isBlocked = a.getBoolean(R.styleable.UserType_state_blocked, false);
+            mUserType = isModerator? User.MODERATOR
+                    : isBlocked? User.BLOCKED
+                    : User.REGULAR_USER;
+        } finally {
+            a.recycle();
+        }
     }
 
     @Override
@@ -35,7 +47,6 @@ public class UserButton extends android.support.v7.widget.AppCompatImageButton {
     }
 
     public void setUserType(int userType) {
-        Log.d(LOG_TAG, "setUserType(" + userType + ")" + " from " + mUserType);
         if (mUserType != userType) {
             mUserType = userType;
             invalidate();
